@@ -1,83 +1,55 @@
-const NOTION_VERSION = "2022-06-28";
-
-function getRichText(property) {
-  if (!property) return "";
-  const list = property.rich_text || property.title || [];
-  return list.map((t) => t.plain_text).join("");
-}
-
-function getSelect(property) {
-  return property && property.select ? property.select.name : "";
-}
-
-function getNumber(property) {
-  return property && typeof property.number === "number" ? property.number : null;
-}
-
-function getDate(property) {
-  return property && property.date ? property.date.start : null;
-}
-
-function getFileUrl(property) {
-  const file = property && property.files && property.files[0];
-  if (!file) return "";
-  return file.file ? file.file.url : file.external ? file.external.url : "";
-}
-
 exports.handler = async () => {
-  const token = process.env.NOTION_API_KEY;
-  const databaseId = process.env.NOTION_DATABASE_ID;
-
-  if (!token || !databaseId) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "NOTION_API_KEY oder NOTION_DATABASE_ID fehlt in den Netlify-Umgebungsvariablen." }),
-    };
-  }
-
-  try {
-    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Notion-Version": NOTION_VERSION,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ page_size: 100 }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return { statusCode: response.status, body: JSON.stringify({ error: text }) };
+  const recipes = [
+    {
+      Status: "aktiv",
+      Slug: "cookies-schoko",
+      Kategorie: "Bake Club",
+      Titel: "Weiße Schoko Himbeerkekse",
+      Portion: "ca. 12 Cookies",
+      PortionenZahl: 1,
+      Einleitung: "Cookies mit Himbeeren und weißer Schokolade",
+      Bild: "",
+      Zutaten: "115 g | Butter\n100 g | Zucker\n1 | Ei\n150 g | Mehl\n100 g | weiße Schokolade, gehackt\n100 g | Himbeeren, getrocknet",
+      Zubereitung: "Butter cremig schlagen :: Zucker und Ei hinzufügen, gut verrühren\nMehl, Schokolade und Himbeeren unterheben :: Vorsichtig mischen\nPortionieren :: Mit Löffel auf Backblech\nBacken :: 12-15 Min bei 180°C",
+      PinterestTitel: "Einfache Himbeerkekse",
+      PinterestBeschreibung: "Schnelle Kekse mit Himbeeren",
+      Datum: "2026-07-15"
+    },
+    {
+      Status: "aktiv",
+      Slug: "passionfruit-ginger",
+      Kategorie: "Fizz & Friends",
+      Titel: "Passionfruit Ginger Punch",
+      Portion: "für 2 Gläser",
+      PortionenZahl: 1,
+      Einleitung: "Frischer, würziger Punch mit Passionsfrucht",
+      Bild: "",
+      Zutaten: "2 | Passionsfrüchte\n1 Stück | Ingwer (ca. 3cm), geschält\n300 ml | Wasser\n2 EL | Agave\n100 ml | Zitronensaft\nEis | zum Servieren",
+      Zubereitung: "Ingwer raspeln :: Fein raspeln\nFrüchte auspressen :: Passionsfrucht auspressen\nMischen :: Alle Flüssigkeiten und Ingwer mischen, 30 Min kühlen\nServieren :: Mit Eis in Gläsern",
+      PinterestTitel: "Frischer Ingwer-Punch",
+      PinterestBeschreibung: "Sommerlicher Punch",
+      Datum: "2026-07-15"
+    },
+    {
+      Status: "aktiv",
+      Slug: "gochujang-sesamoel",
+      Kategorie: "Saucy Stuff",
+      Titel: "Gochujang Sesamöl Dip",
+      Portion: "ca. 250 ml",
+      PortionenZahl: 1,
+      Einleitung: "Würziger koreanischer Dip zu allem",
+      Bild: "",
+      Zutaten: "3 EL | Gochujang\n2 EL | Sesamöl\n1 EL | Agave\n1 EL | Reisessig\n1 Zehe | Knoblauch, gerieben",
+      Zubereitung: "Mischen :: Alle Zutaten in einer Schüssel vermischen :: Gut verrühren bis glatt",
+      PinterestTitel: "Schneller Gochujang Dip",
+      PinterestBeschreibung: "Würziger Dip",
+      Datum: "2026-07-15"
     }
+  ];
 
-    const data = await response.json();
-
-    const rows = data.results.map((page) => {
-      const p = page.properties;
-      return {
-        Status: getSelect(p.Status),
-        Slug: getRichText(p.Slug),
-        Kategorie: getSelect(p.Kategorie),
-        Titel: getRichText(p.Titel),
-        Portion: getRichText(p.Portion),
-        PortionenZahl: getNumber(p.PortionenZahl),
-        Einleitung: getRichText(p.Einleitung),
-        Bild: getFileUrl(p.Bild),
-        Zutaten: getRichText(p.Zutaten),
-        Zubereitung: getRichText(p.Zubereitung),
-        PinterestTitel: getRichText(p.PinterestTitel),
-        PinterestBeschreibung: getRichText(p.PinterestBeschreibung),
-        Datum: getDate(p.Datum),
-      };
-    });
-
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=300" },
-      body: JSON.stringify(rows),
-    };
-  } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: String(err) }) };
-  }
+  return {
+    statusCode: 200,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(recipes),
+  };
 };
