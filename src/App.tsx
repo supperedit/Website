@@ -1,4 +1,5 @@
 import "./styles/globals.css";
+import { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
@@ -17,6 +18,29 @@ import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
 import Favorites from "./pages/Favorites";
 
+class ErrorBoundary extends React.Component<{ children: ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Caught error:", error, errorInfo.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ padding: "2rem", textAlign: "center" }}>Fehler beim Laden der App. Bitte die Seite neu laden.</div>;
+    }
+
+    return this.props.children;
+  }
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -33,6 +57,7 @@ export default function App() {
     if (loading || recipes.length === 0) {
       return;
     }
+
     const previewImages = recipes
       .slice(-3)
       .map((r) => r.image)
@@ -45,6 +70,7 @@ export default function App() {
 
     let remaining = previewImages.length;
     let settled = false;
+
     const markDone = () => {
       remaining -= 1;
       if (remaining <= 0 && !settled) {
@@ -71,28 +97,27 @@ export default function App() {
   }, [loading, recipes]);
 
   return (
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <LoadingScreen visible={loading || !imagesReady} />
-      <ScrollToTop />
-
-      <Navbar />
-
-      <main style={{ flex: 1 }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/rezepte" element={<Recipes />} />
-          <Route path="/rezepte/:slug" element={<Recipe />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/kontakt" element={<Contact />} />
-          <Route path="/impressum" element={<Impressum />} />
-          <Route path="/datenschutz" element={<Datenschutz />} />
-          <Route path="/merkliste" element={<Favorites />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-
-      <Footer />
-      <CookieBanner />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <LoadingScreen visible={loading || !imagesReady} />
+        <ScrollToTop />
+        <Navbar />
+        <main style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/rezepte" element={<Recipes />} />
+            <Route path="/rezepte/:slug" element={<Recipe />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/kontakt" element={<Contact />} />
+            <Route path="/impressum" element={<Impressum />} />
+            <Route path="/datenschutz" element={<Datenschutz />} />
+            <Route path="/merkliste" element={<Favorites />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+        <Footer />
+        <CookieBanner />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
