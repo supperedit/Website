@@ -1,3 +1,4 @@
+import React from "react";
 import "./styles/globals.css";
 import { ReactNode } from "react";
 import { useEffect, useState } from "react";
