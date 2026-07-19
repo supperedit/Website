@@ -17,7 +17,7 @@ jobs:
           node-version: "18"
 
       - name: Sync Rezepte
-        run: node sync-recipes-github.js
+        run: node sync-recipes.js
 
       - name: Commit & Push
         run: |
