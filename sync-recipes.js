@@ -1,9 +1,6 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import https from "https";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
 
 function parseCSV(text) {
   const rows = [];
@@ -148,118 +145,124 @@ function downloadFile(url) {
   });
 }
 
-async function processRecipes() {
-  console.log("🔄 Syncing Notion Rezepte...\n");
+function processRecipes() {
+  return new Promise((resolve, reject) => {
+    console.log("🔄 Syncing Notion Rezepte...\n");
 
-  let csvContent = null;
-  const csvPath = path.join(__dirname, "recipes.csv");
+    let csvContent = null;
+    const csvPath = path.join(__dirname, "recipes.csv");
 
-  if (fs.existsSync(csvPath)) {
-    console.log("📄 Verwende lokale recipes.csv");
-    csvContent = fs.readFileSync(csvPath, "utf-8");
-  } else {
-    console.log("📥 Versuche CSV von Notion zu laden...");
-    try {
-      csvContent = await downloadFile(
+    if (fs.existsSync(csvPath)) {
+      console.log("📄 Verwende lokale recipes.csv");
+      csvContent = fs.readFileSync(csvPath, "utf-8");
+      finalize(csvContent);
+    } else {
+      console.log("📥 Versuche CSV von Notion zu laden...");
+      downloadFile(
         "https://www.notion.so/7609f4fa14a34cf9a0783b5b1bfe63e9?format=csv"
-      );
-      console.log("✅ CSV von Notion geladen");
-    } catch (err) {
-      console.log("⚠️  Konnte nicht von Notion laden:", err.message);
-      console.log("💡 Fallback: Versuche lokale CSV...\n");
-
-      if (!fs.existsSync(csvPath)) {
-        console.error(
-          "❌ Keine CSV verfügbar (weder Online noch Lokal)"
-        );
-        console.error(
-          "💡 Bitte manuell von Notion exportieren: ··· → Download → CSV"
-        );
-        process.exit(1);
-      }
+      )
+        .then((data) => {
+          console.log("✅ CSV von Notion geladen");
+          finalize(data);
+        })
+        .catch((err) => {
+          console.log("⚠️  Konnte nicht von Notion laden:", err.message);
+          if (!fs.existsSync(csvPath)) {
+            console.error("❌ Keine CSV verfügbar (weder Online noch Lokal)");
+            reject(new Error("Keine CSV verfügbar"));
+            return;
+          }
+          csvContent = fs.readFileSync(csvPath, "utf-8");
+          finalize(csvContent);
+        });
     }
-  }
 
-  if (!csvContent) {
-    console.error("❌ CSV konnte nicht geladen werden");
-    process.exit(1);
-  }
+    function finalize(csvContent) {
+      if (!csvContent) {
+        reject(new Error("CSV konnte nicht geladen werden"));
+        return;
+      }
 
-  const rows = parseCSV(csvContent);
+      const rows = parseCSV(csvContent);
 
-  if (rows.length === 0) {
-    console.error("❌ CSV ist leer!");
-    process.exit(1);
-  }
+      if (rows.length === 0) {
+        reject(new Error("CSV ist leer!"));
+        return;
+      }
 
-  const [header, ...dataRows] = rows;
+      const [header, ...dataRows] = rows;
 
-  const col = (name) => {
-    const idx = header.findIndex(
-      (h) => h.trim().toLowerCase() === name.toLowerCase()
-    );
-    return idx;
-  };
-
-  const idx = {
-    titel: col("titel"),
-    slug: col("slug"),
-    kategorie: col("kategorie"),
-    portionen: col("portionen"),
-    portionenzahl: col("portionenzahl"),
-    einleitung: col("einleitung"),
-    bild: col("bild"),
-    zutaten: col("zutaten"),
-    zubereitung: col("zubereitung"),
-    status: col("status"),
-    datum: col("datum"),
-  };
-
-  const recipes = dataRows
-    .filter((r) => {
-      const hasTitle = !!r[idx.titel]?.trim();
-      if (idx.status === -1) return hasTitle;
-      const status = r[idx.status]?.trim().toLowerCase();
-      return hasTitle && status === "aktiv";
-    })
-    .map((r) => {
-      const title = r[idx.titel]?.trim() || "";
-      const slug = r[idx.slug]?.trim() || slugify(title);
-
-      const baseServingsRaw = r[idx.portionenzahl]?.trim();
-      const baseServings =
-        baseServingsRaw && !isNaN(baseServingsRaw)
-          ? parseInt(baseServingsRaw, 10)
-          : null;
-
-      const datum = r[idx.datum]?.trim() || null;
-      const published = datum ? new Date(datum) <= new Date() : true;
-
-      return {
-        slug,
-        kategorie: r[idx.kategorie]?.trim() || "",
-        titel: title,
-        portionen: r[idx.portionen]?.trim() || "",
-        portionenzahl: baseServings,
-        einleitung: r[idx.einleitung]?.trim() || null,
-        bild: getImageUrl(r[idx.bild]) || undefined,
-        ingredientGroups: parseIngredients(r[idx.zutaten] || ""),
-        steps: parseSteps(r[idx.zubereitung] || ""),
-        published,
+      const col = (name) => {
+        const idx = header.findIndex(
+          (h) => h.trim().toLowerCase() === name.toLowerCase()
+        );
+        return idx;
       };
-    });
 
-  const jsonPath = path.join(__dirname, "src", "data", "recipes.json");
-  fs.writeFileSync(jsonPath, JSON.stringify(recipes, null, 2), "utf-8");
+      const idx = {
+        titel: col("titel"),
+        slug: col("slug"),
+        kategorie: col("kategorie"),
+        portionen: col("portionen"),
+        portionenzahl: col("portionenzahl"),
+        einleitung: col("einleitung"),
+        bild: col("bild"),
+        zutaten: col("zutaten"),
+        zubereitung: col("zubereitung"),
+        status: col("status"),
+        datum: col("datum"),
+      };
 
-  console.log("✅ Fertig!");
-  console.log(`📊 ${recipes.length} Rezepte konvertiert`);
-  console.log(`💾 Gespeichert in: ${jsonPath}\n`);
+      const recipes = dataRows
+        .filter((r) => {
+          const hasTitle = !!r[idx.titel]?.trim();
+          if (idx.status === -1) return hasTitle;
+          const status = r[idx.status]?.trim().toLowerCase();
+          return hasTitle && status === "aktiv";
+        })
+        .map((r) => {
+          const title = r[idx.titel]?.trim() || "";
+          const slug = r[idx.slug]?.trim() || slugify(title);
+
+          const baseServingsRaw = r[idx.portionenzahl]?.trim();
+          const baseServings =
+            baseServingsRaw && !isNaN(baseServingsRaw)
+              ? parseInt(baseServingsRaw, 10)
+              : null;
+
+          const datum = r[idx.datum]?.trim() || null;
+          const published = datum ? new Date(datum) <= new Date() : true;
+
+          return {
+            slug,
+            kategorie: r[idx.kategorie]?.trim() || "",
+            titel: title,
+            portionen: r[idx.portionen]?.trim() || "",
+            portionenzahl: baseServings,
+            einleitung: r[idx.einleitung]?.trim() || null,
+            bild: getImageUrl(r[idx.bild]) || undefined,
+            ingredientGroups: parseIngredients(r[idx.zutaten] || ""),
+            steps: parseSteps(r[idx.zubereitung] || ""),
+            published,
+          };
+        });
+
+      const jsonPath = path.join(__dirname, "src", "data", "recipes.json");
+      fs.writeFileSync(jsonPath, JSON.stringify(recipes, null, 2), "utf-8");
+
+      console.log("✅ Fertig!");
+      console.log(`📊 ${recipes.length} Rezepte konvertiert`);
+      console.log(`💾 Gespeichert in: ${jsonPath}\n`);
+      resolve();
+    }
+  });
 }
 
-try {
-  await processRecipes();
-} catch (err) {
-  console.error("❌ Fehler:", err.message);
-  process.exit(1);
-}
+processRecipes()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("❌ Fehler:", err.message);
+    process.exit(1);
+  });
