@@ -1,0 +1,33 @@
+name: Sync Notion Rezepte
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Sync Rezepte
+        run: node sync-recipes.js
+        continue-on-error: true
+
+      - name: Commit & Push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add src/data/recipes.json
+          if git diff --cached --exit-code > /dev/null; then
+            echo "Keine Änderungen"
+          else
+            git commit -m "🔄 Update Rezepte von Notion"
+            git push
+          fi
