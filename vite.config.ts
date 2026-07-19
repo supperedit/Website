@@ -1,23 +1,8 @@
 import { defineConfig } from "vite"
-import path from 'path';
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import svgr from "vite-plugin-svgr";
-
-
-function figmaAssetResolver() {
-  return {
-    name: 'figma-asset-resolver',
-    resolveId(id) {
-      if (id.startsWith('figma:asset/')) {
-        const filename = id.replace('figma:asset/', '')
-        return path.resolve(__dirname, 'src/assets', filename)
-      }
-    },
-  }
-}
+import react from "@vitejs/plugin-react"
+import tailwindcss from "@tailwindcss/vite"
+import svgr from "vite-plugin-svgr"
 
 export default defineConfig({
-  plugins: [
-    figmaAssetResolver(),svgr(), react(), tailwindcss()],
-});
+  plugins: [react(), tailwindcss(), svgr()],
+})
