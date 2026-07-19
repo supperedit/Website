@@ -6,7 +6,7 @@
     "portionen": "für 4 Personen",
     "portionenzahl": 4,
     "einleitung": "Das ist ein Test-Rezept",
-    "bild": undefined,
+    "bild": null,
     "ingredientGroups": [
       {
         "group": null,
@@ -24,7 +24,7 @@
       {
         "title": "Kochen",
         "content": "Pasta kochen",
-        "veganNote": undefined
+        "veganNote": null
       }
     ],
     "published": true
