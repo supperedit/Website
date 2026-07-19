@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+
 const __dirname = path.resolve();
 
 function parseCSV(text) {
@@ -117,29 +118,31 @@ function downloadFile(url) {
     let data = "";
 
     const makeRequest = (protocol) => {
-      protocol.get(url, { timeout: 10000 }, (res) => {
-        if (res.statusCode === 301 || res.statusCode === 302) {
-          const redirectUrl = res.headers.location;
-          const redirectProtocol = redirectUrl.startsWith("https")
-            ? https
-            : require("http");
-          makeRequest(redirectProtocol);
-          return;
-        }
+      protocol
+        .get(url, { timeout: 10000 }, (res) => {
+          if (res.statusCode === 301 || res.statusCode === 302) {
+            const redirectUrl = res.headers.location;
+            const redirectProtocol = redirectUrl.startsWith("https")
+              ? https
+              : require("http");
+            makeRequest(redirectProtocol);
+            return;
+          }
 
-        if (res.statusCode !== 200) {
-          reject(new Error(`HTTP ${res.statusCode}`));
-          return;
-        }
+          if (res.statusCode !== 200) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
+          }
 
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
+          res.on("data", (chunk) => {
+            data += chunk;
+          });
 
-        res.on("end", () => {
-          resolve(data);
-        });
-      });
+          res.on("end", () => {
+            resolve(data);
+          });
+        })
+        .on("error", reject);
     };
 
     makeRequest(url.startsWith("https") ? https : require("http"));
@@ -150,55 +153,35 @@ function processRecipes() {
   return new Promise((resolve, reject) => {
     console.log("🔄 Syncing Notion Rezepte...\n");
 
-    let csvContent = null;
-    const csvPath = path.join(__dirname, "recipes.csv");
+    downloadFile(
+      "https://www.notion.so/7609f4fa14a34cf9a0783b5b1bfe63e9?format=csv"
+    )
+      .then((csvContent) => {
+        console.log("✅ CSV von Notion geladen");
+        processCSV(csvContent);
+      })
+      .catch((err) => {
+        console.error("❌ Fehler beim Laden von Notion:", err.message);
+        reject(err);
+      });
 
-    if (fs.existsSync(csvPath)) {
-      console.log("📄 Verwende lokale recipes.csv");
-      csvContent = fs.readFileSync(csvPath, "utf-8");
-      finalize(csvContent);
-    } else {
-      console.log("📥 Versuche CSV von Notion zu laden...");
-      downloadFile(
-        "https://www.notion.so/7609f4fa14a34cf9a0783b5b1bfe63e9?format=csv"
-      )
-        .then((data) => {
-          console.log("✅ CSV von Notion geladen");
-          finalize(data);
-        })
-        .catch((err) => {
-          console.log("⚠️  Konnte nicht von Notion laden:", err.message);
-          if (!fs.existsSync(csvPath)) {
-            console.error("❌ Keine CSV verfügbar (weder Online noch Lokal)");
-            reject(new Error("Keine CSV verfügbar"));
-            return;
-          }
-          csvContent = fs.readFileSync(csvPath, "utf-8");
-          finalize(csvContent);
-        });
-    }
-
-    function finalize(csvContent) {
+    function processCSV(csvContent) {
       if (!csvContent) {
         reject(new Error("CSV konnte nicht geladen werden"));
         return;
       }
 
       const rows = parseCSV(csvContent);
-
       if (rows.length === 0) {
         reject(new Error("CSV ist leer!"));
         return;
       }
 
       const [header, ...dataRows] = rows;
-
-      const col = (name) => {
-        const idx = header.findIndex(
+      const col = (name) =>
+        header.findIndex(
           (h) => h.trim().toLowerCase() === name.toLowerCase()
         );
-        return idx;
-      };
 
       const idx = {
         titel: col("titel"),
@@ -218,19 +201,16 @@ function processRecipes() {
         .filter((r) => {
           const hasTitle = !!r[idx.titel]?.trim();
           if (idx.status === -1) return hasTitle;
-          const status = r[idx.status]?.trim().toLowerCase();
-          return hasTitle && status === "aktiv";
+          return hasTitle && r[idx.status]?.trim().toLowerCase() === "aktiv";
         })
         .map((r) => {
           const title = r[idx.titel]?.trim() || "";
           const slug = r[idx.slug]?.trim() || slugify(title);
-
           const baseServingsRaw = r[idx.portionenzahl]?.trim();
           const baseServings =
             baseServingsRaw && !isNaN(baseServingsRaw)
               ? parseInt(baseServingsRaw, 10)
               : null;
-
           const datum = r[idx.datum]?.trim() || null;
           const published = datum ? new Date(datum) <= new Date() : true;
 
