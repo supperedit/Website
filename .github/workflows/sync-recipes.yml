@@ -17,14 +17,13 @@ jobs:
           node-version: "18"
 
       - name: Sync Rezepte
-        run: node sync-recipes.js
-        continue-on-error: true
+        run: node sync-recipes-github.js
 
       - name: Commit & Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add src/data/recipes.json
+          git add -A
           if git diff --cached --exit-code > /dev/null; then
             echo "Keine Änderungen"
           else
