@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+const __dirname = path.resolve();
 
 function parseCSV(text) {
   const rows = [];
