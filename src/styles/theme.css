@@ -1,0 +1,19 @@
+:root {
+  --color-cream: #F7F6EC;
+  --color-ink: #2b1210;
+  --color-maroon: #430908;
+  --color-terracotta: #7c4535;
+  --color-mustard: #afa033;
+  --color-sky: #c7dfe3;
+  --color-dusty-blue: #85a9c7;
+  --color-lavender: #c1aac2;
+  --color-blush: #f6cdd6;
+  --color-butter: #F6E698;
+
+  --color-sand: var(--color-butter);
+  --color-muted: rgba(43, 18, 16, 0.55);
+  --color-line: rgba(43, 18, 16, 0.15);
+
+  --font-display: "Dreamland", cursive; /* Name muss exakt zur Headline-Schrift in fonts.css passen */
+  --font-body: "Elms Sans", sans-serif; /* Name muss exakt zur Copy-Schrift in fonts.css passen */
+}
