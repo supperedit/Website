@@ -102,7 +102,10 @@ async function queryAll(databaseId: string, token: string): Promise<NotionPage[]
       body: JSON.stringify(body),
     });
 
-    if (!res.ok) throw new Error(`Notion API error: ${res.status}`);
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Notion API error: ${res.status} — ${body}`);
+    }
     const data = (await res.json()) as { results: NotionPage[]; has_more: boolean; next_cursor: string | null };
     pages.push(...data.results);
     cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
