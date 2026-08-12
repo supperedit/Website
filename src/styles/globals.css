@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Elms+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import "./fonts.css";
+@import "./theme.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 3px;
+}
+
+.logo-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(124, 69, 53, 0.3);
+  border-radius: 12px;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 56px);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* ─── Marquee ───────────────────────────────────────────────────────────── */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── Recipe card – shared across Home + Recipes ────────────────────────── */
+.recipe-card-hover {
+  display: block;
+  cursor: pointer;
+}
+
+.recipe-card-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: var(--color-dusty-blue);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s ease;
+}
+
+.recipe-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* subtle zoom-in on hover handled by container scale */
+}
+
+.recipe-card-hover:hover .recipe-card-image {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 16px 32px rgba(43, 18, 16, 0.18);
+}
+
+/* ─── Shuffle button icon ────────────────────────────────────────────────── */
+.shuffle-icon {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+button:active .shuffle-icon {
+  transform: rotate(180deg);
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  .recipe-card-hover .recipe-card-image {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .shuffle-icon {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ─── Logo helpers ────────────────────────────────────────────────────────── */
+.logo-blend,
+.logo-blend path {
+  fill: #ffffff !important;
+}
