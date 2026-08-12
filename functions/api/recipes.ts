@@ -92,11 +92,11 @@ async function queryAll(databaseId: string, token: string): Promise<NotionPage[]
     const body: Record<string, unknown> = { page_size: 100 };
     if (cursor) body.start_cursor = cursor;
 
-    const res = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+    const res = await fetch(`https://api.notion.com/v1/data_sources/${databaseId}/query`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        "Notion-Version": "2025-09-03",
+        "Notion-Version": "2026-03-11",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
