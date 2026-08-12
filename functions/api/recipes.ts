@@ -86,30 +86,48 @@ function imageUrl(prop: NotionProperty | undefined): string | undefined {
 
 async function queryAll(databaseId: string, token: string): Promise<NotionPage[]> {
   const pages: NotionPage[] = [];
-  let cursor: string | undefined;
 
-  do {
-    const body: Record<string, unknown> = { page_size: 100 };
-    if (cursor) body.start_cursor = cursor;
+  // Retrieve the database to discover its data_source IDs (required for multi-source databases)
+  const dbRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Notion-Version": "2026-03-11",
+    },
+  });
 
-    const res = await fetch(`https://api.notion.com/v1/data_sources/${databaseId}/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Notion-Version": "2026-03-11",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const body = await res.text();
-      throw new Error(`Notion API error: ${res.status} — ${body}`);
+  let dataSourceIds: string[] = [databaseId];
+  if (dbRes.ok) {
+    const dbData = (await dbRes.json()) as { data_sources?: { id: string }[] };
+    if (dbData.data_sources && dbData.data_sources.length > 0) {
+      dataSourceIds = dbData.data_sources.map((ds) => ds.id);
     }
-    const data = (await res.json()) as { results: NotionPage[]; has_more: boolean; next_cursor: string | null };
-    pages.push(...data.results);
-    cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
-  } while (cursor);
+  }
+
+  for (const dataSourceId of dataSourceIds) {
+    let cursor: string | undefined;
+    do {
+      const body: Record<string, unknown> = { page_size: 100 };
+      if (cursor) body.start_cursor = cursor;
+
+      const res = await fetch(`https://api.notion.com/v1/data_sources/${dataSourceId}/query`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": "2026-03-11",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Notion API error: ${res.status} — ${errBody}`);
+      }
+      const data = (await res.json()) as { results: NotionPage[]; has_more: boolean; next_cursor: string | null };
+      pages.push(...data.results);
+      cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
+    } while (cursor);
+  }
 
   return pages;
 }
