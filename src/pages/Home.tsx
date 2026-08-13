@@ -24,8 +24,9 @@ const marqueeText = "Recipes for people who don't follow recipes. ";
 
 // Duration of one full loop through the category set, in seconds. Higher = slower.
 const CATEGORY_LOOP_SECONDS = 45;
-// How quickly velocity eases toward its target (0 on hover, base speed otherwise).
-const CATEGORY_EASE_FACTOR = 0.14;
+// After the person manually scrolls/drags the category strip, autoplay stays
+// paused for this long before easing back in.
+const CATEGORY_RESUME_DELAY = 2500;
 
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
   cookie: { Icon: CookieIcon, height: 78 },
@@ -65,8 +66,7 @@ export default function Home() {
     [recipes, activeVibe],
   );
 
-  // The API now returns recipes newest-first (sorted server-side by Notion date),
-  // so no client-side re-sorting is needed here.
+  // The API returns recipes newest-first (sorted server-side by Notion date).
   const newestRecipes = useMemo(() => recipes.slice(0, 4), [recipes]);
 
   useEffect(() => {
@@ -90,43 +90,103 @@ export default function Home() {
     setSuggestion(next);
   };
 
-  // ── Smooth-hover category scroller ──────────────────────────────────────
-  // Runs opposite to the ticker and eases its speed down to a stop on hover
-  // instead of cutting abruptly, then eases back up when the pointer leaves.
-  const catTrackRef = useRef<HTMLDivElement>(null);
-  const catHoverRef = useRef(false);
-  const catVelocityRef = useRef(0);
-  const catOffsetRef = useRef(0);
-  const catBaseSpeedRef = useRef(0);
+  // ── Category scroller: autoplay + manual scroll/drag ───────────────────
+  // Real horizontal scroll container (not a transformed div), so touch swipe
+  // and trackpad scrolling work natively. Autoplay nudges scrollLeft via
+  // rAF; any manual interaction (drag, wheel, touch) pauses it for
+  // CATEGORY_RESUME_DELAY ms, then it eases back in. The category list is
+  // rendered twice back-to-back and we silently wrap scrollLeft between the
+  // two copies so the loop feels infinite in both directions.
+  const catContainerRef = useRef<HTMLDivElement>(null);
   const catSetWidthRef = useRef(0);
+  const catBaseSpeedRef = useRef(0);
+  const catLastInteractionRef = useRef(0);
+  const catIsDraggingRef = useRef(false);
+  const catDragStartXRef = useRef(0);
+  const catDragStartScrollRef = useRef(0);
+  const catAdjustingRef = useRef(false); // true while WE are setting scrollLeft, so the scroll listener doesn't mistake it for user input
+  const catInitializedRef = useRef(false);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
+    const container = catContainerRef.current;
+    if (!container) return;
 
     const measure = () => {
-      const track = catTrackRef.current;
-      if (!track) return;
-      catSetWidthRef.current = track.scrollWidth / 2;
+      catSetWidthRef.current = container.scrollWidth / 2;
       catBaseSpeedRef.current = catSetWidthRef.current / (CATEGORY_LOOP_SECONDS * 60);
+      if (!catInitializedRef.current && catSetWidthRef.current > 0) {
+        catAdjustingRef.current = true;
+        container.scrollLeft = catSetWidthRef.current / 2;
+        catInitializedRef.current = true;
+      }
     };
     measure();
     window.addEventListener("resize", measure);
 
+    const wrap = () => {
+      const setWidth = catSetWidthRef.current;
+      if (setWidth <= 0) return;
+      if (container.scrollLeft <= 0) {
+        catAdjustingRef.current = true;
+        container.scrollLeft += setWidth;
+      } else if (container.scrollLeft >= setWidth) {
+        catAdjustingRef.current = true;
+        container.scrollLeft -= setWidth;
+      }
+    };
+
+    const onScroll = () => {
+      if (catAdjustingRef.current) {
+        catAdjustingRef.current = false;
+        return;
+      }
+      catLastInteractionRef.current = performance.now();
+      wrap();
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+
+    // Mouse drag-to-scroll. Touch and trackpad already scroll the container
+    // natively via overflow-x, so this only kicks in for mouse input.
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
+      catIsDraggingRef.current = true;
+      catDragStartXRef.current = e.clientX;
+      catDragStartScrollRef.current = container.scrollLeft;
+      container.setPointerCapture(e.pointerId);
+      container.style.cursor = "grabbing";
+    };
+    const onPointerMove = (e: PointerEvent) => {
+      if (!catIsDraggingRef.current) return;
+      catAdjustingRef.current = true;
+      container.scrollLeft = catDragStartScrollRef.current - (e.clientX - catDragStartXRef.current);
+      catLastInteractionRef.current = performance.now();
+      wrap();
+    };
+    const endDrag = () => {
+      catIsDraggingRef.current = false;
+      container.style.cursor = "grab";
+    };
+    const onWheel = () => {
+      catLastInteractionRef.current = performance.now();
+    };
+    container.addEventListener("pointerdown", onPointerDown);
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("pointerup", endDrag);
+    container.addEventListener("pointercancel", endDrag);
+    container.addEventListener("pointerleave", endDrag);
+    container.addEventListener("wheel", onWheel, { passive: true });
+    container.addEventListener("touchstart", onWheel, { passive: true });
+
     let rafId: number;
     const tick = () => {
-      const setWidth = catSetWidthRef.current;
-      const targetSpeed = catHoverRef.current ? 0 : catBaseSpeedRef.current;
-      catVelocityRef.current += (targetSpeed - catVelocityRef.current) * CATEGORY_EASE_FACTOR;
-      catOffsetRef.current += catVelocityRef.current;
-
-      if (setWidth > 0) {
-        if (catOffsetRef.current >= setWidth) catOffsetRef.current -= setWidth;
-        if (catOffsetRef.current < 0) catOffsetRef.current += setWidth;
-      }
-
-      if (catTrackRef.current) {
-        catTrackRef.current.style.transform = `translateX(${-catOffsetRef.current}px)`;
+      const now = performance.now();
+      const recentlyInteracted = now - catLastInteractionRef.current < CATEGORY_RESUME_DELAY;
+      if (!prefersReducedMotion && !catIsDraggingRef.current && !recentlyInteracted) {
+        // Negative direction: categories drift left → right.
+        catAdjustingRef.current = true;
+        container.scrollLeft -= catBaseSpeedRef.current;
+        wrap();
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -135,6 +195,14 @@ export default function Home() {
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", measure);
+      container.removeEventListener("scroll", onScroll);
+      container.removeEventListener("pointerdown", onPointerDown);
+      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointerup", endDrag);
+      container.removeEventListener("pointercancel", endDrag);
+      container.removeEventListener("pointerleave", endDrag);
+      container.removeEventListener("wheel", onWheel);
+      container.removeEventListener("touchstart", onWheel);
     };
   }, []);
 
@@ -185,32 +253,20 @@ export default function Home() {
             Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
             einfach hängen bleibt.
           </p>
-          <Link
-            to="/rezepte"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              backgroundColor: "var(--color-terracotta)",
-              color: "var(--color-cream)",
-              borderRadius: 999,
-              padding: "12px 26px",
-              fontSize: 14,
-            }}
-          >
+          <Link to="/rezepte" className="btn-primary">
             Alle Rezepte <ArrowRight size={14} />
           </Link>
         </div>
       </section>
 
-      {/* ── Marquee ── */}
+      {/* ── Marquee: drifts right → left ── */}
       <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
         <div
           style={{
             display: "flex",
             width: "max-content",
             whiteSpace: "nowrap",
-            animation: "marquee-scroll 26s linear infinite reverse",
+            animation: "marquee-scroll 26s linear infinite",
           }}
         >
           {[0, 1].map((i) => (
@@ -231,18 +287,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Kategorien ── */}
+      {/* ── Kategorien: drifts left → right, scrollable/draggable by hand ── */}
       <section style={{ backgroundColor: "var(--color-cream)", paddingBlock: 40 }}>
         <div className="wrap" style={{ marginBottom: 40 }}>
           <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>Kategorien</h2>
         </div>
 
-        <div
-          style={{ overflow: "hidden", paddingBottom: 8 }}
-          onMouseEnter={() => { catHoverRef.current = true; }}
-          onMouseLeave={() => { catHoverRef.current = false; }}
-        >
-          <div className="categories-infinite" ref={catTrackRef}>
+        <div className="categories-scroll" ref={catContainerRef}>
+          <div className="categories-track">
             {[...categories, ...categories].map((cat, i) => {
               const entry = categoryIcons[cat.slug];
               const Icon = entry?.Icon;
@@ -255,6 +307,7 @@ export default function Home() {
                   style={{ width: 140, flexShrink: 0, textAlign: "center" }}
                   aria-hidden={isDuplicate || undefined}
                   tabIndex={isDuplicate ? -1 : undefined}
+                  draggable={false}
                 >
                   <div
                     style={{
@@ -263,6 +316,7 @@ export default function Home() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      pointerEvents: "none",
                     }}
                   >
                     {Icon && (
@@ -273,10 +327,10 @@ export default function Home() {
                       />
                     )}
                   </div>
-                  <span className="font-display" style={{ display: "block", fontSize: 22 }}>
+                  <span className="font-display" style={{ display: "block", fontSize: 22, pointerEvents: "none" }}>
                     {cat.name}
                   </span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--color-muted)" }}>
+                  <span style={{ display: "block", fontSize: 11, color: "var(--color-muted)", pointerEvents: "none" }}>
                     {cat.sub}
                   </span>
                 </Link>
@@ -286,7 +340,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Manifest / The Art of Supper (moved up, right after Kategorien) ── */}
+      {/* ── Neue Rezepte (moved right after Kategorien) ── */}
+      {!loading && newestRecipes.length > 0 && (
+        <section className="wrap" style={{ paddingBlock: 40 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              marginBottom: 40,
+            }}
+          >
+            <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>
+              Neue Rezepte
+            </h2>
+            <Link to="/rezepte" style={{ fontSize: 14, borderBottom: "1px solid var(--color-ink)" }}>
+              Alle ansehen
+            </Link>
+          </div>
+
+          {/* Desktop/tablet: normal grid. Mobile: horizontal swipe carousel (see .newest-* in <style>),
+              so four full-height recipe cards don't stack into a huge scroll distance on phones. */}
+          <div className="newest-grid">
+            {newestRecipes.map((r) => (
+              <RecipeCard
+                key={r.slug}
+                slug={r.slug}
+                title={r.title}
+                category={r.category}
+                image={resizeDriveUrl(r.image, "w600")}
+                titleSize={24}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Manifest / The Art of Supper ── */}
       <section className="wrap sticky-feature">
         <div className="sticky-feature-image" style={{ backgroundImage: `url(${heroImage})` }} />
         <div className="sticky-feature-text">
@@ -315,46 +405,6 @@ export default function Home() {
           </p>
         </div>
       </section>
-
-      {/* ── Neue Rezepte ── */}
-      {!loading && newestRecipes.length > 0 && (
-        <section className="wrap" style={{ paddingBlock: 40 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              marginBottom: 40,
-            }}
-          >
-            <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>
-              Neue Rezepte
-            </h2>
-            <Link to="/rezepte" style={{ fontSize: 14, borderBottom: "1px solid var(--color-ink)" }}>
-              Alle ansehen
-            </Link>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 28,
-            }}
-          >
-            {newestRecipes.map((r) => (
-              <RecipeCard
-                key={r.slug}
-                slug={r.slug}
-                title={r.title}
-                category={r.category}
-                image={resizeDriveUrl(r.image, "w600")}
-                titleSize={24}
-              />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ── Seasonal calendar ── */}
       <section
@@ -450,37 +500,11 @@ export default function Home() {
                 </p>
 
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link
-                    to={`/rezepte/${suggestion.slug}`}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      backgroundColor: "var(--color-terracotta)",
-                      color: "var(--color-cream)",
-                      borderRadius: 999,
-                      padding: "10px 20px",
-                      fontSize: 13,
-                    }}
-                  >
+                  <Link to={`/rezepte/${suggestion.slug}`} className="btn-primary btn-small">
                     Zum Rezept <ArrowRight size={13} />
                   </Link>
-                  <button
-                    onClick={pickRandom}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: "none",
-                      border: "1px solid var(--color-line)",
-                      borderRadius: 999,
-                      padding: "10px 20px",
-                      fontSize: 13,
-                      color: "var(--color-ink)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Shuffle size={13} className="shuffle-icon" /> anderes
+                  <button onClick={pickRandom} className="btn-secondary btn-small">
+                    <Shuffle size={13} /> Anderes Rezept
                   </button>
                 </div>
               </div>
@@ -495,7 +519,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Quote / statement (sits between the two "pick a recipe" sections on purpose) ── */}
+      {/* ── Quote / statement ── */}
       <section
         className="statement-section"
         style={{
@@ -528,12 +552,76 @@ export default function Home() {
       <SupperPairing />
 
       <style>{`
-        .categories-infinite {
+        /* ── Shared CTA styles, used everywhere on this page ── */
+        .btn-primary, .btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          border-radius: 999px;
+          padding: 12px 24px;
+          font-size: 14px;
+          text-decoration: none;
+          cursor: pointer;
+          transition: opacity 0.2s ease, background 0.2s ease;
+        }
+        .btn-primary, .btn-secondary {
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .btn-primary {
+          background-color: var(--color-terracotta);
+          color: var(--color-cream);
+          border: 1px solid var(--color-terracotta);
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary {
+          background: none;
+          color: var(--color-ink);
+          border: 1px solid var(--color-line);
+        }
+        .btn-secondary:hover { background: rgba(43, 18, 16, 0.06); }
+        .btn-small { padding: 10px 20px; font-size: 13px; }
+
+        /* ── Neue Rezepte: grid on larger screens, swipe carousel on mobile ── */
+        .newest-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 28px;
+        }
+        @media (max-width: 640px) {
+          .newest-grid {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 8px;
+            margin-inline: -20px;
+            padding-inline: 20px;
+            scrollbar-width: none;
+          }
+          .newest-grid::-webkit-scrollbar { display: none; }
+          .newest-grid > * {
+            flex: 0 0 68%;
+            scroll-snap-align: start;
+          }
+        }
+
+        /* ── Category scroller ── */
+        .categories-scroll {
+          overflow-x: auto;
+          overflow-y: hidden;
+          padding-bottom: 8px;
+          cursor: grab;
+          touch-action: pan-x;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .categories-scroll::-webkit-scrollbar { display: none; }
+        .categories-track {
           display: flex;
           gap: 40px;
           width: max-content;
           padding-left: max(clamp(20px, 5vw, 56px), calc((100vw - 1180px) / 2 + 56px));
-          will-change: transform;
         }
 
         .vibe-filter {
@@ -562,36 +650,21 @@ export default function Home() {
           color: var(--color-cream);
         }
 
+        /* ── Postcard suggestion: plain clean card now, no scalloped edges ── */
         .postcard {
-          max-width: 680px;
+          max-width: 640px;
           margin: 0 auto;
           display: flex;
-          position: relative;
-          overflow: hidden;
           background: var(--color-cream);
-          box-shadow: 0 6px 32px rgba(43, 18, 16, 0.10);
-        }
-        .postcard::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 10;
-          background:
-            radial-gradient(circle at 0 0, var(--color-sky) 9px, transparent 9px) 0 0 / 18px 18px no-repeat,
-            radial-gradient(circle at 100% 0, var(--color-sky) 9px, transparent 9px) 100% 0 / 18px 18px no-repeat,
-            radial-gradient(circle at 0 100%, var(--color-sky) 9px, transparent 9px) 0 100% / 18px 18px no-repeat,
-            radial-gradient(circle at 100% 100%, var(--color-sky) 9px, transparent 9px) 100% 100% / 18px 18px no-repeat,
-            radial-gradient(circle at 50% 0, var(--color-sky) 9px, transparent 9px) top / 22px 9px repeat-x,
-            radial-gradient(circle at 50% 100%, var(--color-sky) 9px, transparent 9px) bottom / 22px 9px repeat-x,
-            radial-gradient(circle at 0 50%, var(--color-sky) 9px, transparent 9px) left / 9px 22px repeat-y,
-            radial-gradient(circle at 100% 50%, var(--color-sky) 9px, transparent 9px) right / 9px 22px repeat-y;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 20px 48px rgba(43, 18, 16, 0.12);
         }
         .postcard-photo {
-          width: 260px;
+          width: 240px;
           flex-shrink: 0;
           position: relative;
-          min-height: 360px;
+          min-height: 320px;
           background-color: var(--color-line);
         }
         .postcard-right {
@@ -601,12 +674,10 @@ export default function Home() {
           flex-direction: column;
           justify-content: center;
           text-align: left;
-          border-left: 1px dashed var(--color-line);
         }
         @media (max-width: 580px) {
           .postcard { flex-direction: column; }
-          .postcard-photo { width: 100%; min-height: 240px; }
-          .postcard-right { border-left: none; border-top: 1px dashed var(--color-line); }
+          .postcard-photo { width: 100%; min-height: 220px; }
         }
 
         .statement-section { background-attachment: fixed; }
@@ -638,7 +709,6 @@ export default function Home() {
         }
         @media (prefers-reduced-motion: reduce) {
           .sticky-feature-image { position: static !important; }
-          .categories-infinite { overflow-x: auto; transform: none !important; }
         }
       `}</style>
     </>
