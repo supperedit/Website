@@ -1,168 +1,204 @@
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
-import { categories } from "../data/categories";
-import RecipeCard from "../components/RecipeCard";
-import SEO from "../components/SEO";
-
-export default function Recipes() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeCategory = searchParams.get("kategorie");
-  const { recipes, loading, error } = useRecipes();
-
-  // Newest recipes first (last row in the sheet = newest)
-  const reversed = useMemo(() => [...recipes].reverse(), [recipes]);
-
-  const activeCategoryName = categories.find((c) => c.slug === activeCategory)?.name;
-  const filtered = activeCategoryName
-    ? reversed.filter((r) => r.category === activeCategoryName)
-    : reversed;
-
-  // Recipe count per category (for the filter chips)
-  const countByCategory = useMemo(() => {
-    const map: Record<string, number> = {};
-    recipes.forEach((r) => {
-      if (r.category) map[r.category] = (map[r.category] ?? 0) + 1;
-    });
-    return map;
-  }, [recipes]);
-
-  return (
-    <>
-      <SEO title="Alle Rezepte" description="Alle Rezepte von Supper Edit auf einen Blick." />
-
-      <section className="wrap" style={{ paddingBlock: 80 }}>
-        <h1 className="font-display" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", marginBottom: 32 }}>
-          Rezepte
-        </h1>
-
-        {/* ── Category filter ── */}
-        <div
-          role="group"
-          aria-label="Nach Kategorie filtern"
-          style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 48 }}
-        >
-          <button
-            onClick={() => setSearchParams({})}
-            aria-pressed={!activeCategory}
-            style={{
-              padding: "8px 16px",
-              borderRadius: 999,
-              border: "1px solid var(--color-line)",
-              background: !activeCategory ? "var(--color-terracotta)" : "transparent",
-              color: !activeCategory ? "var(--color-cream)" : "var(--color-ink)",
-              fontSize: 13,
-              cursor: "pointer",
-            }}
-          >
-            Alle
-            {!loading && (
-              <span style={{ marginLeft: 6, opacity: 0.65, fontSize: 11 }}>
-                {recipes.length}
-              </span>
-            )}
-          </button>
-
-          {categories.map((cat) => {
-            const count = countByCategory[cat.name] ?? 0;
-            const active = activeCategory === cat.slug;
-            return (
-              <button
-                key={cat.slug}
-                onClick={() => setSearchParams({ kategorie: cat.slug })}
-                aria-pressed={active}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: 999,
-                  border: "1px solid var(--color-line)",
-                  background: active ? "var(--color-terracotta)" : "transparent",
-                  color: active ? "var(--color-cream)" : "var(--color-ink)",
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                {cat.name}
-                {!loading && count > 0 && (
-                  <span style={{ marginLeft: 6, opacity: 0.65, fontSize: 11 }}>
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Skeleton loading ── */}
-        {loading && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 28 }}>
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i}>
-                <div className="recipe-skeleton-image" />
-                <div className="recipe-skeleton-line" style={{ width: "40%", marginTop: 14 }} />
-                <div className="recipe-skeleton-line" style={{ width: "70%", marginTop: 8 }} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {error && (
-          <p style={{ color: "var(--color-muted)" }}>
-            Rezepte konnten gerade nicht geladen werden.
-          </p>
-        )}
-
-        {/* ── Recipe grid ── */}
-        {!loading && !error && filtered.length > 0 && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: 28,
-            }}
-          >
-            {filtered.map((r) => (
-              <RecipeCard
-                key={r.slug}
-                slug={r.slug}
-                title={r.title}
-                category={r.category}
-                image={resizeDriveUrl(r.image, "w600")}
-                titleSize={20}
-              />
-            ))}
-          </div>
-        )}
-
-        {!loading && !error && filtered.length === 0 && (
-          <p style={{ color: "var(--color-muted)" }}>
-            Für diese Kategorie ist noch kein Rezept da.
-          </p>
-        )}
-      </section>
-
-      <style>{`
-        .recipe-skeleton-image {
-          aspect-ratio: 3/4;
-          border-radius: 12px;
-          background: linear-gradient(90deg, var(--color-line) 25%, rgba(43,18,16,0.08) 50%, var(--color-line) 75%);
-          background-size: 200% 100%;
-          animation: skeleton-shimmer 1.4s ease infinite;
-        }
-        .recipe-skeleton-line {
-          height: 14px;
-          border-radius: 4px;
-          background: linear-gradient(90deg, var(--color-line) 25%, rgba(43,18,16,0.08) 50%, var(--color-line) 75%);
-          background-size: 200% 100%;
-          animation: skeleton-shimmer 1.4s ease infinite;
-        }
-        @keyframes skeleton-shimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .recipe-skeleton-image, .recipe-skeleton-line { animation: none; }
-        }
-      `}</style>
-    </>
-  );
+interface Env {
+  NOTION_TOKEN: string;
+  NOTION_DATABASE_ID: string;
 }
+
+interface NotionRichText {
+  plain_text: string;
+}
+
+interface NotionProperty {
+  type: string;
+  title?: NotionRichText[];
+  rich_text?: NotionRichText[];
+  select?: { name: string } | null;
+  number?: number | null;
+  url?: string | null;
+  files?: { type: string; file?: { url: string }; external?: { url: string }; name: string }[];
+}
+
+interface NotionPage {
+  id: string;
+  created_time: string;
+  properties: Record<string, NotionProperty>;
+}
+
+function richText(prop: NotionProperty | undefined): string {
+  if (!prop) return "";
+  if (prop.type === "title") return prop.title?.map((t) => t.plain_text).join("") ?? "";
+  if (prop.type === "rich_text") return prop.rich_text?.map((t) => t.plain_text).join("") ?? "";
+  return "";
+}
+
+function slugify(text: string): string {
+  const map: Record<string, string> = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
+  return text
+    .toLowerCase()
+    .replace(/[äöüß]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function parseIngredients(cell: string) {
+  const groups: { group: string | null; items: { amount: string; name: string; veganAmount: string | null; veganName: string | null }[] }[] = [
+    { group: null, items: [] },
+  ];
+  const lines = cell.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  lines.forEach((line) => {
+    if (line.startsWith("##")) {
+      groups.push({ group: line.replace(/^##\s*/, ""), items: [] });
+      return;
+    }
+    const parts = line.split("|").map((p) => p.trim());
+    const [amount, name, veganAmount, veganName] = parts;
+    if (!amount || !name) return;
+    groups[groups.length - 1].items.push({
+      amount,
+      name,
+      veganAmount: veganAmount || null,
+      veganName: veganName || null,
+    });
+  });
+  return groups.filter((g) => g.items.length > 0);
+}
+
+function parseSteps(cell: string) {
+  return cell
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [title, content, veganNote] = line.split("::").map((p) => (p || "").trim());
+      return { title: title || "", content: content || "", veganNote: veganNote || undefined };
+    })
+    .filter((s) => s.title);
+}
+
+function imageUrl(prop: NotionProperty | undefined): string | undefined {
+  if (!prop) return undefined;
+  if (prop.type === "url" && prop.url) return prop.url;
+  if (prop.type === "files" && prop.files?.[0]) {
+    const f = prop.files[0];
+    if (f.type === "file" && f.file) return f.file.url;
+    if (f.type === "external" && f.external) return f.external.url;
+  }
+  return undefined;
+}
+
+/** Prefer the "Datum" property if set, otherwise fall back to when the Notion page was created. */
+function recipeDate(page: NotionPage): string {
+  const datumProp = page.properties["Datum"] ?? page.properties["datum"];
+  if (datumProp?.type === "date") {
+    const dateValue = (datumProp as unknown as { date?: { start?: string } }).date;
+    if (dateValue?.start) return dateValue.start;
+  }
+  return page.created_time;
+}
+
+async function queryAll(databaseId: string, token: string): Promise<NotionPage[]> {
+  const pages: NotionPage[] = [];
+
+  // Retrieve the database to discover its data_source IDs (required for multi-source databases)
+  const dbRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Notion-Version": "2026-03-11",
+    },
+  });
+
+  let dataSourceIds: string[] = [databaseId];
+  if (dbRes.ok) {
+    const dbData = (await dbRes.json()) as { data_sources?: { id: string }[] };
+    if (dbData.data_sources && dbData.data_sources.length > 0) {
+      dataSourceIds = dbData.data_sources.map((ds) => ds.id);
+    }
+  }
+
+  for (const dataSourceId of dataSourceIds) {
+    let cursor: string | undefined;
+    do {
+      const body: Record<string, unknown> = { page_size: 100 };
+      if (cursor) body.start_cursor = cursor;
+
+      const res = await fetch(`https://api.notion.com/v1/data_sources/${dataSourceId}/query`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Notion-Version": "2026-03-11",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Notion API error: ${res.status} — ${errBody}`);
+      }
+      const data = (await res.json()) as { results: NotionPage[]; has_more: boolean; next_cursor: string | null };
+      pages.push(...data.results);
+      cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
+    } while (cursor);
+  }
+
+  return pages;
+}
+
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { NOTION_TOKEN, NOTION_DATABASE_ID } = context.env;
+
+  if (!NOTION_TOKEN || !NOTION_DATABASE_ID) {
+    return new Response(JSON.stringify({ error: "NOTION_TOKEN or NOTION_DATABASE_ID not set" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const pages = await queryAll(NOTION_DATABASE_ID, NOTION_TOKEN);
+
+    const recipes = pages
+      .filter((page) => {
+        const status = page.properties["Status"];
+        if (!status) return true;
+        if (status.type === "select") return status.select?.name?.toLowerCase() === "aktiv";
+        return true;
+      })
+      .map((page) => {
+        const p = page.properties;
+        const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
+        const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
+        const baseServingsNum = p["Portionenzahl"]?.number ?? p["portionenzahl"]?.number ?? null;
+
+        return {
+          slug,
+          category: (p["Kategorie"] ?? p["kategorie"])?.select?.name ?? richText(p["Kategorie"] ?? p["kategorie"]) ?? "",
+          title,
+          servings: richText(p["Portionen"] ?? p["portionen"]),
+          baseServings: baseServingsNum && baseServingsNum > 0 ? baseServingsNum : null,
+          intro: richText(p["Einleitung"] ?? p["einleitung"]) || null,
+          image: imageUrl(p["Bild"] ?? p["bild"]),
+          ingredientGroups: parseIngredients(richText(p["Zutaten"] ?? p["zutaten"])),
+          steps: parseSteps(richText(p["Zubereitung"] ?? p["zubereitung"])),
+          // Used only for sorting below; not part of the public Recipe type.
+          _sortDate: recipeDate(page),
+        };
+      })
+      .filter((r) => r.title)
+      // Newest first, so the frontend can just take the first N recipes.
+      .sort((a, b) => new Date(b._sortDate).getTime() - new Date(a._sortDate).getTime())
+      .map(({ _sortDate, ...recipe }) => recipe);
+
+    return new Response(JSON.stringify(recipes), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "s-maxage=300, stale-while-revalidate=60",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
