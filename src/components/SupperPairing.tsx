@@ -23,10 +23,9 @@ const PAIRINGS = [
 
 /**
  * Picks a random recipe from `category`, excluding `exclude` if possible.
- * If excluding would leave nothing to pick from (e.g. the category only has
- * one recipe total), falls back to the full category pool instead of
- * returning null — this is what previously made the whole section vanish
- * after a shuffle whenever a category had just one recipe.
+ * Falls back to the full category pool instead of returning null when
+ * excluding would leave nothing — otherwise a category with just one
+ * recipe could make the whole section vanish after a shuffle.
  */
 function pickRandom(recipes: Recipe[], category: string, exclude?: string): Recipe | null {
   const withoutExcluded = recipes.filter((r) => r.category === category && r.slug !== exclude);
@@ -46,7 +45,6 @@ export default function SupperPairing() {
 
   const currentPairing = PAIRINGS[pairingIndex];
 
-  // Only offer pairings where both categories actually have a recipe.
   const availablePairings = useMemo(
     () =>
       PAIRINGS.filter(
@@ -69,8 +67,6 @@ export default function SupperPairing() {
   const shuffle = () => {
     if (availablePairings.length === 0) return;
     const idx = PAIRINGS.indexOf(availablePairings[Math.floor(Math.random() * availablePairings.length)]);
-    // Fall back to the current item rather than null if a pick somehow fails,
-    // so the section never disappears out from under the person clicking it.
     const nextA = pickRandom(recipes, PAIRINGS[idx].categoryA, itemA?.slug) ?? itemA;
     const nextB = pickRandom(recipes, PAIRINGS[idx].categoryB, itemB?.slug) ?? itemB;
     setPairingIndex(idx);
@@ -82,7 +78,7 @@ export default function SupperPairing() {
 
   return (
     <section className="pairing-section">
-      <div className="wrap" style={{ textAlign: "center", position: "relative" }}>
+      <div className="wrap" style={{ textAlign: "center" }}>
         <p className="pairing-eyebrow">{currentPairing.label}</p>
         <h2 className="font-display pairing-heading">The Supper Pairing</h2>
 
@@ -97,10 +93,8 @@ export default function SupperPairing() {
               />
             </div>
 
-            <div className="pairing-connector" aria-hidden="true">
-              <span className="pairing-plus">+</span>
-              <span className="pairing-connector-line" />
-            </div>
+            {/* Simple "paired with" symbol — no extra line, nothing that could read as a minus sign */}
+            <span className="pairing-symbol" aria-hidden="true">×</span>
 
             <div className="pairing-item">
               <RecipeCard
@@ -113,8 +107,8 @@ export default function SupperPairing() {
           </div>
         </div>
 
-        <button type="button" onClick={shuffle} className="pairing-shuffle">
-          <Shuffle size={13} /> anderes Pairing
+        <button type="button" onClick={shuffle} className="btn-secondary btn-small pairing-shuffle">
+          <Shuffle size={13} /> Neues Pairing
         </button>
       </div>
 
@@ -122,8 +116,6 @@ export default function SupperPairing() {
         .pairing-section {
           background-color: var(--color-sand);
           padding-block: 80px;
-          position: relative;
-          overflow: hidden;
         }
         .pairing-eyebrow {
           font-size: 11px;
@@ -134,25 +126,29 @@ export default function SupperPairing() {
         }
         .pairing-heading {
           font-size: clamp(1.8rem, 4vw, 2.6rem);
-          margin: 0 0 48px;
+          margin: 0 0 40px;
           color: var(--color-maroon);
         }
         .pairing-card {
-          max-width: 640px;
+          max-width: 560px;
           margin: 0 auto;
           background: var(--color-cream);
           border-radius: 20px;
-          padding: 40px 32px;
+          padding: 32px 20px;
           box-shadow: 0 20px 48px rgba(43, 18, 16, 0.12);
         }
+        /* Row layout stays side-by-side at every width — including mobile —
+           so the whole pairing fits on one screen while scrolling, instead
+           of stacking into a tall column. Card width shrinks with the
+           viewport instead. */
         .pairing-row {
           display: flex;
           align-items: flex-start;
           justify-content: center;
-          gap: 24px;
+          gap: clamp(10px, 4vw, 24px);
         }
         .pairing-item {
-          width: 220px;
+          width: clamp(120px, 38vw, 220px);
           flex-shrink: 0;
           text-align: left;
           transition: transform 0.25s ease;
@@ -160,49 +156,16 @@ export default function SupperPairing() {
         .pairing-item:hover {
           transform: translateY(-4px);
         }
-        .pairing-connector {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-start;
-          padding-top: 70px; /* roughly centers on the image, above the text block */
+        .pairing-symbol {
           flex-shrink: 0;
-        }
-        .pairing-plus {
+          align-self: center;
           font-family: var(--font-display);
-          font-size: 34px;
+          font-size: clamp(20px, 5vw, 28px);
           line-height: 1;
           color: var(--color-terracotta);
         }
-        .pairing-connector-line {
-          width: 1px;
-          height: 24px;
-          background: var(--color-line);
-          margin-top: 6px;
-        }
         .pairing-shuffle {
-          margin-top: 40px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: none;
-          border: 1px solid var(--color-line);
-          border-radius: 999px;
-          padding: 10px 20px;
-          font-size: 13px;
-          color: var(--color-ink);
-          cursor: pointer;
-          transition: background 0.2s ease;
-        }
-        .pairing-shuffle:hover {
-          background: rgba(43, 18, 16, 0.06);
-        }
-        @media (max-width: 560px) {
-          .pairing-card { padding: 32px 20px; }
-          .pairing-row { flex-direction: column; align-items: center; gap: 20px; }
-          .pairing-item { width: 220px; text-align: center; }
-          .pairing-connector { flex-direction: row; padding-top: 0; }
-          .pairing-connector-line { width: 24px; height: 1px; margin-top: 0; margin-left: 6px; }
+          margin-top: 32px;
         }
       `}</style>
     </section>
