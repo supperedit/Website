@@ -23,8 +23,11 @@ import picnicImage from "../assets/images/picnic.jpg";
 const marqueeText = "Recipes for people who don't follow recipes. ";
 
 // Duration of one full loop through the category set, in seconds.
-// Kept close to the old CSS animation's 28s so the pacing feels the same.
-const CATEGORY_LOOP_SECONDS = 28;
+// Faster than the ticker on purpose so the two bands read as distinct.
+const CATEGORY_LOOP_SECONDS = 16;
+// How quickly velocity eases toward its target (0 on hover, base speed
+// otherwise). Higher = snappier stop/start, lower = more gradual.
+const CATEGORY_EASE_FACTOR = 0.14;
 
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
   cookie: { Icon: CookieIcon, height: 78 },
@@ -62,9 +65,9 @@ export default function Home() {
   };
 
   // ── Smooth-hover category scroller ──────────────────────────────────────
-  // Runs opposite to the ticker (ticker moves left, this moves right) and
-  // eases its speed down to a stop on hover instead of cutting abruptly,
-  // then eases back up when the pointer leaves.
+  // Runs opposite to the ticker (ticker's text drifts leftward; this drifts
+  // rightward) and eases its speed down to a stop on hover instead of
+  // cutting abruptly, then eases back up when the pointer leaves.
   const catTrackRef = useRef<HTMLDivElement>(null);
   const catHoverRef = useRef(false);
   const catVelocityRef = useRef(0);
@@ -91,8 +94,7 @@ export default function Home() {
     const tick = () => {
       const setWidth = catSetWidthRef.current;
       const targetSpeed = catHoverRef.current ? 0 : catBaseSpeedRef.current;
-      // Ease current velocity toward the target speed (0 on hover, base speed otherwise).
-      catVelocityRef.current += (targetSpeed - catVelocityRef.current) * 0.045;
+      catVelocityRef.current += (targetSpeed - catVelocityRef.current) * CATEGORY_EASE_FACTOR;
       catOffsetRef.current += catVelocityRef.current;
 
       if (setWidth > 0) {
@@ -101,8 +103,9 @@ export default function Home() {
       }
 
       if (catTrackRef.current) {
-        // Opposite direction to the ticker: offset increases → content drifts right.
-        catTrackRef.current.style.transform = `translateX(${catOffsetRef.current - setWidth}px)`;
+        // Negative offset → content drifts rightward, opposite of the
+        // leftward-moving ticker above.
+        catTrackRef.current.style.transform = `translateX(${-catOffsetRef.current}px)`;
       }
       rafId = requestAnimationFrame(tick);
     };
