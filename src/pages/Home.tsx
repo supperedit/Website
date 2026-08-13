@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Shuffle } from "lucide-react";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
@@ -8,6 +8,7 @@ import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
 import AnimatedLogo from "../components/AnimatedLogo";
 import SeasonalCalendarCard from "../components/SeasonalCalendarCard";
+import SupperPairing from "../components/SupperPairing";
 import heroImage from "../assets/images/hero.jpg";
 import CookieIcon from "../assets/icons/cookie.svg?react";
 import RollIcon from "../assets/icons/roll.svg?react";
@@ -21,15 +22,19 @@ import picnicImage from "../assets/images/picnic.jpg";
 
 const marqueeText = "Recipes for people who don't follow recipes. ";
 
+// Duration of one full loop through the category set, in seconds.
+// Kept close to the old CSS animation's 28s so the pacing feels the same.
+const CATEGORY_LOOP_SECONDS = 28;
+
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
   cookie: { Icon: CookieIcon, height: 78 },
-  swirl:  { Icon: RollIcon,   height: 79 },
-  saucy:  { Icon: SauceIcon,  height: 95 },
+  swirl: { Icon: RollIcon, height: 79 },
+  saucy: { Icon: SauceIcon, height: 95 },
   pickle: { Icon: PickleIcon, height: 102 },
-  fizz:   { Icon: DrinkIcon,  height: 94 },
-  bites:  { Icon: SnackIcon,  height: 110 },
-  bread:  { Icon: ButterIcon, height: 67 },
-  pasta:  { Icon: PastaIcon,  height: 69 },
+  fizz: { Icon: DrinkIcon, height: 94 },
+  bites: { Icon: SnackIcon, height: 110 },
+  bread: { Icon: ButterIcon, height: 67 },
+  pasta: { Icon: PastaIcon, height: 69 },
 };
 
 export default function Home() {
@@ -55,6 +60,59 @@ export default function Home() {
     }
     setSuggestion(next);
   };
+
+  // ── Smooth-hover category scroller ──────────────────────────────────────
+  // Runs opposite to the ticker (ticker moves left, this moves right) and
+  // eases its speed down to a stop on hover instead of cutting abruptly,
+  // then eases back up when the pointer leaves.
+  const catTrackRef = useRef<HTMLDivElement>(null);
+  const catHoverRef = useRef(false);
+  const catVelocityRef = useRef(0);
+  const catOffsetRef = useRef(0);
+  const catBaseSpeedRef = useRef(0);
+  const catSetWidthRef = useRef(0);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const measure = () => {
+      const track = catTrackRef.current;
+      if (!track) return;
+      // Track renders the category list twice back-to-back, so one full
+      // "set" is exactly half the scrollable width.
+      catSetWidthRef.current = track.scrollWidth / 2;
+      catBaseSpeedRef.current = catSetWidthRef.current / (CATEGORY_LOOP_SECONDS * 60);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+
+    let rafId: number;
+    const tick = () => {
+      const setWidth = catSetWidthRef.current;
+      const targetSpeed = catHoverRef.current ? 0 : catBaseSpeedRef.current;
+      // Ease current velocity toward the target speed (0 on hover, base speed otherwise).
+      catVelocityRef.current += (targetSpeed - catVelocityRef.current) * 0.045;
+      catOffsetRef.current += catVelocityRef.current;
+
+      if (setWidth > 0) {
+        if (catOffsetRef.current >= setWidth) catOffsetRef.current -= setWidth;
+        if (catOffsetRef.current < 0) catOffsetRef.current += setWidth;
+      }
+
+      if (catTrackRef.current) {
+        // Opposite direction to the ticker: offset increases → content drifts right.
+        catTrackRef.current.style.transform = `translateX(${catOffsetRef.current - setWidth}px)`;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   return (
     <>
@@ -127,15 +185,20 @@ export default function Home() {
         </div>
 
         {/*
-          Infinite scroll: categories are rendered twice so the animation can loop
-          seamlessly. translateX(-50%) = exactly one full set width.
-          Duplicates are hidden from keyboard/screen readers via aria-hidden + tabIndex.
+          Infinite scroll: categories are rendered twice so the loop is seamless.
+          The scroll position itself is driven by a requestAnimationFrame loop
+          (see the effect above) rather than a CSS animation, so hovering can
+          ease the speed down smoothly instead of snapping to a stop.
         */}
-        <div style={{ overflow: "hidden", paddingBottom: 8 }}>
-          <div className="categories-infinite">
+        <div
+          style={{ overflow: "hidden", paddingBottom: 8 }}
+          onMouseEnter={() => { catHoverRef.current = true; }}
+          onMouseLeave={() => { catHoverRef.current = false; }}
+        >
+          <div className="categories-infinite" ref={catTrackRef}>
             {[...categories, ...categories].map((cat, i) => {
               const entry = categoryIcons[cat.slug];
-              const Icon = entry.Icon;
+              const Icon = entry?.Icon;
               const isDuplicate = i >= categories.length;
               return (
                 <Link
@@ -156,11 +219,13 @@ export default function Home() {
                       justifyContent: "center",
                     }}
                   >
-                    <Icon
-                      className="cat-icon"
-                      style={{ height: entry.height, width: "auto" }}
-                      color="var(--color-ink)"
-                    />
+                    {Icon && (
+                      <Icon
+                        className="cat-icon"
+                        style={{ height: entry.height, width: "auto" }}
+                        color="var(--color-ink)"
+                      />
+                    )}
                   </div>
                   <span className="font-display" style={{ display: "block", fontSize: 22 }}>
                     {cat.name}
@@ -403,22 +468,19 @@ export default function Home() {
         </section>
       )}
 
+      {/* ── The Supper Pairing ── */}
+      <SupperPairing />
+
       <style>{`
-        /* ── Infinite category scroll ── */
+        /* ── Category scroller ──
+           Position is set imperatively via ref (see the rAF effect above),
+           so no @keyframes / animation property here anymore. */
         .categories-infinite {
           display: flex;
           gap: 40px;
           width: max-content;
           padding-left: max(clamp(20px, 5vw, 56px), calc((100vw - 1180px) / 2 + 56px));
-          animation: category-scroll 28s linear infinite;
           will-change: transform;
-        }
-        .categories-infinite:hover {
-          animation-play-state: paused;
-        }
-        @keyframes category-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
         }
 
         /* ── Postcard suggestion ── */
@@ -426,8 +488,8 @@ export default function Home() {
           max-width: 680px;
           margin: 0 auto;
           display: flex;
-          position: relative;       /* needed for ::after overlay */
-          overflow: hidden;         /* clips photo to card boundary */
+          position: relative; /* needed for ::after overlay */
+          overflow: hidden; /* clips photo to card boundary */
           background: var(--color-cream);
           box-shadow: 0 6px 32px rgba(43, 18, 16, 0.10);
         }
@@ -444,15 +506,15 @@ export default function Home() {
           z-index: 10;
           background:
             /* ── Corners: solid sky-blue quarter-circles to clean up where edges meet ── */
-            radial-gradient(circle at 0    0,    var(--color-sky) 9px, transparent 9px) 0    0    / 18px 18px no-repeat,
-            radial-gradient(circle at 100% 0,    var(--color-sky) 9px, transparent 9px) 100% 0    / 18px 18px no-repeat,
-            radial-gradient(circle at 0    100%, var(--color-sky) 9px, transparent 9px) 0    100% / 18px 18px no-repeat,
+            radial-gradient(circle at 0 0, var(--color-sky) 9px, transparent 9px) 0 0 / 18px 18px no-repeat,
+            radial-gradient(circle at 100% 0, var(--color-sky) 9px, transparent 9px) 100% 0 / 18px 18px no-repeat,
+            radial-gradient(circle at 0 100%, var(--color-sky) 9px, transparent 9px) 0 100% / 18px 18px no-repeat,
             radial-gradient(circle at 100% 100%, var(--color-sky) 9px, transparent 9px) 100% 100% / 18px 18px no-repeat,
             /* ── Edges ── */
-            radial-gradient(circle at 50% 0,    var(--color-sky) 9px, transparent 9px) top    / 22px 9px  repeat-x,
-            radial-gradient(circle at 50% 100%, var(--color-sky) 9px, transparent 9px) bottom / 22px 9px  repeat-x,
-            radial-gradient(circle at 0   50%,  var(--color-sky) 9px, transparent 9px) left   / 9px  22px repeat-y,
-            radial-gradient(circle at 100% 50%, var(--color-sky) 9px, transparent 9px) right  / 9px  22px repeat-y;
+            radial-gradient(circle at 50% 0, var(--color-sky) 9px, transparent 9px) top / 22px 9px repeat-x,
+            radial-gradient(circle at 50% 100%, var(--color-sky) 9px, transparent 9px) bottom / 22px 9px repeat-x,
+            radial-gradient(circle at 0 50%, var(--color-sky) 9px, transparent 9px) left / 9px 22px repeat-y,
+            radial-gradient(circle at 100% 50%, var(--color-sky) 9px, transparent 9px) right / 9px 22px repeat-y;
         }
         .postcard-photo {
           width: 260px;
@@ -470,7 +532,7 @@ export default function Home() {
           text-align: left;
           border-left: 1px dashed var(--color-line);
         }
-@media (max-width: 580px) {
+        @media (max-width: 580px) {
           .postcard { flex-direction: column; }
           .postcard-photo { width: 100%; min-height: 240px; }
           .postcard-right { border-left: none; border-top: 1px dashed var(--color-line); }
@@ -505,7 +567,7 @@ export default function Home() {
         }
         @media (prefers-reduced-motion: reduce) {
           .sticky-feature-image { position: static !important; }
-          .categories-infinite { animation: none; overflow-x: auto; }
+          .categories-infinite { overflow-x: auto; transform: none !important; }
         }
       `}</style>
     </>
