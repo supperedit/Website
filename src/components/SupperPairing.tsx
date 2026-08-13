@@ -4,6 +4,10 @@ import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import type { Recipe } from "../data/recipeTypes";
 import RecipeCard from "./RecipeCard";
 
+/**
+ * Two fixed pairing vibes. Each vibe pulls one random recipe from each of
+ * two categories (category names must match src/data/categories.ts exactly).
+ */
 const PAIRINGS = [
   {
     label: "Herzhaft am Abend",
@@ -17,10 +21,21 @@ const PAIRINGS = [
   },
 ] as const;
 
+/**
+ * Picks a random recipe from `category`, excluding `exclude` if possible.
+ * If excluding would leave nothing to pick from (e.g. the category only has
+ * one recipe total), falls back to the full category pool instead of
+ * returning null — this is what previously made the whole section vanish
+ * after a shuffle whenever a category had just one recipe.
+ */
 function pickRandom(recipes: Recipe[], category: string, exclude?: string): Recipe | null {
-  const pool = recipes.filter((r) => r.category === category && r.slug !== exclude);
-  if (pool.length === 0) return null;
-  return pool[Math.floor(Math.random() * pool.length)];
+  const withoutExcluded = recipes.filter((r) => r.category === category && r.slug !== exclude);
+  if (withoutExcluded.length > 0) {
+    return withoutExcluded[Math.floor(Math.random() * withoutExcluded.length)];
+  }
+  const full = recipes.filter((r) => r.category === category);
+  if (full.length === 0) return null;
+  return full[Math.floor(Math.random() * full.length)];
 }
 
 export default function SupperPairing() {
@@ -54,9 +69,13 @@ export default function SupperPairing() {
   const shuffle = () => {
     if (availablePairings.length === 0) return;
     const idx = PAIRINGS.indexOf(availablePairings[Math.floor(Math.random() * availablePairings.length)]);
+    // Fall back to the current item rather than null if a pick somehow fails,
+    // so the section never disappears out from under the person clicking it.
+    const nextA = pickRandom(recipes, PAIRINGS[idx].categoryA, itemA?.slug) ?? itemA;
+    const nextB = pickRandom(recipes, PAIRINGS[idx].categoryB, itemB?.slug) ?? itemB;
     setPairingIndex(idx);
-    setItemA(pickRandom(recipes, PAIRINGS[idx].categoryA, itemA?.slug));
-    setItemB(pickRandom(recipes, PAIRINGS[idx].categoryB, itemB?.slug));
+    setItemA(nextA);
+    setItemB(nextB);
   };
 
   if (loading || !itemA || !itemB) return null;
@@ -94,7 +113,7 @@ export default function SupperPairing() {
           </div>
         </div>
 
-        <button onClick={shuffle} className="pairing-shuffle">
+        <button type="button" onClick={shuffle} className="pairing-shuffle">
           <Shuffle size={13} /> anderes Pairing
         </button>
       </div>
