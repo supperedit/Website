@@ -22,11 +22,9 @@ import picnicImage from "../assets/images/picnic.jpg";
 
 const marqueeText = "Recipes for people who don't follow recipes. ";
 
-// Duration of one full loop through the category set, in seconds.
-// Faster than the ticker on purpose so the two bands read as distinct.
-const CATEGORY_LOOP_SECONDS = 16;
-// How quickly velocity eases toward its target (0 on hover, base speed
-// otherwise). Higher = snappier stop/start, lower = more gradual.
+// Duration of one full loop through the category set, in seconds. Higher = slower.
+const CATEGORY_LOOP_SECONDS = 45;
+// How quickly velocity eases toward its target (0 on hover, base speed otherwise).
 const CATEGORY_EASE_FACTOR = 0.14;
 
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
@@ -40,34 +38,61 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
   pasta: { Icon: PastaIcon, height: 69 },
 };
 
+/**
+ * "Vibes" for the recipe-suggestion picker. Category names must match
+ * src/data/categories.ts exactly. Adjust these groupings any time —
+ * they're just editorial buckets, not a fixed taxonomy.
+ */
+const VIBES = [
+  { key: "alle", label: "Alles", categories: null as string[] | null },
+  { key: "suess", label: "Süßes", categories: ["Bake Club", "Swirl Society"] },
+  {
+    key: "herzhaft",
+    label: "Herzhaft",
+    categories: ["Small Bites", "Bread & Butter", "Pasta Night", "Saucy Stuff", "Pickle & Ferment"],
+  },
+  { key: "maedelsabend", label: "Mädelsabend", categories: ["Fizz & Friends", "Slow Sips", "Small Bites"] },
+] as const;
+
 export default function Home() {
   const { recipes, loading } = useRecipes();
+  const [vibeKey, setVibeKey] = useState<(typeof VIBES)[number]["key"]>("alle");
   const [suggestion, setSuggestion] = useState<Recipe | null>(null);
 
-  // Newest 4 recipes (last rows in the sheet = newest)
-  const newestRecipes = useMemo(() => [...recipes].reverse().slice(0, 4), [recipes]);
+  const activeVibe = VIBES.find((v) => v.key === vibeKey) ?? VIBES[0];
+  const vibePool = useMemo(
+    () => (activeVibe.categories ? recipes.filter((r) => activeVibe.categories!.includes(r.category)) : recipes),
+    [recipes, activeVibe],
+  );
+
+  // The API now returns recipes newest-first (sorted server-side by Notion date),
+  // so no client-side re-sorting is needed here.
+  const newestRecipes = useMemo(() => recipes.slice(0, 4), [recipes]);
 
   useEffect(() => {
-    if (recipes.length > 0 && !suggestion) {
-      setSuggestion(recipes[Math.floor(Math.random() * recipes.length)]);
+    if (vibePool.length > 0) {
+      setSuggestion(vibePool[Math.floor(Math.random() * vibePool.length)]);
+    } else {
+      setSuggestion(null);
     }
-  }, [recipes, suggestion]);
+    // Re-roll whenever the vibe changes, or once recipes first load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vibeKey, recipes.length]);
 
   const pickRandom = () => {
-    if (recipes.length === 0) return;
-    let next = recipes[Math.floor(Math.random() * recipes.length)];
-    if (recipes.length > 1 && suggestion) {
+    if (vibePool.length === 0) return;
+    let next = vibePool[Math.floor(Math.random() * vibePool.length)];
+    if (vibePool.length > 1 && suggestion) {
       while (next.slug === suggestion.slug) {
-        next = recipes[Math.floor(Math.random() * recipes.length)];
+        next = vibePool[Math.floor(Math.random() * vibePool.length)];
       }
     }
     setSuggestion(next);
   };
 
   // ── Smooth-hover category scroller ──────────────────────────────────────
-  // Runs opposite to the ticker (ticker's text drifts leftward; this drifts
-  // rightward) and eases its speed down to a stop on hover instead of
-  // cutting abruptly, then eases back up when the pointer leaves.
+  // Runs opposite to the ticker and eases its speed down to a stop on hover
+  // instead of cutting abruptly, then eases back up when the pointer leaves.
   const catTrackRef = useRef<HTMLDivElement>(null);
   const catHoverRef = useRef(false);
   const catVelocityRef = useRef(0);
@@ -82,8 +107,6 @@ export default function Home() {
     const measure = () => {
       const track = catTrackRef.current;
       if (!track) return;
-      // Track renders the category list twice back-to-back, so one full
-      // "set" is exactly half the scrollable width.
       catSetWidthRef.current = track.scrollWidth / 2;
       catBaseSpeedRef.current = catSetWidthRef.current / (CATEGORY_LOOP_SECONDS * 60);
     };
@@ -103,8 +126,6 @@ export default function Home() {
       }
 
       if (catTrackRef.current) {
-        // Negative offset → content drifts rightward, opposite of the
-        // leftward-moving ticker above.
         catTrackRef.current.style.transform = `translateX(${-catOffsetRef.current}px)`;
       }
       rafId = requestAnimationFrame(tick);
@@ -150,6 +171,35 @@ export default function Home() {
         />
         <div style={{ position: "relative", zIndex: 1, textAlign: "center", paddingBottom: 48 }}>
           <AnimatedLogo />
+          <p
+            className="font-body"
+            style={{
+              color: "var(--color-cream)",
+              fontSize: 15,
+              lineHeight: 1.7,
+              maxWidth: 380,
+              margin: "20px auto 24px",
+              opacity: 0.92,
+            }}
+          >
+            Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
+            einfach hängen bleibt.
+          </p>
+          <Link
+            to="/rezepte"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              backgroundColor: "var(--color-terracotta)",
+              color: "var(--color-cream)",
+              borderRadius: 999,
+              padding: "12px 26px",
+              fontSize: 14,
+            }}
+          >
+            Alle Rezepte <ArrowRight size={14} />
+          </Link>
         </div>
       </section>
 
@@ -160,7 +210,7 @@ export default function Home() {
             display: "flex",
             width: "max-content",
             whiteSpace: "nowrap",
-            animation: "marquee-scroll 26s linear infinite",
+            animation: "marquee-scroll 26s linear infinite reverse",
           }}
         >
           {[0, 1].map((i) => (
@@ -187,12 +237,6 @@ export default function Home() {
           <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>Kategorien</h2>
         </div>
 
-        {/*
-          Infinite scroll: categories are rendered twice so the loop is seamless.
-          The scroll position itself is driven by a requestAnimationFrame loop
-          (see the effect above) rather than a CSS animation, so hovering can
-          ease the speed down smoothly instead of snapping to a stop.
-        */}
         <div
           style={{ overflow: "hidden", paddingBottom: 8 }}
           onMouseEnter={() => { catHoverRef.current = true; }}
@@ -212,7 +256,6 @@ export default function Home() {
                   aria-hidden={isDuplicate || undefined}
                   tabIndex={isDuplicate ? -1 : undefined}
                 >
-                  {/* Icon container: 120px so even the tallest icon (110px) has breathing room */}
                   <div
                     style={{
                       height: 120,
@@ -240,6 +283,36 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* ── Manifest / The Art of Supper (moved up, right after Kategorien) ── */}
+      <section className="wrap sticky-feature">
+        <div className="sticky-feature-image" style={{ backgroundImage: `url(${heroImage})` }} />
+        <div className="sticky-feature-text">
+          <p className="font-display" style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", marginBottom: 10 }}>
+            The Art of Supper.
+          </p>
+          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
+            Supper ist mehr als nur ein Abendessen. Es beschreibt diese{" "}
+            <strong>entspannten Abende</strong>, an denen Menschen zusammenkommen,
+            sich Zeit füreinander nehmen und Essen teilen.
+          </p>
+          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
+            Genau darum geht es bei <strong>Supper Edit</strong>.
+          </p>
+          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
+            Nicht um das perfekte Menü oder stundenlange Vorbereitung. Sondern um{" "}
+            <strong>einfache Rezepte, saisonale Zutaten und kleine Ideen</strong> für
+            Tisch, Deko und Anrichten, die aus einem gewöhnlichen Abend etwas Besonderes
+            machen. Oft reichen ein paar Teller zum Teilen, Kerzen auf dem Tisch und{" "}
+            <strong>die richtigen Menschen</strong>, damit aus einem Dienstagabend ein
+            Anlass wird.
+          </p>
+          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8 }}>
+            Denn die schönsten Dinner entstehen nicht durch Perfektion, sondern durch
+            <strong> die Menschen, die daran sitzen</strong>.
+          </p>
         </div>
       </section>
 
@@ -295,98 +368,47 @@ export default function Home() {
         <SeasonalCalendarCard />
       </section>
 
-      {/* ── Sticky feature ── */}
-      <section className="wrap sticky-feature">
-        <div className="sticky-feature-image" style={{ backgroundImage: `url(${heroImage})` }} />
-        <div className="sticky-feature-text">
-          <p className="font-display" style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", marginBottom: 10 }}>
-            The Art of Supper.
+      {/* ── Random suggestion, with a vibe filter ── */}
+      <section style={{ backgroundColor: "var(--color-sky)", paddingBlock: 72 }}>
+        <div className="wrap" style={{ textAlign: "center" }}>
+          <p
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: "var(--color-maroon)",
+              marginBottom: 12,
+            }}
+          >
+            Noch nichts geplant?
           </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Supper ist mehr als nur ein Abendessen. Es beschreibt diese{" "}
-            <strong>entspannten Abende</strong>, an denen Menschen zusammenkommen,
-            sich Zeit füreinander nehmen und Essen teilen.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Genau darum geht es bei <strong>Supper Edit</strong>.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Nicht um das perfekte Menü oder stundenlange Vorbereitung. Sondern um{" "}
-            <strong>einfache Rezepte, saisonale Zutaten und kleine Ideen</strong> für
-            Tisch, Deko und Anrichten, die aus einem gewöhnlichen Abend etwas Besonderes
-            machen. Oft reichen ein paar Teller zum Teilen, Kerzen auf dem Tisch und{" "}
-            <strong>die richtigen Menschen</strong>, damit aus einem Dienstagabend ein
-            Anlass wird.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8 }}>
-            Denn die schönsten Dinner entstehen nicht durch Perfektion, sondern durch
-            <strong> die Menschen, die daran sitzen</strong>.
-          </p>
-        </div>
-      </section>
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
+              color: "var(--color-maroon)",
+              margin: "0 0 24px",
+            }}
+          >
+            Heute kochst du:
+          </h2>
 
-      {/* ── Quote / statement ── */}
-      <section
-        className="statement-section"
-        style={{
-          paddingBlock: 96,
-          paddingInline: 24,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-          backgroundImage: `linear-gradient(rgba(43, 18, 16, 0.55), rgba(43, 18, 16, 0.55)), url(${heroImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <p
-          className="font-display"
-          style={{
-            fontStyle: "italic",
-            fontSize: "clamp(1.6rem, 4vw, 2.6rem)",
-            maxWidth: 720,
-            margin: "0 auto",
-            position: "relative",
-            color: "var(--color-cream)",
-          }}
-        >
-          Recipes worth making twice.
-        </p>
-      </section>
+          <div className="vibe-filter" role="group" aria-label="Nach Vibe filtern">
+            {VIBES.map((vibe) => (
+              <button
+                key={vibe.key}
+                type="button"
+                onClick={() => setVibeKey(vibe.key)}
+                aria-pressed={vibeKey === vibe.key}
+                className={`vibe-pill ${vibeKey === vibe.key ? "vibe-pill-active" : ""}`}
+              >
+                {vibe.label}
+              </button>
+            ))}
+          </div>
 
-      {/* ── Random suggestion ── */}
-      {suggestion && (
-        <section style={{ backgroundColor: "var(--color-sky)", paddingBlock: 72 }}>
-          <div className="wrap" style={{ textAlign: "center" }}>
-            <p
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "var(--color-maroon)",
-                marginBottom: 12,
-              }}
-            >
-              Noch nichts geplant?
-            </p>
-            <h2
-              className="font-display"
-              style={{
-                fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
-                color: "var(--color-maroon)",
-                margin: "0 0 40px",
-              }}
-            >
-              Heute kochst du:
-            </h2>
-
-            {/*
-              Postcard layout: photo left, content right.
-              Scalloped edges via radial-gradient painted in --color-sky
-              (matches section bg) to create the perforated cutout illusion.
-            */}
+          {suggestion ? (
             <div className="postcard">
-              {/* Photo side */}
               <div className="postcard-photo">
                 {suggestion.image ? (
                   <img
@@ -407,14 +429,11 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Content side */}
               <div className="postcard-right">
-                {/* Category label above title */}
                 <span style={{ fontSize: 11, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 8, minHeight: "1em" }}>
                   {suggestion.category}
                 </span>
 
-                {/* Title — fixed min-height so layout doesn't shift between recipes */}
                 <p
                   className="font-display"
                   style={{ fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)", margin: "0 0 12px", lineHeight: 1.2, minHeight: "3.6em" }}
@@ -422,7 +441,6 @@ export default function Home() {
                   {suggestion.title}
                 </p>
 
-                {/* Intro — fixed min-height */}
                 <p style={{ fontSize: 13, color: "var(--color-muted)", lineHeight: 1.75, margin: "0 0 28px", minHeight: "4.5em" }}>
                   {suggestion.intro
                     ? suggestion.intro.length > 95
@@ -467,17 +485,49 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            !loading && (
+              <p style={{ color: "var(--color-maroon)", fontSize: 14 }}>
+                Für "{activeVibe.label}" ist noch kein Rezept da.
+              </p>
+            )
+          )}
+        </div>
+      </section>
+
+      {/* ── Quote / statement (sits between the two "pick a recipe" sections on purpose) ── */}
+      <section
+        className="statement-section"
+        style={{
+          paddingBlock: 96,
+          paddingInline: 24,
+          textAlign: "center",
+          position: "relative",
+          overflow: "hidden",
+          backgroundImage: `linear-gradient(rgba(43, 18, 16, 0.55), rgba(43, 18, 16, 0.55)), url(${heroImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <p
+          className="font-display"
+          style={{
+            fontStyle: "italic",
+            fontSize: "clamp(1.6rem, 4vw, 2.6rem)",
+            maxWidth: 720,
+            margin: "0 auto",
+            position: "relative",
+            color: "var(--color-cream)",
+          }}
+        >
+          Recipes worth making twice.
+        </p>
+      </section>
 
       {/* ── The Supper Pairing ── */}
       <SupperPairing />
 
       <style>{`
-        /* ── Category scroller ──
-           Position is set imperatively via ref (see the rAF effect above),
-           so no @keyframes / animation property here anymore. */
         .categories-infinite {
           display: flex;
           gap: 40px;
@@ -486,21 +536,41 @@ export default function Home() {
           will-change: transform;
         }
 
-        /* ── Postcard suggestion ── */
+        .vibe-filter {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 40px;
+        }
+        .vibe-pill {
+          padding: 8px 16px;
+          border-radius: 999px;
+          border: 1px solid var(--color-line);
+          background: transparent;
+          color: var(--color-ink);
+          font-size: 13px;
+          cursor: pointer;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+        .vibe-pill:hover {
+          background: rgba(43, 18, 16, 0.06);
+        }
+        .vibe-pill-active {
+          background: var(--color-terracotta);
+          border-color: var(--color-terracotta);
+          color: var(--color-cream);
+        }
+
         .postcard {
           max-width: 680px;
           margin: 0 auto;
           display: flex;
-          position: relative; /* needed for ::after overlay */
-          overflow: hidden; /* clips photo to card boundary */
+          position: relative;
+          overflow: hidden;
           background: var(--color-cream);
           box-shadow: 0 6px 32px rgba(43, 18, 16, 0.10);
         }
-        /*
-          Scalloped edges as an overlay on top of everything (incl. the photo).
-          Radial-gradient circles in --color-sky sit above the card content
-          and create the perforated cutout illusion against the section background.
-        */
         .postcard::after {
           content: '';
           position: absolute;
@@ -508,12 +578,10 @@ export default function Home() {
           pointer-events: none;
           z-index: 10;
           background:
-            /* ── Corners: solid sky-blue quarter-circles to clean up where edges meet ── */
             radial-gradient(circle at 0 0, var(--color-sky) 9px, transparent 9px) 0 0 / 18px 18px no-repeat,
             radial-gradient(circle at 100% 0, var(--color-sky) 9px, transparent 9px) 100% 0 / 18px 18px no-repeat,
             radial-gradient(circle at 0 100%, var(--color-sky) 9px, transparent 9px) 0 100% / 18px 18px no-repeat,
             radial-gradient(circle at 100% 100%, var(--color-sky) 9px, transparent 9px) 100% 100% / 18px 18px no-repeat,
-            /* ── Edges ── */
             radial-gradient(circle at 50% 0, var(--color-sky) 9px, transparent 9px) top / 22px 9px repeat-x,
             radial-gradient(circle at 50% 100%, var(--color-sky) 9px, transparent 9px) bottom / 22px 9px repeat-x,
             radial-gradient(circle at 0 50%, var(--color-sky) 9px, transparent 9px) left / 9px 22px repeat-y,
