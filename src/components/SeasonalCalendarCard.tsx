@@ -21,7 +21,11 @@ interface DayCell {
   recipe: Recipe | null;
 }
 
-/** Pick up to 3 unique recipes biased toward seasonal ingredients. No duplicates. */
+/**
+ * Pick up to 3 unique recipes with seasonal bias.
+ * Excluded zone: dinner idea days ± 2 days (so the overflowing spiral text
+ * doesn't land directly next to a recipe cell).
+ */
 function pickSeasonalRecipes(
   recipes: Recipe[],
   monthIndex0: number,
@@ -33,19 +37,18 @@ function pickSeasonalRecipes(
   const monthData = seasonalCalendar[monthIndex0];
   const seasonalSlugs = new Set((monthData?.items ?? []).map((i) => i.slug));
 
-  // Prefer recipes whose slug contains a seasonal ingredient slug
   const seasonal = recipes.filter((r) =>
-    [...seasonalSlugs].some((slug) => r.slug?.includes(slug) || r.title?.toLowerCase().includes(slug)),
+    [...seasonalSlugs].some(
+      (slug) => r.slug?.includes(slug) || r.title?.toLowerCase().includes(slug),
+    ),
   );
   const pool = seasonal.length >= 3 ? seasonal : recipes;
 
-  // Shuffle pool
   const shuffled = [...pool];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  // Deduplicate by slug
   const unique: Recipe[] = [];
   const seen = new Set<string>();
   for (const r of shuffled) {
@@ -53,10 +56,15 @@ function pickSeasonalRecipes(
     if (unique.length === 3) break;
   }
 
-  // Pick 3 days that don't overlap with dinner ideas
+  // Buffer zone: exclude days within 2 of any dinner idea
+  const blocked = new Set<number>();
+  ideaDays.forEach((d) => {
+    for (let offset = -2; offset <= 2; offset++) blocked.add(d + offset);
+  });
+
   const daysInMonth = new Date(year, monthIndex0 + 1, 0).getDate();
   const candidates = Array.from({ length: daysInMonth }, (_, i) => i + 1).filter(
-    (d) => !ideaDays.has(d),
+    (d) => !blocked.has(d),
   );
   for (let i = candidates.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -75,16 +83,21 @@ function buildGrid(year: number, monthIndex0: number, recipeByDay: Map<number, R
   const monthIdeas = dinnerIdeas.filter((e) => e.month === monthIndex0 + 1);
 
   const cells: DayCell[] = [];
+  // Leading empty cells (days before month starts)
   for (let i = 0; i < firstWeekday; i++)
     cells.push({ day: null, isToday: false, idea: null, recipe: null });
   for (let day = 1; day <= daysInMonth; day++) {
     cells.push({
       day,
-      isToday: today.getFullYear() === year && today.getMonth() === monthIndex0 && today.getDate() === day,
+      isToday:
+        today.getFullYear() === year &&
+        today.getMonth() === monthIndex0 &&
+        today.getDate() === day,
       idea: monthIdeas.find((e) => e.day === day) ?? null,
       recipe: recipeByDay.get(day) ?? null,
     });
   }
+  // Pad to complete last row (keep trailing empties so grid lines look correct)
   while (cells.length % 7 !== 0)
     cells.push({ day: null, isToday: false, idea: null, recipe: null });
 
@@ -93,26 +106,19 @@ function buildGrid(year: number, monthIndex0: number, recipeByDay: Map<number, R
   return weeks;
 }
 
-/** Hand-drawn spiral circle — mirrors the SVG reference design. */
+/** Blue spiral circle — centered on cell, overflows visually */
 function SpiralCircle() {
   return (
     <svg
       viewBox="0 0 110 85"
       aria-hidden="true"
-      preserveAspectRatio="none"
-      style={{
-        position: "absolute",
-        inset: "-12px -8px",
-        width: "calc(100% + 16px)",
-        height: "calc(100% + 24px)",
-        pointerEvents: "none",
-        overflow: "visible",
-      }}
+      preserveAspectRatio="xMidYMid meet"
+      className="sc-spiral"
     >
       <path
         d="M100,42 C98,14 80,2 55,6 C26,11 6,22 6,42 C6,63 26,78 55,78 C84,78 104,63 100,42 C96,21 77,8 55,12 C30,16 12,28 12,44 C12,61 28,73 54,72"
         stroke="#85a9c7"
-        strokeWidth="2"
+        strokeWidth="2.2"
         fill="none"
         strokeLinecap="round"
       />
@@ -177,7 +183,7 @@ export default function SeasonalCalendarCard() {
 
   return (
     <div className="sc-root">
-      {/* ── Background ── */}
+      {/* ── Background image ── */}
       <img src={picnicImage} alt="" aria-hidden className="sc-bg" />
       <div className="sc-bg-veil" aria-hidden />
 
@@ -189,12 +195,24 @@ export default function SeasonalCalendarCard() {
 
           {/* Month nav */}
           <div className="sc-month-row">
-            <button type="button" className="sc-nav" onClick={() => goToMonth(-1)} aria-label="Vorheriger Monat">
-              <ChevronLeft size={16} aria-hidden />
+            <button
+              type="button"
+              className="sc-nav"
+              onClick={() => goToMonth(-1)}
+              aria-label="Vorheriger Monat"
+            >
+              <ChevronLeft size={14} aria-hidden />
             </button>
-            <h2 className="sc-month-title">{MONTH_NAMES[monthIndex0].toUpperCase()}</h2>
-            <button type="button" className="sc-nav" onClick={() => goToMonth(1)} aria-label="Nächster Monat">
-              <ChevronRight size={16} aria-hidden />
+            <h2 className="sc-month-title">
+              {MONTH_NAMES[monthIndex0].toUpperCase()}
+            </h2>
+            <button
+              type="button"
+              className="sc-nav"
+              onClick={() => goToMonth(1)}
+              aria-label="Nächster Monat"
+            >
+              <ChevronRight size={14} aria-hidden />
             </button>
           </div>
 
@@ -212,39 +230,36 @@ export default function SeasonalCalendarCard() {
           <div className="sc-grid">
             {weeks.map((week, wi) =>
               week.map((cell, di) => {
-                if (cell.day === null)
-                  return <div key={`${wi}-${di}`} className="sc-cell sc-cell-empty" />;
+                const key = `${wi}-${di}`;
+
+                // Empty filler cell (before/after month)
+                if (cell.day === null) {
+                  return <div key={key} className="sc-cell sc-cell-empty" />;
+                }
+
+                const hasIdea = !!cell.idea;
+                const hasRecipe = !!cell.recipe;
 
                 return (
                   <div
-                    key={`${wi}-${di}`}
-                    className={`sc-cell${cell.isToday ? " sc-cell-today" : ""}`}
+                    key={key}
+                    className={`sc-cell${cell.isToday ? " sc-cell-today" : ""}${hasRecipe ? " sc-cell-recipe" : ""}${hasIdea ? " sc-cell-idea" : ""}`}
                   >
-                    <span className="sc-day-num">{cell.day}</span>
-
-                    {cell.idea && (
-                      <button
-                        type="button"
-                        className="sc-idea-btn"
-                        onClick={(e) => openPopup(cell.idea!, e.currentTarget)}
-                      >
-                        <SpiralCircle />
-                        <span className="sc-idea-title">{cell.idea.title}</span>
-                        {cell.idea.subtitle && (
-                          <span className="sc-idea-sub">{cell.idea.subtitle}</span>
-                        )}
-                      </button>
+                    {/* Day number — hidden for recipe and idea cells */}
+                    {!hasRecipe && !hasIdea && (
+                      <span className="sc-day-num">{cell.day}</span>
                     )}
 
-                    {!cell.idea && cell.recipe && (
+                    {/* Recipe: full-bleed image */}
+                    {hasRecipe && cell.recipe && (
                       <Link
                         to={`/rezepte/${cell.recipe.slug}`}
-                        className="sc-recipe-thumb"
+                        className="sc-recipe-link"
                         aria-label={cell.recipe.title}
                       >
                         {cell.recipe.image && (
                           <img
-                            src={resizeDriveUrl(cell.recipe.image, "w200")}
+                            src={resizeDriveUrl(cell.recipe.image, "w300")}
                             alt=""
                             loading="lazy"
                             decoding="async"
@@ -252,27 +267,51 @@ export default function SeasonalCalendarCard() {
                         )}
                       </Link>
                     )}
+
+                    {/* Dinner idea: spiral + large overflowing title */}
+                    {hasIdea && cell.idea && (
+                      <button
+                        type="button"
+                        className="sc-idea-btn"
+                        onClick={(e) => openPopup(cell.idea!, e.currentTarget)}
+                      >
+                        <SpiralCircle />
+                        <span className="sc-idea-title">{cell.idea.title}</span>
+                      </button>
+                    )}
                   </div>
                 );
               })
             )}
           </div>
 
-          {/* Popup */}
+          {/* Popup detail */}
           {activePopup && (
             <div
               className="sc-overlay"
               onClick={(e) => { if (e.target === e.currentTarget) closePopup(); }}
             >
-              <div className="sc-popup" role="dialog" aria-modal="true" aria-labelledby="sc-popup-title">
-                <button type="button" ref={closeRef} className="sc-popup-close" onClick={closePopup} aria-label="Schließen">
-                  <X size={14} aria-hidden />
+              <div
+                className="sc-popup"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="sc-popup-title"
+              >
+                <button
+                  type="button"
+                  ref={closeRef}
+                  className="sc-popup-close"
+                  onClick={closePopup}
+                  aria-label="Schließen"
+                >
+                  <X size={13} aria-hidden />
                 </button>
                 <span className="sc-popup-eyebrow">
                   {activePopup.idea.day}. {MONTH_NAMES[activePopup.idea.month - 1]}
                 </span>
-                <h3 id="sc-popup-title" className="sc-popup-title">{activePopup.idea.title}</h3>
-                {activePopup.idea.subtitle && <p className="sc-popup-subtitle">{activePopup.idea.subtitle}</p>}
+                <h3 id="sc-popup-title" className="sc-popup-title">
+                  {activePopup.idea.title}
+                </h3>
                 <p className="sc-popup-idea">{activePopup.idea.idea}</p>
                 {(activePopup.idea.onTheTable || activePopup.idea.kochen) && (
                   <div className="sc-popup-section">
@@ -310,7 +349,9 @@ export default function SeasonalCalendarCard() {
           </div>
           <div className="sc-seasonal-pills">
             {(monthData.items ?? []).map((item) => (
-              <span key={item.slug} className="sc-seasonal-pill">{item.name}</span>
+              <span key={item.slug} className="sc-seasonal-pill">
+                {item.name}
+              </span>
             ))}
           </div>
         </div>
@@ -318,24 +359,31 @@ export default function SeasonalCalendarCard() {
       </div>
 
       <style>{`
-        /* ─── Root ─── */
+        @import url('https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap');
+
+        /* ─── Outer wrapper ─── */
         .sc-root {
           position: relative;
           width: 100%;
-          border-radius: 20px;
+          max-width: 1280px;
+          margin: 0 auto;
+          border-radius: 18px;
           overflow: hidden;
+          /* 16:9 ratio keeps it laptop-sized */
+          aspect-ratio: 16 / 9;
         }
 
         /* ─── Background ─── */
         .sc-bg {
           position: absolute; inset: 0;
           width: 100%; height: 100%;
-          object-fit: cover; object-position: center 30%;
+          object-fit: cover;
+          object-position: center 35%;
           display: block;
         }
         .sc-bg-veil {
           position: absolute; inset: 0;
-          background: rgba(43, 18, 16, 0.38);
+          background: rgba(30, 12, 8, 0.40);
         }
 
         /* ─── Two-column layout ─── */
@@ -343,17 +391,23 @@ export default function SeasonalCalendarCard() {
           position: relative; z-index: 1;
           display: flex;
           align-items: flex-start;
-          gap: 28px;
-          padding: 36px 32px;
+          gap: 2.2%;
+          padding: 3.2% 3%;
+          height: 100%;
+          box-sizing: border-box;
         }
 
         /* ─── Calendar card ─── */
         .sc-card {
           position: relative;
-          flex: 0 0 62%;
+          flex: 0 0 60%;
           background: #F7F6EC;
-          border-radius: 16px;
-          padding: 28px 24px 20px;
+          border-radius: 14px;
+          padding: 2.4% 2% 1.6%;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          box-sizing: border-box;
         }
 
         /* Month row */
@@ -361,29 +415,29 @@ export default function SeasonalCalendarCard() {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 16px;
-          margin-bottom: 20px;
+          gap: 10px;
+          margin-bottom: 1.4%;
+          flex-shrink: 0;
         }
         .sc-month-title {
-          font-family: var(--font-body);
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
           font-weight: 300;
-          font-size: clamp(26px, 5.5vw, 48px);
-          letter-spacing: 0.16em;
-          color: var(--color-ink);
+          font-size: clamp(18px, 3.4vw, 38px);
+          letter-spacing: 0.18em;
+          color: var(--color-ink, #2b1210);
           margin: 0;
-          text-align: center;
-          min-width: 0;
           flex: 1;
+          text-align: center;
         }
         .sc-nav {
           flex-shrink: 0;
-          width: 30px; height: 30px;
+          width: 26px; height: 26px;
           border-radius: 50%;
           border: 1px solid rgba(43,18,16,0.2);
           background: none;
-          color: var(--color-ink);
+          color: var(--color-ink, #2b1210);
           display: flex; align-items: center; justify-content: center;
-          cursor: pointer; opacity: 0.55; transition: opacity 0.15s;
+          cursor: pointer; opacity: 0.5; transition: opacity 0.15s;
         }
         .sc-nav:hover { opacity: 1; }
 
@@ -391,154 +445,167 @@ export default function SeasonalCalendarCard() {
         .sc-weekdays {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
-          border-bottom: 1px solid rgba(43,18,16,0.15);
-          padding-bottom: 6px;
-          margin-bottom: 0;
+          border-bottom: 1px solid rgba(43,18,16,0.14);
+          padding-bottom: 4px;
+          flex-shrink: 0;
         }
         .sc-dow {
           text-align: center;
-          font-family: var(--font-body);
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
           font-weight: 300;
-          font-size: 10px;
-          letter-spacing: 0.04em;
-          color: rgba(43,18,16,0.5);
+          font-size: clamp(7px, 0.85vw, 11px);
+          color: rgba(43,18,16,0.45);
+          letter-spacing: 0.02em;
         }
         .sc-dow-short { display: none; }
 
-        /* Day grid */
+        /* ─── Day grid ─── */
         .sc-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
+          flex: 1;
+          overflow: visible; /* let dinner ideas overflow */
         }
+
         .sc-cell {
           position: relative;
-          aspect-ratio: 1 / 1;
-          border-right: 1px solid rgba(43,18,16,0.12);
-          border-bottom: 1px solid rgba(43,18,16,0.12);
-          padding: 5px;
-          display: flex;
-          flex-direction: column;
-          overflow: visible;
+          /* SVG cell ratio: ~190 wide × 156 tall */
+          aspect-ratio: 190 / 150;
+          border-right: 0.7px solid rgba(43,18,16,0.13);
+          border-bottom: 0.7px solid rgba(43,18,16,0.13);
+          overflow: visible; /* dinner ideas spill out */
         }
         .sc-cell:nth-child(7n) { border-right: none; }
-        .sc-cell-empty { background: rgba(43,18,16,0.02); }
-        .sc-cell-today { box-shadow: inset 0 0 0 1.5px var(--color-maroon); border-radius: 3px; }
-
-        .sc-day-num {
-          font-family: var(--font-body);
-          font-weight: 300;
-          font-size: 10px;
-          color: var(--color-ink);
-          opacity: 0.6;
-          line-height: 1;
-          flex-shrink: 0;
+        .sc-cell-empty { background: rgba(43,18,16,0.015); }
+        .sc-cell-today {
+          box-shadow: inset 0 0 0 1.5px var(--color-maroon, #8b2e2e);
+          border-radius: 2px;
         }
 
-        /* Dinner idea */
+        /* Day number — plain cells only */
+        .sc-day-num {
+          position: absolute;
+          top: 5px; left: 6px;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-weight: 300;
+          font-size: clamp(7px, 0.75vw, 10px);
+          color: rgba(43,18,16,0.45);
+          line-height: 1;
+          z-index: 2;
+        }
+
+        /* ─── Recipe cell: full-bleed image ─── */
+        .sc-cell-recipe { overflow: hidden; }
+        .sc-recipe-link {
+          position: absolute;
+          inset: 0;
+          display: block;
+          text-decoration: none;
+        }
+        .sc-recipe-link img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+        .sc-recipe-link:hover img { transform: scale(1.04); }
+
+        /* ─── Dinner idea: centered, overflows cell ─── */
+        .sc-cell-idea { z-index: 4; }
+
         .sc-idea-btn {
-          position: relative;
-          flex: 1;
-          margin-top: 2px;
+          /* Centered on the cell */
+          position: absolute;
+          top: 50%; left: 50%;
+          transform: translate(-50%, -50%);
+          /* Wider than cell so text + spiral can overflow naturally */
+          width: 210%;
           background: none; border: none;
-          padding: 8px 4px 4px;
           cursor: pointer;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           text-align: center;
-          gap: 2px;
+          z-index: 5;
+          padding: 0;
         }
+
+        /* Spiral SVG: fills the button area */
+        .sc-spiral {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          overflow: visible;
+        }
+
+        /* Title text on top of spiral */
         .sc-idea-title {
+          position: relative; z-index: 1;
           font-family: 'Homemade Apple', cursive;
-          font-size: clamp(8px, 1.2vw, 13px);
-          line-height: 1.3;
-          color: var(--color-ink);
-          position: relative; z-index: 1;
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        .sc-idea-sub {
-          font-family: var(--font-body);
-          font-weight: 300;
-          font-size: clamp(6px, 0.85vw, 9px);
-          color: var(--color-muted);
-          font-style: italic;
-          position: relative; z-index: 1;
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
+          font-size: clamp(11px, 1.5vw, 16px);
+          line-height: 1.35;
+          color: var(--color-ink, #2b1210);
+          /* The button is 210% wide; text wraps freely */
+          white-space: normal;
+          padding: 20% 12%;
         }
 
-        /* Recipe thumbnail */
-        .sc-recipe-thumb {
-          display: block;
-          margin-top: auto;
-          border-radius: 3px;
-          overflow: hidden;
-          flex: 1;
-          min-height: 0;
-        }
-        .sc-recipe-thumb img {
-          width: 100%; height: 100%;
-          object-fit: cover; display: block;
-        }
-
-        /* ─── Popup ─── */
+        /* ─── Popup overlay ─── */
         .sc-overlay {
-          position: absolute; inset: 0; z-index: 10;
+          position: absolute; inset: 0; z-index: 20;
           background: rgba(20,8,4,0.55);
           display: flex; align-items: center; justify-content: center;
-          padding: 20px; border-radius: 16px;
+          padding: 16px;
+          border-radius: 14px;
         }
         .sc-popup {
-          position: relative; width: 100%; max-width: 300px;
+          position: relative; width: 100%; max-width: 280px;
           background: #F7F6EC;
-          border-radius: 14px;
-          padding: 28px 22px 22px;
-          box-shadow: 0 20px 48px rgba(43,18,16,0.28);
+          border-radius: 12px;
+          padding: 24px 20px 20px;
+          box-shadow: 0 16px 40px rgba(43,18,16,0.28);
         }
         .sc-popup-close {
-          position: absolute; top: 12px; right: 12px;
-          width: 28px; height: 28px; border-radius: 50%;
+          position: absolute; top: 10px; right: 10px;
+          width: 26px; height: 26px; border-radius: 50%;
           border: none; background: rgba(43,18,16,0.08);
-          color: var(--color-ink);
+          color: var(--color-ink, #2b1210);
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
         }
         .sc-popup-eyebrow {
           display: block;
-          font-family: var(--font-body); font-size: 11px;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-size: 10px;
           letter-spacing: 0.1em; text-transform: uppercase;
-          color: var(--color-terracotta); margin-bottom: 4px;
+          color: var(--color-terracotta, #c4714a); margin-bottom: 3px;
         }
         .sc-popup-title {
           font-family: 'Homemade Apple', cursive;
-          font-size: clamp(20px, 5vw, 26px);
-          color: var(--color-ink); margin: 0 0 4px; line-height: 1.2;
-        }
-        .sc-popup-subtitle {
-          font-family: var(--font-body); font-size: 12px;
-          font-style: italic; color: var(--color-muted); margin: 0 0 12px;
+          font-size: clamp(18px, 4vw, 24px);
+          color: var(--color-ink, #2b1210); margin: 0 0 10px; line-height: 1.2;
         }
         .sc-popup-idea {
-          font-family: var(--font-body); font-size: 13px;
-          line-height: 1.65; color: var(--color-muted); margin: 0;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-size: 12px; line-height: 1.65;
+          color: var(--color-muted, #6b5a57); margin: 0;
         }
-        .sc-popup-section { margin-top: 14px; }
+        .sc-popup-section { margin-top: 12px; }
         .sc-popup-label {
-          font-family: var(--font-body); font-weight: 600;
-          font-size: 10px; text-transform: uppercase;
-          letter-spacing: 0.1em; color: var(--color-terracotta); margin: 0 0 5px;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-weight: 600; font-size: 9px;
+          text-transform: uppercase; letter-spacing: 0.12em;
+          color: var(--color-terracotta, #c4714a); margin: 0 0 4px;
         }
         .sc-popup-list {
           list-style: none; padding: 0; margin: 0;
-          font-family: var(--font-body); font-size: 13px;
-          line-height: 1.5; color: var(--color-ink);
-          display: flex; flex-direction: column; gap: 3px;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-size: 12px; line-height: 1.55;
+          color: var(--color-ink, #2b1210);
+          display: flex; flex-direction: column; gap: 2px;
         }
 
         /* ─── Seasonal sidebar ─── */
@@ -546,22 +613,22 @@ export default function SeasonalCalendarCard() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 16px;
-          padding-top: 4px;
+          gap: 14px;
+          padding-top: 2px;
         }
         .sc-seasonal-header {
           background: #F7F6EC;
           border-radius: 999px;
-          padding: 12px 24px;
+          padding: 10px 22px;
           display: inline-flex;
           align-self: flex-start;
         }
         .sc-seasonal-title {
-          font-family: var(--font-body);
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
           font-weight: 300;
-          font-size: clamp(14px, 2.2vw, 20px);
-          letter-spacing: 0.08em;
-          color: var(--color-ink);
+          font-size: clamp(12px, 1.6vw, 18px);
+          letter-spacing: 0.07em;
+          color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
         .sc-seasonal-pills {
@@ -572,33 +639,30 @@ export default function SeasonalCalendarCard() {
         .sc-seasonal-pill {
           background: #F7F6EC;
           border-radius: 999px;
-          padding: 8px 18px;
-          font-family: var(--font-body);
+          padding: 7px 16px;
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
           font-weight: 300;
-          font-size: clamp(12px, 1.8vw, 16px);
-          color: var(--color-ink);
+          font-size: clamp(11px, 1.35vw, 15px);
+          color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
 
         /* ─── Responsive ─── */
-        @media (max-width: 600px) {
-          .sc-layout { flex-direction: column; padding: 20px 16px; gap: 20px; }
-          .sc-card { flex: none; width: 100%; padding: 18px 12px 14px; }
+        @media (max-width: 700px) {
+          .sc-root { aspect-ratio: auto; }
+          .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
+          .sc-card { flex: none; width: 100%; height: auto; }
           .sc-seasonal { width: 100%; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
-          .sc-idea-title { font-size: 8px; -webkit-line-clamp: 2; }
-          .sc-idea-sub { display: none; }
-          .sc-seasonal-pill { font-size: 12px; padding: 6px 12px; }
+          .sc-grid { overflow: visible; }
+          .sc-idea-title { font-size: 9px; }
+          .sc-seasonal-pill { font-size: 11px; padding: 5px 12px; }
         }
-        @media (min-width: 601px) and (max-width: 900px) {
-          .sc-layout { padding: 24px 20px; }
+        @media (min-width: 701px) and (max-width: 960px) {
+          .sc-root { aspect-ratio: auto; min-height: 500px; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
-        }
-        @media (min-width: 901px) {
-          .sc-cell { padding: 7px; }
-          .sc-day-num { font-size: 12px; }
         }
       `}</style>
     </div>
