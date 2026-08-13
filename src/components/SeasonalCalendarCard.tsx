@@ -174,7 +174,6 @@ export default function SeasonalCalendarCard() {
 
                     {!cell.idea && cell.moment && (
                       <div className="cal-cell-moment">
-                        <span aria-hidden="true">{cell.moment.emoji}</span>
                         <span className="cal-cell-moment-label">{cell.moment.label}</span>
                       </div>
                     )}
