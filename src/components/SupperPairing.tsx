@@ -4,10 +4,6 @@ import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import type { Recipe } from "../data/recipeTypes";
 import RecipeCard from "./RecipeCard";
 
-/**
- * Two fixed pairing vibes. Each vibe pulls one random recipe from each of
- * two categories (category names must match src/data/categories.ts exactly).
- */
 const PAIRINGS = [
   {
     label: "Herzhaft am Abend",
@@ -21,12 +17,6 @@ const PAIRINGS = [
   },
 ] as const;
 
-/**
- * Picks a random recipe from `category`, excluding `exclude` if possible.
- * Falls back to the full category pool instead of returning null when
- * excluding would leave nothing — otherwise a category with just one
- * recipe could make the whole section vanish after a shuffle.
- */
 function pickRandom(recipes: Recipe[], category: string, exclude?: string): Recipe | null {
   const withoutExcluded = recipes.filter((r) => r.category === category && r.slug !== exclude);
   if (withoutExcluded.length > 0) {
@@ -92,9 +82,6 @@ export default function SupperPairing() {
                 image={resizeDriveUrl(itemA.image, "w600")}
               />
             </div>
-
-            {/* Simple "paired with" symbol — no extra line, nothing that could read as a minus sign */}
-            <span className="pairing-symbol" aria-hidden="true">×</span>
 
             <div className="pairing-item">
               <RecipeCard
