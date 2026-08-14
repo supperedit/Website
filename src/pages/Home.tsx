@@ -35,7 +35,7 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
   bites: { Icon: SnackIcon, height: 110 },
   bread: { Icon: ButterIcon, height: 67 },
   pasta: { Icon: PastaIcon, height: 69 },
-  slow-sips: { Icon: SlowSipsIcon, height: 90 },
+  "slow-sips": { Icon: SlowSipsIcon, height: 90 },
   pantry: { Icon: PantryIcon, height: 90 },
 };
 
