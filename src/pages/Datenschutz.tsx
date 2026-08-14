@@ -1,100 +1,104 @@
-import SEO from "../components/SEO";
-
 export default function Datenschutz() {
   return (
-    <>
-      <SEO title="Datenschutz" description="Datenschutzerklärung (Privacy Policy) von Supper Edit." />
+    <main style={{ maxWidth: 680, margin: "0 auto", padding: "64px 24px", lineHeight: 1.7 }}>
+      <h1 style={{ marginBottom: 8 }}>Datenschutzerklärung</h1>
+      <p style={{ color: "var(--color-terracotta)", marginBottom: 40, fontSize: 14 }}>
+        Stand: August 2026
+      </p>
 
-      <section className="wrap" style={{ paddingBlock: 80, maxWidth: 640 }}>
-        <h1 className="font-display" style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", marginBottom: 4 }}>
-          Datenschutzerklärung
-        </h1>
-        <p style={{ fontSize: 13, color: "var(--color-muted)", marginBottom: 24 }}>
-          Privacy Policy
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>1. Verantwortliche Stelle</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Amy Djuritschek, Schubertstr. 42, 90530 Wendelstein, suppereditclub@gmail.com
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>2. Allgemeines zur Datenverarbeitung</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Wir verarbeiten personenbezogene Daten unserer Nutzer grundsätzlich nur, soweit
-          dies zur Bereitstellung einer funktionsfähigen Website sowie unserer Inhalte und
-          Leistungen erforderlich ist. Rechtsgrundlage ist, soweit nichts anderes angegeben
-          ist, Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am reibungslosen Betrieb
-          der Website) bzw. Art. 6 Abs. 1 lit. a DSGVO (Einwilligung).
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>3. Hosting</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Diese Website wird über Cloudflare Pages (Cloudflare, Inc., 101 Townsend St,
-          San Francisco, CA 94107, USA) gehostet. Beim Aufruf der Seite verarbeitet
-          Cloudflare automatisch Server-Logdaten, die dein Browser übermittelt (z. B.
-          IP-Adresse, Datum und Uhrzeit des Zugriffs, verwendeter Browser, aufgerufene
-          Seite). Diese Daten sind technisch erforderlich, um die Website auszuliefern,
-          und werden nicht mit anderen Datenquellen zusammengeführt. Details entnimmst du
-          der Datenschutzerklärung von Cloudflare (cloudflare.com/privacypolicy).
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>4. Google Fonts</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Diese Website bindet die Schriftart "Elms Sans" von Google Fonts ein. Beim
-          Aufruf einer Seite lädt dein Browser die benötigten Schriften direkt von
-          Servern von Google (Google Ireland Limited). Dabei wird deine IP-Adresse an
-          Google übertragen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>5. Rezeptdaten über Google Sheets</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Die Rezepttexte und -bilder dieser Seite werden aus einer öffentlich
-          veröffentlichten Google-Tabelle geladen. Dein Browser ruft diese Inhalte direkt
-          bei Google ab, wodurch auch hierbei deine IP-Adresse an Google übertragen wird.
-          Es werden dabei keine Formulareingaben oder sonstigen personenbezogenen Daten
-          von dir an Google übermittelt.
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>6. Lokale Speicherung im Browser</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Diese Website speichert einzelne Informationen ausschließlich lokal in deinem
-          Browser (Local Storage), nicht auf unseren Servern: deine Entscheidung im
-          Cookie-Hinweis sowie die Rezepte, die du dir über die Merkliste-Funktion
-          gemerkt hast. Diese Daten verlassen dein Gerät nicht und werden von uns nicht
-          eingesehen. Du kannst sie jederzeit über die Einstellungen deines Browsers
-          löschen.
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>7. Kontaktformular</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Wenn du uns über das Kontaktformular schreibst, verwenden wir die von dir
-          angegebenen Daten (Name, E-Mail-Adresse, Nachricht) ausschließlich zur
-          Bearbeitung deiner Anfrage und für den Fall von Anschlussfragen.
-          Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO. Eine Weitergabe an Dritte
-          erfolgt nicht.
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>8. Deine Rechte</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Du hast jederzeit das Recht auf Auskunft über deine bei uns gespeicherten
-          personenbezogenen Daten, deren Herkunft und Empfänger sowie den Zweck der
-          Datenverarbeitung, außerdem ein Recht auf Berichtigung, Löschung oder
-          Einschränkung der Verarbeitung dieser Daten. Wende dich dazu an die oben
-          genannte Kontaktadresse. Dir steht zudem ein Beschwerderecht bei der
-          zuständigen Aufsichtsbehörde zu.
-        </p>
-
-        <h2 className="font-display" style={{ fontSize: 20, marginTop: 32 }}>9. Datensicherheit</h2>
-        <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--color-muted)" }}>
-          Diese Website nutzt aus Sicherheitsgründen eine SSL- bzw. TLS-Verschlüsselung.
-          Eine verschlüsselte Verbindung erkennst du daran, dass die Adresszeile deines
-          Browsers mit "https://" beginnt.
-        </p>
-
-        <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 40 }}>
-          Stand: Juli 2026
+      <section style={{ marginBottom: 40 }}>
+        <h2>1. Verantwortliche</h2>
+        <p>
+          Amy Djuritschek<br />
+          Schubertstr. 42, 90530 Wendelstein<br />
+          E-Mail: <a href="mailto:suppereditclub@gmail.com">suppereditclub@gmail.com</a>
         </p>
       </section>
-    </>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>2. Hosting</h2>
+        <p>
+          Diese Website wird über <strong>Cloudflare Pages</strong> (Cloudflare,
+          Inc., 101 Townsend St., San Francisco, CA 94107, USA) gehostet.
+          Cloudflare verarbeitet beim Aufruf der Seite technisch notwendige
+          Daten (IP-Adresse, Zeitstempel, aufgerufene URL, Browser-Typ). Dies
+          dient der Bereitstellung und Sicherheit der Website und beruht auf
+          Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse). Cloudflare ist
+          nach dem EU-US Data Privacy Framework zertifiziert.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>3. Cookies & lokale Speicherung</h2>
+        <p>
+          Diese Website setzt keine Tracking-Cookies. Im Browser wird
+          ausschließlich der <strong>lokale Speicher (localStorage)</strong>{" "}
+          verwendet, um deine gespeicherten Lieblingsrezepte zu merken. Diese
+          Daten verlassen deinen Browser nicht und werden nicht an Server
+          übertragen.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>4. Keine Analyse- oder Tracking-Dienste</h2>
+        <p>
+          Auf dieser Website werden keine Analyse- oder Tracking-Dienste (z. B.
+          Google Analytics) eingesetzt. Es werden keine Profile über das
+          Nutzungsverhalten erstellt.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>5. Kontaktaufnahme per E-Mail</h2>
+        <p>
+          Wenn du mir per E-Mail schreibst, werden die von dir übermittelten
+          Daten (Name, E-Mail-Adresse, Nachrichteninhalt) ausschließlich zur
+          Bearbeitung deiner Anfrage verwendet und nicht an Dritte weitergegeben.
+          Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>6. Externe Inhalte & eingebettete Medien</h2>
+        <p>
+          Rezeptbilder werden über <strong>Google Drive</strong> ausgeliefert.
+          Beim Laden dieser Bilder kann Google die IP-Adresse des abrufenden
+          Geräts verarbeiten. Weitere Informationen findest du in der{" "}
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Datenschutzerklärung von Google
+          </a>
+          .
+        </p>
+      </section>
+
+      <section style={{ marginBottom: 40 }}>
+        <h2>7. Deine Rechte</h2>
+        <p>
+          Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung
+          der Verarbeitung sowie Datenübertragbarkeit (Art. 15–20 DSGVO).
+          Außerdem kannst du der Verarbeitung widersprechen (Art. 21 DSGVO) und
+          dich bei einer Aufsichtsbehörde beschweren. Die zuständige Behörde für
+          Bayern ist das Bayerische Landesamt für Datenschutzaufsicht (BayLDA),
+          Promenade 18, 91522 Ansbach.
+        </p>
+        <p>
+          Für Anfragen wende dich an:{" "}
+          <a href="mailto:suppereditclub@gmail.com">suppereditclub@gmail.com</a>
+        </p>
+      </section>
+
+      <section>
+        <h2>8. Aktualität</h2>
+        <p>
+          Diese Datenschutzerklärung kann bei Änderungen der Website oder der
+          gesetzlichen Anforderungen angepasst werden. Die aktuelle Version ist
+          stets auf dieser Seite abrufbar.
+        </p>
+      </section>
+    </main>
   );
 }
