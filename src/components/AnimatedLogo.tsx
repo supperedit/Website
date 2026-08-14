@@ -18,7 +18,7 @@ export default function AnimatedLogo() {
   const measure = () => {
     const rect = spacerRef.current?.getBoundingClientRect();
     if (rect && rect.width > 0) {
-      const centerTop = rect.top;
+      const centerTop = (window.innerHeight - rect.height) / 2;
       const centerLeft = window.innerWidth / 2;
       setStart({ top: centerTop, left: centerLeft, width: rect.width });
     }
