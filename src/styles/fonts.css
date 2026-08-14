@@ -1,7 +1,7 @@
 @font-face {
   font-family: "Dreamland";
   src: url("/fonts/Dreamland.woff2") format("woff2");
-  font-weight: normal;
+  font-weight: 300;
   font-style: normal;
   /* Renders text in the fallback font immediately, then swaps to Dreamland
      once it's loaded — instead of blocking render until a 1MB+ base64 blob
