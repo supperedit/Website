@@ -1,56 +1,9 @@
-interface Env {
-  NOTION_TOKEN: string;
-  NOTION_DATABASE_ID: string;
-}
-
-interface NotionRichText {
-  plain_text: string;
-}
-
-interface NotionProperty {
-  type: string;
-  title?: NotionRichText[];
-  rich_text?: NotionRichText[];
-  select?: { name: string } | null;
-  url?: string | null;
-  files?: {
-    type: string;
-    file?: { url: string };
-    external?: { url: string };
-    name: string;
-  }[];
-}
-
-interface NotionPage {
-  id: string;
-  properties: Record<string, NotionProperty>;
-}
-
-function richText(prop: NotionProperty | undefined): string {
-  if (!prop) return "";
-  if (prop.type === "title") return prop.title?.map((t) => t.plain_text).join("") ?? "";
-  if (prop.type === "rich_text") return prop.rich_text?.map((t) => t.plain_text).join("") ?? "";
-  return "";
-}
-
-function imageUrl(prop: NotionProperty | undefined): string | undefined {
-  if (!prop) return undefined;
-  if (prop.type === "url" && prop.url) return prop.url;
-  if (prop.type === "files" && prop.files?.[0]) {
-    const f = prop.files[0];
-    if (f.type === "file" && f.file) return f.file.url;
-    if (f.type === "external" && f.external) return f.external.url;
-  }
-  return undefined;
-}
-
-function slugify(text: string): string {
-  const map: Record<string, string> = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
-  return text
-    .toLowerCase()
-    .replace(/[äöüß]/g, (c) => map[c] || c)
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+interface Recipe {
+  slug: string;
+  title: string;
+  category: string;
+  intro: string | null;
+  image?: string;
 }
 
 function escapeXml(str: string): string {
@@ -62,92 +15,17 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-async function queryAll(databaseId: string, token: string): Promise<NotionPage[]> {
-  const pages: NotionPage[] = [];
-
-  const dbRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Notion-Version": "2026-03-11",
-    },
-  });
-
-  let dataSourceIds: string[] = [databaseId];
-  if (dbRes.ok) {
-    const dbData = (await dbRes.json()) as { data_sources?: { id: string }[] };
-    if (dbData.data_sources?.length) {
-      dataSourceIds = dbData.data_sources.map((ds) => ds.id);
-    }
-  }
-
-  for (const dataSourceId of dataSourceIds) {
-    let cursor: string | undefined;
-    do {
-      const body: Record<string, unknown> = { page_size: 100 };
-      if (cursor) body.start_cursor = cursor;
-
-      const res = await fetch(
-        `https://api.notion.com/v1/data_sources/${dataSourceId}/query`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Notion-Version": "2026-03-11",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        },
-      );
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        throw new Error(`Notion API error: ${res.status} — ${errBody}`);
-      }
-
-      const data = (await res.json()) as {
-        results: NotionPage[];
-        has_more: boolean;
-        next_cursor: string | null;
-      };
-      pages.push(...data.results);
-      cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
-    } while (cursor);
-  }
-
-  return pages;
-}
-
-export const onRequest: PagesFunction<Env> = async (context) => {
-  const { NOTION_TOKEN, NOTION_DATABASE_ID } = context.env;
+export const onRequest: PagesFunction = async () => {
   const BASE = "https://www.supperedit.de";
 
-  if (!NOTION_TOKEN || !NOTION_DATABASE_ID) {
-    return new Response("Server configuration error", { status: 500 });
+  const res = await fetch(`${BASE}/api/recipes`);
+  if (!res.ok) {
+    return new Response("Could not load recipes", { status: 502 });
   }
 
-  try {
-    const pages = await queryAll(NOTION_DATABASE_ID, NOTION_TOKEN);
+  const recipes = (await res.json()) as Recipe[];
 
-    const items = pages
-      .filter((page) => {
-        const status = page.properties["Status"];
-        if (!status) return true;
-        if (status.type === "select")
-          return status.select?.name?.toLowerCase() === "aktiv";
-        return true;
-      })
-      .map((page) => {
-        const p = page.properties;
-        const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
-        const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
-        const intro = richText(p["Einleitung"] ?? p["einleitung"]);
-        const image = imageUrl(p["Bild"] ?? p["bild"]);
-        const category = (p["Kategorie"] ?? p["kategorie"])?.select?.name ?? "";
-        return { title, slug, intro, image, category };
-      })
-      .filter((r) => r.title && r.slug);
-
-    const rss = `<?xml version="1.0" encoding="UTF-8"?>
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
   xmlns:media="http://search.yahoo.com/mrss/"
   xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -157,7 +35,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     <description>Gute Rezepte, schnelle Drinks und kleine Ideen für entspannte Abende.</description>
     <language>de</language>
     <ttl>60</ttl>
-${items
+${recipes
   .map((r) => {
     const url = `${BASE}/rezepte/${r.slug}`;
     const desc = escapeXml(r.intro || r.category || r.title);
@@ -177,14 +55,11 @@ ${imgTag}
   </channel>
 </rss>`;
 
-    return new Response(rss, {
-      headers: {
-        "Content-Type": "application/rss+xml; charset=utf-8",
-        "Cache-Control": "s-maxage=600, stale-while-revalidate=120",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  } catch (err) {
-    return new Response(`RSS error: ${String(err)}`, { status: 500 });
-  }
+  return new Response(rss, {
+    headers: {
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "s-maxage=600, stale-while-revalidate=120",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
 };
