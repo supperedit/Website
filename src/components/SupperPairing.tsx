@@ -101,7 +101,7 @@ export default function SupperPairing() {
 
       <style>{`
         .pairing-section {
-          background-color: var(--color-white);
+          background-color: var(--color-cream);
           padding-block: 80px;
         }
         .pairing-eyebrow {
