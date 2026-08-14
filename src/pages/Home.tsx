@@ -246,14 +246,22 @@ export default function Home() {
               fontSize: 15,
               lineHeight: 1.7,
               maxWidth: 380,
-              margin: "20px auto 24px",
+              margin: "6px auto 20px",
               opacity: 0.92,
             }}
           >
             Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
             einfach hängen bleibt.
           </p>
-          <Link to="/rezepte" className="btn-primary">
+          <Link
+            to="/rezepte"
+            className="btn-primary"
+            style={{
+              backgroundColor: "var(--color-dusty-blue)",
+              color: "var(--color-maroon)",
+              borderColor: "var(--color-dusty-blue)",
+            }}
+          >
             Alle Rezepte <ArrowRight size={14} />
           </Link>
         </div>
