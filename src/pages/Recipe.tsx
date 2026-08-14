@@ -471,7 +471,7 @@ export default function Recipe() {
 
       <style>{`
         .recipe-back-btn {
-          display: none;
+          display: inline-flex;
           align-items: center;
           gap: 4px;
           background: none;
@@ -524,6 +524,7 @@ export default function Recipe() {
           }
           .recipe-back-btn {
             display: inline-flex;
+            margin-bottom: 12px;
           }
           .recipe-header {
             padding-top: 8px;
