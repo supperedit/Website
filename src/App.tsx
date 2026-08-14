@@ -65,7 +65,7 @@ export default function App() {
     // Hard timeout – never block the user for more than 3 s
     const timeout = setTimeout(() => {
       if (!settled) { settled = true; setImagesReady(true); }
-    }, 3000);
+    }, 1500);
 
     return () => clearTimeout(timeout);
   }, [loading, recipes]);
