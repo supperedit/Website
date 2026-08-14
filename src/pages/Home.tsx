@@ -212,34 +212,46 @@ export default function Home() {
             backgroundColor: "var(--color-ink)",
           }}
         />
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-          <AnimatedLogo />
-          <p
-            className="font-body"
+        <div style={{ position: "relative", zIndex: 1 }}>
+            <AnimatedLogo />
+          </div>
+          <div
             style={{
-              color: "var(--color-cream)",
-              fontSize: 15,
-              lineHeight: 1.7,
-              maxWidth: 380,
-              margin: "6px auto 20px",
-              opacity: 0.92,
+              position: "absolute",
+              zIndex: 1,
+              top: "calc(50% + min(86px, 16.3vw) + 16px)",
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              padding: "0 20px",
             }}
           >
-            Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
-            einfach hängen bleibt.
-          </p>
-          <Link
-            to="/rezepte"
-            className="btn-primary"
-            style={{
-              backgroundColor: "var(--color-dusty-blue)",
-              color: "var(--color-maroon)",
-              borderColor: "var(--color-dusty-blue)",
-            }}
-          >
-            Alle Rezepte <ArrowRight size={14} />
-          </Link>
-        </div>
+            <p
+              className="font-body"
+              style={{
+                color: "var(--color-cream)",
+                fontSize: 15,
+                lineHeight: 1.7,
+                maxWidth: 380,
+                margin: "0 auto 20px",
+                opacity: 0.92,
+              }}
+            >
+              Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
+              einfach hängen bleibt.
+            </p>
+            <Link
+              to="/rezepte"
+              className="btn-primary"
+              style={{
+                backgroundColor: "var(--color-dusty-blue)",
+                color: "var(--color-maroon)",
+                borderColor: "var(--color-dusty-blue)",
+              }}
+            >
+              Alle Rezepte <ArrowRight size={14} />
+            </Link>
+          </div>
       </section>
 
       <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
