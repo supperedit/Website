@@ -5,6 +5,7 @@ import { seasonalCalendar } from "../data/seasonalCalendar";
 import { dinnerIdeas, type DinnerIdea } from "../data/dinnerIdeas";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import type { Recipe } from "../data/recipeTypes";
+
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
   "Juli", "August", "September", "Oktober", "November", "Dezember",
@@ -19,11 +20,6 @@ interface DayCell {
   recipe: Recipe | null;
 }
 
-/**
- * Pick up to 3 unique recipes with seasonal bias.
- * Excluded zone: dinner idea days ± 2 days (so the overflowing spiral text
- * doesn't land directly next to a recipe cell).
- */
 function pickSeasonalRecipes(
   recipes: Recipe[],
   monthIndex0: number,
@@ -54,7 +50,6 @@ function pickSeasonalRecipes(
     if (unique.length === 3) break;
   }
 
-  // Buffer zone: exclude days within 2 of any dinner idea
   const blocked = new Set<number>();
   ideaDays.forEach((d) => {
     for (let offset = -2; offset <= 2; offset++) blocked.add(d + offset);
@@ -81,7 +76,6 @@ function buildGrid(year: number, monthIndex0: number, recipeByDay: Map<number, R
   const monthIdeas = dinnerIdeas.filter((e) => e.month === monthIndex0 + 1);
 
   const cells: DayCell[] = [];
-  // Leading empty cells (days before month starts)
   for (let i = 0; i < firstWeekday; i++)
     cells.push({ day: null, isToday: false, idea: null, recipe: null });
   for (let day = 1; day <= daysInMonth; day++) {
@@ -95,7 +89,6 @@ function buildGrid(year: number, monthIndex0: number, recipeByDay: Map<number, R
       recipe: recipeByDay.get(day) ?? null,
     });
   }
-  // Pad to complete last row (keep trailing empties so grid lines look correct)
   while (cells.length % 7 !== 0)
     cells.push({ day: null, isToday: false, idea: null, recipe: null });
 
@@ -104,7 +97,6 @@ function buildGrid(year: number, monthIndex0: number, recipeByDay: Map<number, R
   return weeks;
 }
 
-/** Blue spiral circle — centered on cell, overflows visually */
 function SpiralCircle() {
   return (
     <svg
@@ -145,7 +137,6 @@ export default function SeasonalCalendarCard() {
 
   const recipeByDay = useMemo(
     () => pickSeasonalRecipes(recipes, monthIndex0, year, ideaDays),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [recipes, monthIndex0, year],
   );
 
@@ -181,13 +172,9 @@ export default function SeasonalCalendarCard() {
 
   return (
     <div className="sc-root">
-      {/* ── Two-column layout ── */}
       <div className="sc-layout">
 
-        {/* ── LEFT: calendar card ── */}
         <div className="sc-card">
-
-          {/* Month nav */}
           <div className="sc-month-row">
             <button
               type="button"
@@ -210,7 +197,6 @@ export default function SeasonalCalendarCard() {
             </button>
           </div>
 
-          {/* Weekday headers */}
           <div className="sc-weekdays">
             {WEEKDAY_FULL.map((label, i) => (
               <div key={label} className="sc-dow">
@@ -220,13 +206,11 @@ export default function SeasonalCalendarCard() {
             ))}
           </div>
 
-          {/* Day grid */}
           <div className="sc-grid">
             {weeks.map((week, wi) =>
               week.map((cell, di) => {
                 const key = `${wi}-${di}`;
 
-                // Empty filler cell (before/after month)
                 if (cell.day === null) {
                   return <div key={key} className="sc-cell sc-cell-empty" />;
                 }
@@ -239,12 +223,10 @@ export default function SeasonalCalendarCard() {
                     key={key}
                     className={`sc-cell${cell.isToday ? " sc-cell-today" : ""}${hasRecipe ? " sc-cell-recipe" : ""}${hasIdea ? " sc-cell-idea" : ""}`}
                   >
-                    {/* Day number — hidden for recipe and idea cells */}
                     {!hasRecipe && !hasIdea && (
                       <span className="sc-day-num">{cell.day}</span>
                     )}
 
-                    {/* Recipe: full-bleed image */}
                     {hasRecipe && cell.recipe && (
                       <Link
                         to={`/rezepte/${cell.recipe.slug}`}
@@ -262,7 +244,6 @@ export default function SeasonalCalendarCard() {
                       </Link>
                     )}
 
-                    {/* Dinner idea: spiral + large overflowing title */}
                     {hasIdea && cell.idea && (
                       <button
                         type="button"
@@ -279,7 +260,6 @@ export default function SeasonalCalendarCard() {
             )}
           </div>
 
-          {/* Popup detail */}
           {activePopup && (
             <div
               className="sc-overlay"
@@ -336,7 +316,6 @@ export default function SeasonalCalendarCard() {
           )}
         </div>
 
-        {/* ── RIGHT: seasonal sidebar ── */}
         <div className="sc-seasonal">
           <div className="sc-seasonal-header">
             <span className="sc-seasonal-title">Das hat Saison:</span>
@@ -355,18 +334,14 @@ export default function SeasonalCalendarCard() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap');
 
-        /* ─── Outer wrapper ─── */
         .sc-root {
           position: relative;
           width: 100%;
           max-width: 1060px;
           margin: 0 auto;
-          /* 16:9 keeps it laptop-proportioned; no overflow:hidden so dinner
-             idea titles can spill beyond their cell boundaries */
           aspect-ratio: 16 / 9;
         }
 
-        /* ─── Two-column layout ─── */
         .sc-layout {
           position: relative; z-index: 1;
           display: flex;
@@ -377,7 +352,6 @@ export default function SeasonalCalendarCard() {
           box-sizing: border-box;
         }
 
-        /* ─── Calendar card ─── */
         .sc-card {
           position: relative;
           flex: 0 0 60%;
@@ -388,9 +362,9 @@ export default function SeasonalCalendarCard() {
           flex-direction: column;
           height: 100%;
           box-sizing: border-box;
+          overflow: hidden;
         }
 
-        /* Month row */
         .sc-month-row {
           display: flex;
           align-items: center;
@@ -421,7 +395,6 @@ export default function SeasonalCalendarCard() {
         }
         .sc-nav:hover { opacity: 1; }
 
-        /* Weekday headers */
         .sc-weekdays {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
@@ -439,21 +412,20 @@ export default function SeasonalCalendarCard() {
         }
         .sc-dow-short { display: none; }
 
-        /* ─── Day grid ─── */
         .sc-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
+          grid-auto-rows: 1fr;
           flex: 1;
-          overflow: visible; /* let dinner ideas overflow */
+          min-height: 0;
+          overflow: visible;
         }
 
         .sc-cell {
           position: relative;
-          /* SVG cell ratio: ~190 wide × 156 tall */
-          aspect-ratio: 190 / 150;
           border-right: 0.7px solid rgba(43,18,16,0.13);
           border-bottom: 0.7px solid rgba(43,18,16,0.13);
-          overflow: visible; /* dinner ideas spill out */
+          overflow: visible;
         }
         .sc-cell:nth-child(7n) { border-right: none; }
         .sc-cell-empty { background: rgba(43,18,16,0.015); }
@@ -462,7 +434,6 @@ export default function SeasonalCalendarCard() {
           border-radius: 2px;
         }
 
-        /* Day number — plain cells only */
         .sc-day-num {
           position: absolute;
           top: 5px; left: 6px;
@@ -474,7 +445,6 @@ export default function SeasonalCalendarCard() {
           z-index: 2;
         }
 
-        /* ─── Recipe cell: full-bleed image ─── */
         .sc-cell-recipe { overflow: hidden; }
         .sc-recipe-link {
           position: absolute;
@@ -490,15 +460,12 @@ export default function SeasonalCalendarCard() {
         }
         .sc-recipe-link:hover img { transform: scale(1.04); }
 
-        /* ─── Dinner idea: centered, overflows cell ─── */
         .sc-cell-idea { z-index: 4; }
 
         .sc-idea-btn {
-          /* Centered on the cell */
           position: absolute;
           top: 50%; left: 50%;
           transform: translate(-50%, -50%);
-          /* Wider than cell so text + spiral can overflow naturally */
           width: 210%;
           background: none; border: none;
           cursor: pointer;
@@ -511,7 +478,6 @@ export default function SeasonalCalendarCard() {
           padding: 0;
         }
 
-        /* Spiral SVG: fills the button area */
         .sc-spiral {
           position: absolute;
           inset: 0;
@@ -521,19 +487,16 @@ export default function SeasonalCalendarCard() {
           overflow: visible;
         }
 
-        /* Title text on top of spiral */
         .sc-idea-title {
           position: relative; z-index: 1;
           font-family: 'Homemade Apple', cursive;
           font-size: clamp(11px, 1.5vw, 16px);
           line-height: 1.35;
           color: var(--color-ink, #2b1210);
-          /* The button is 210% wide; text wraps freely */
           white-space: normal;
           padding: 20% 12%;
         }
 
-        /* ─── Popup overlay ─── */
         .sc-overlay {
           position: absolute; inset: 0; z-index: 20;
           background: rgba(20,8,4,0.55);
@@ -588,7 +551,6 @@ export default function SeasonalCalendarCard() {
           display: flex; flex-direction: column; gap: 2px;
         }
 
-        /* ─── Seasonal sidebar ─── */
         .sc-seasonal {
           flex: 1;
           display: flex;
@@ -627,17 +589,14 @@ export default function SeasonalCalendarCard() {
           white-space: nowrap;
         }
 
-        /* ─── Responsive ─── */
         @media (max-width: 700px) {
           .sc-root { aspect-ratio: auto; overflow: visible; }
           .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
           .sc-card { flex: none; width: 100%; height: auto; overflow: visible; }
-          .sc-grid { overflow: visible; }
+          .sc-grid { grid-auto-rows: auto; overflow: visible; }
           .sc-seasonal { width: 100%; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
-          /* On mobile the idea button is still 210% of a narrow cell — allow
-             it to visually overflow without being cut by any parent */
           .sc-cell { overflow: visible; }
           .sc-idea-title { font-size: 9px; }
           .sc-seasonal-pill { font-size: 11px; padding: 5px 12px; }
