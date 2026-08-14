@@ -64,7 +64,9 @@ button:focus-visible {
 }
 
 .font-display {
+  .font-display {
   font-family: var(--font-display);
+  font-weight: 300;
 }
 
 /* ─── Marquee ───────────────────────────────────────────────────────────── */
