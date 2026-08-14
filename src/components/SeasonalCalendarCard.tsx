@@ -5,8 +5,6 @@ import { seasonalCalendar } from "../data/seasonalCalendar";
 import { dinnerIdeas, type DinnerIdea } from "../data/dinnerIdeas";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import type { Recipe } from "../data/recipeTypes";
-import picnicImage from "../assets/images/picnic.jpg";
-
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
   "Juli", "August", "September", "Oktober", "November", "Dezember",
@@ -183,10 +181,6 @@ export default function SeasonalCalendarCard() {
 
   return (
     <div className="sc-root">
-      {/* ── Background image ── */}
-      <img src={picnicImage} alt="" aria-hidden className="sc-bg" />
-      <div className="sc-bg-veil" aria-hidden />
-
       {/* ── Two-column layout ── */}
       <div className="sc-layout">
 
@@ -365,25 +359,11 @@ export default function SeasonalCalendarCard() {
         .sc-root {
           position: relative;
           width: 100%;
-          max-width: 1280px;
+          max-width: 1060px;
           margin: 0 auto;
-          border-radius: 18px;
-          overflow: hidden;
-          /* 16:9 ratio keeps it laptop-sized */
+          /* 16:9 keeps it laptop-proportioned; no overflow:hidden so dinner
+             idea titles can spill beyond their cell boundaries */
           aspect-ratio: 16 / 9;
-        }
-
-        /* ─── Background ─── */
-        .sc-bg {
-          position: absolute; inset: 0;
-          width: 100%; height: 100%;
-          object-fit: cover;
-          object-position: center 35%;
-          display: block;
-        }
-        .sc-bg-veil {
-          position: absolute; inset: 0;
-          background: rgba(30, 12, 8, 0.40);
         }
 
         /* ─── Two-column layout ─── */
@@ -649,13 +629,16 @@ export default function SeasonalCalendarCard() {
 
         /* ─── Responsive ─── */
         @media (max-width: 700px) {
-          .sc-root { aspect-ratio: auto; }
+          .sc-root { aspect-ratio: auto; overflow: visible; }
           .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
-          .sc-card { flex: none; width: 100%; height: auto; }
+          .sc-card { flex: none; width: 100%; height: auto; overflow: visible; }
+          .sc-grid { overflow: visible; }
           .sc-seasonal { width: 100%; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
-          .sc-grid { overflow: visible; }
+          /* On mobile the idea button is still 210% of a narrow cell — allow
+             it to visually overflow without being cut by any parent */
+          .sc-cell { overflow: visible; }
           .sc-idea-title { font-size: 9px; }
           .sc-seasonal-pill { font-size: 11px; padding: 5px 12px; }
         }
