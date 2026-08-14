@@ -20,13 +20,9 @@ import PastaIcon from "../assets/icons/pasta.svg?react";
 import SnackIcon from "../assets/icons/snack.svg?react";
 import picnicImage from "../assets/images/picnic.jpg";
 
-const marqueeText = "Recipes for people who don't follow recipes. ";
-
-// Duration of one full loop through the category set, in seconds. Higher = slower.
-const CATEGORY_LOOP_SECONDS = 45;
-// After the person manually scrolls/drags the category strip, autoplay stays
-// paused for this long before easing back in.
-const CATEGORY_RESUME_DELAY = 2500;
+const marqueeText = "Recipes for people who don't follow recipes.";
+const marqueeSeparator = "   ·   ";
+const marqueeUnit = Array(5).fill(marqueeText).join(marqueeSeparator) + marqueeSeparator;
 
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
   cookie: { Icon: CookieIcon, height: 78 },
@@ -39,11 +35,6 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
   pasta: { Icon: PastaIcon, height: 69 },
 };
 
-/**
- * "Vibes" for the recipe-suggestion picker. Category names must match
- * src/data/categories.ts exactly. Adjust these groupings any time —
- * they're just editorial buckets, not a fixed taxonomy.
- */
 const VIBES = [
   { key: "alle", label: "Alles", categories: null as string[] | null },
   { key: "suess", label: "Süßes", categories: ["Bake Club", "Swirl Society"] },
@@ -66,7 +57,6 @@ export default function Home() {
     [recipes, activeVibe],
   );
 
-  // The API returns recipes newest-first (sorted server-side by Notion date).
   const newestRecipes = useMemo(() => recipes.slice(0, 4), [recipes]);
 
   useEffect(() => {
@@ -75,8 +65,6 @@ export default function Home() {
     } else {
       setSuggestion(null);
     }
-    // Re-roll whenever the vibe changes, or once recipes first load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vibeKey, recipes.length]);
 
   const pickRandom = () => {
@@ -90,31 +78,20 @@ export default function Home() {
     setSuggestion(next);
   };
 
-  // ── Category scroller: autoplay + manual scroll/drag ───────────────────
-  // Real horizontal scroll container (not a transformed div), so touch swipe
-  // and trackpad scrolling work natively. Autoplay nudges scrollLeft via
-  // rAF; any manual interaction (drag, wheel, touch) pauses it for
-  // CATEGORY_RESUME_DELAY ms, then it eases back in. The category list is
-  // rendered twice back-to-back and we silently wrap scrollLeft between the
-  // two copies so the loop feels infinite in both directions.
   const catContainerRef = useRef<HTMLDivElement>(null);
   const catSetWidthRef = useRef(0);
-  const catBaseSpeedRef = useRef(0);
-  const catLastInteractionRef = useRef(0);
+  const catAdjustingRef = useRef(false);
+  const catInitializedRef = useRef(false);
   const catIsDraggingRef = useRef(false);
   const catDragStartXRef = useRef(0);
   const catDragStartScrollRef = useRef(0);
-  const catAdjustingRef = useRef(false); // true while WE are setting scrollLeft, so the scroll listener doesn't mistake it for user input
-  const catInitializedRef = useRef(false);
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const container = catContainerRef.current;
     if (!container) return;
 
     const measure = () => {
       catSetWidthRef.current = container.scrollWidth / 2;
-      catBaseSpeedRef.current = catSetWidthRef.current / (CATEGORY_LOOP_SECONDS * 60);
       if (!catInitializedRef.current && catSetWidthRef.current > 0) {
         catAdjustingRef.current = true;
         container.scrollLeft = catSetWidthRef.current / 2;
@@ -136,18 +113,25 @@ export default function Home() {
       }
     };
 
-    const onScroll = () => {
+    const onContainerScroll = () => {
       if (catAdjustingRef.current) {
         catAdjustingRef.current = false;
         return;
       }
-      catLastInteractionRef.current = performance.now();
       wrap();
     };
-    container.addEventListener("scroll", onScroll, { passive: true });
+    container.addEventListener("scroll", onContainerScroll, { passive: true });
 
-    // Mouse drag-to-scroll. Touch and trackpad already scroll the container
-    // natively via overflow-x, so this only kicks in for mouse input.
+    let prevScrollY = window.scrollY;
+    let catVelocity = 0;
+
+    const onWindowScroll = () => {
+      const delta = window.scrollY - prevScrollY;
+      prevScrollY = window.scrollY;
+      catVelocity += delta * 0.75;
+    };
+    window.addEventListener("scroll", onWindowScroll, { passive: true });
+
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       catIsDraggingRef.current = true;
@@ -160,32 +144,25 @@ export default function Home() {
       if (!catIsDraggingRef.current) return;
       catAdjustingRef.current = true;
       container.scrollLeft = catDragStartScrollRef.current - (e.clientX - catDragStartXRef.current);
-      catLastInteractionRef.current = performance.now();
+      catVelocity = 0;
       wrap();
     };
     const endDrag = () => {
       catIsDraggingRef.current = false;
       container.style.cursor = "grab";
     };
-    const onWheel = () => {
-      catLastInteractionRef.current = performance.now();
-    };
     container.addEventListener("pointerdown", onPointerDown);
     container.addEventListener("pointermove", onPointerMove);
     container.addEventListener("pointerup", endDrag);
     container.addEventListener("pointercancel", endDrag);
     container.addEventListener("pointerleave", endDrag);
-    container.addEventListener("wheel", onWheel, { passive: true });
-    container.addEventListener("touchstart", onWheel, { passive: true });
 
     let rafId: number;
     const tick = () => {
-      const now = performance.now();
-      const recentlyInteracted = now - catLastInteractionRef.current < CATEGORY_RESUME_DELAY;
-      if (!prefersReducedMotion && !catIsDraggingRef.current && !recentlyInteracted) {
-        // Negative direction: categories drift left → right.
+      if (!catIsDraggingRef.current && Math.abs(catVelocity) > 0.05) {
         catAdjustingRef.current = true;
-        container.scrollLeft -= catBaseSpeedRef.current;
+        container.scrollLeft += catVelocity;
+        catVelocity *= 0.9;
         wrap();
       }
       rafId = requestAnimationFrame(tick);
@@ -195,14 +172,13 @@ export default function Home() {
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", measure);
-      container.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onWindowScroll);
+      container.removeEventListener("scroll", onContainerScroll);
       container.removeEventListener("pointerdown", onPointerDown);
       container.removeEventListener("pointermove", onPointerMove);
       container.removeEventListener("pointerup", endDrag);
       container.removeEventListener("pointercancel", endDrag);
       container.removeEventListener("pointerleave", endDrag);
-      container.removeEventListener("wheel", onWheel);
-      container.removeEventListener("touchstart", onWheel);
     };
   }, []);
 
@@ -213,13 +189,12 @@ export default function Home() {
         description="Eine kuratierte Rezeptsammlung aus dem Alltag. Einfach in der Zubereitung, nie langweilig im Ergebnis."
       />
 
-      {/* ── Hero ── */}
       <section
         style={{
           position: "relative",
           minHeight: "100svh",
           display: "flex",
-          alignItems: "flex-end",
+          alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
         }}
@@ -237,7 +212,7 @@ export default function Home() {
             backgroundColor: "var(--color-ink)",
           }}
         />
-        <div style={{ position: "relative", zIndex: 1, textAlign: "center", paddingBottom: 48 }}>
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
           <AnimatedLogo />
           <p
             className="font-body"
@@ -267,14 +242,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Marquee: drifts right → left ── */}
       <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
         <div
           style={{
             display: "flex",
             width: "max-content",
             whiteSpace: "nowrap",
-            animation: "marquee-scroll 26s linear infinite",
+            animation: "marquee-scroll 32s linear infinite",
+            animationDirection: "reverse",
           }}
         >
           {[0, 1].map((i) => (
@@ -286,19 +261,20 @@ export default function Home() {
                 fontSize: 12,
                 fontWeight: 100,
                 letterSpacing: "0.08em",
-                paddingInline: 40,
+                paddingInline: 24,
               }}
             >
-              {marqueeText.repeat(i === 0 ? 4 : 3)}
+              {marqueeUnit}
             </span>
           ))}
         </div>
       </div>
 
-      {/* ── Kategorien: drifts left → right, scrollable/draggable by hand ── */}
       <section style={{ backgroundColor: "var(--color-cream)", paddingBlock: 40 }}>
         <div className="wrap" style={{ marginBottom: 40 }}>
-          <h2 style={{ fontSize: 36, margin: 0 }}>Kategorien</h2>
+          <h2 className="font-display" style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", margin: 0, fontWeight: 400 }}>
+            Kategorien
+          </h2>
         </div>
 
         <div className="categories-scroll" ref={catContainerRef}>
@@ -348,7 +324,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Neue Rezepte (moved right after Kategorien) ── */}
       {!loading && newestRecipes.length > 0 && (
         <section className="wrap" style={{ paddingBlock: 40 }}>
           <div
@@ -359,7 +334,7 @@ export default function Home() {
               marginBottom: 40,
             }}
           >
-            <h2 style={{ fontSize: 36, margin: 0 }}>
+            <h2 className="font-display" style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", margin: 0, fontWeight: 400 }}>
               Neue Rezepte
             </h2>
             <Link to="/rezepte" style={{ fontSize: 14, borderBottom: "1px solid var(--color-ink)" }}>
@@ -367,8 +342,6 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Desktop/tablet: normal grid. Mobile: horizontal swipe carousel (see .newest-* in <style>),
-              so four full-height recipe cards don't stack into a huge scroll distance on phones. */}
           <div className="newest-grid">
             {newestRecipes.map((r) => (
               <RecipeCard
@@ -384,7 +357,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── Manifest / The Art of Supper ── */}
       <section className="wrap sticky-feature">
         <div className="sticky-feature-image" style={{ backgroundImage: `url(${heroImage})` }} />
         <div className="sticky-feature-text">
@@ -414,7 +386,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Seasonal calendar ── */}
       <section
         style={{
           backgroundImage: `linear-gradient(rgba(43, 18, 16, 0.45), rgba(43, 18, 16, 0.45)), url(${picnicImage})`,
@@ -426,7 +397,6 @@ export default function Home() {
         <SeasonalCalendarCard />
       </section>
 
-      {/* ── Random suggestion, with a vibe filter ── */}
       <section style={{ backgroundColor: "var(--color-sky)", paddingBlock: 72 }}>
         <div className="wrap" style={{ textAlign: "center" }}>
           <p
@@ -441,10 +411,12 @@ export default function Home() {
             Noch nichts geplant?
           </p>
           <h2
+            className="font-display"
             style={{
               fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
               color: "var(--color-maroon)",
               margin: "0 0 24px",
+              fontWeight: 400,
             }}
           >
             Heute kochst du:
@@ -525,7 +497,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Quote / statement ── */}
       <section
         className="statement-section"
         style={{
@@ -554,11 +525,9 @@ export default function Home() {
         </p>
       </section>
 
-      {/* ── The Supper Pairing ── */}
       <SupperPairing />
 
       <style>{`
-        /* ── Shared CTA styles, used everywhere on this page ── */
         .btn-primary, .btn-secondary {
           display: inline-flex;
           align-items: center;
@@ -569,8 +538,6 @@ export default function Home() {
           text-decoration: none;
           cursor: pointer;
           transition: opacity 0.2s ease, background 0.2s ease;
-        }
-        .btn-primary, .btn-secondary {
           text-transform: uppercase;
           letter-spacing: 0.04em;
         }
@@ -588,7 +555,6 @@ export default function Home() {
         .btn-secondary:hover { background: rgba(43, 18, 16, 0.06); }
         .btn-small { padding: 10px 20px; font-size: 13px; }
 
-        /* ── Neue Rezepte: grid on larger screens, swipe carousel on mobile ── */
         .newest-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -612,7 +578,6 @@ export default function Home() {
           }
         }
 
-        /* ── Category scroller ── */
         .categories-scroll {
           overflow-x: auto;
           overflow-y: hidden;
@@ -647,16 +612,13 @@ export default function Home() {
           cursor: pointer;
           transition: background 0.2s ease, color 0.2s ease;
         }
-        .vibe-pill:hover {
-          background: rgba(43, 18, 16, 0.06);
-        }
+        .vibe-pill:hover { background: rgba(43, 18, 16, 0.06); }
         .vibe-pill-active {
           background: var(--color-terracotta);
           border-color: var(--color-terracotta);
           color: var(--color-cream);
         }
 
-        /* ── Postcard suggestion: plain clean card now, no scalloped edges ── */
         .postcard {
           max-width: 640px;
           margin: 0 auto;
