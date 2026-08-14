@@ -58,7 +58,6 @@ export default function RecipeCard({
         {category}
       </span>
       <h3
-        className="font-display"
         style={{ fontSize: titleSize, margin: "2px 0 0" }}
       >
         {title}
