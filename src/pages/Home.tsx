@@ -22,8 +22,10 @@ import picnicImage from "../assets/images/picnic.jpg";
 
 const marqueeText = "Recipes for people who don't follow recipes. ";
 
+// Duration of one full loop through the category set, in seconds. Higher = slower.
 const CATEGORY_LOOP_SECONDS = 45;
-
+// After the person manually scrolls/drags the category strip, autoplay stays
+// paused for this long before easing back in.
 const CATEGORY_RESUME_DELAY = 2500;
 
 const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
@@ -37,6 +39,11 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
   pasta: { Icon: PastaIcon, height: 69 },
 };
 
+/**
+ * "Vibes" for the recipe-suggestion picker. Category names must match
+ * src/data/categories.ts exactly. Adjust these groupings any time —
+ * they're just editorial buckets, not a fixed taxonomy.
+ */
 const VIBES = [
   { key: "alle", label: "Alles", categories: null as string[] | null },
   { key: "suess", label: "Süßes", categories: ["Bake Club", "Swirl Society"] },
@@ -59,6 +66,7 @@ export default function Home() {
     [recipes, activeVibe],
   );
 
+  // The API returns recipes newest-first (sorted server-side by Notion date).
   const newestRecipes = useMemo(() => recipes.slice(0, 4), [recipes]);
 
   useEffect(() => {
@@ -67,7 +75,8 @@ export default function Home() {
     } else {
       setSuggestion(null);
     }
-
+    // Re-roll whenever the vibe changes, or once recipes first load.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vibeKey, recipes.length]);
 
   const pickRandom = () => {
@@ -81,6 +90,13 @@ export default function Home() {
     setSuggestion(next);
   };
 
+  // ── Category scroller: autoplay + manual scroll/drag ───────────────────
+  // Real horizontal scroll container (not a transformed div), so touch swipe
+  // and trackpad scrolling work natively. Autoplay nudges scrollLeft via
+  // rAF; any manual interaction (drag, wheel, touch) pauses it for
+  // CATEGORY_RESUME_DELAY ms, then it eases back in. The category list is
+  // rendered twice back-to-back and we silently wrap scrollLeft between the
+  // two copies so the loop feels infinite in both directions.
   const catContainerRef = useRef<HTMLDivElement>(null);
   const catSetWidthRef = useRef(0);
   const catBaseSpeedRef = useRef(0);
@@ -197,68 +213,59 @@ export default function Home() {
         description="Eine kuratierte Rezeptsammlung aus dem Alltag. Einfach in der Zubereitung, nie langweilig im Ergebnis."
       />
 
-<section
-  style={{
-    position: "relative",
-    minHeight: "100svh",
-    overflow: "hidden",
-  }}
->
-  <img
-    src={heroImage}
-    alt=""
-    fetchPriority="high"
-    style={{
-      position: "absolute",
-      inset: 0,
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      backgroundColor: "var(--color-ink)",
-    }}
-  />
-
-  <AnimatedLogo />
-
-  <div
-    style={{
-      position: "absolute",
-      top: "calc(50% + clamp(85px, 10vw, 105px))",
-      left: 0,
-      right: 0,
-      zIndex: 1,
-      textAlign: "center",
-      paddingInline: 24,
-    }}
-  >
-    <p
-      className="font-body"
-      style={{
-        color: "var(--color-cream)",
-        fontSize: 15,
-        lineHeight: 1.7,
-        maxWidth: 380,
-        margin: "0 auto 20px",
-        opacity: 0.92,
-      }}
-    >
-      Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
-      einfach hängen bleibt.
-    </p>
-
-    <Link
-      to="/rezepte"
-      className="btn-primary"
-      style={{
-        backgroundColor: "var(--color-dusty-blue)",
-        color: "var(--color-maroon)",
-        borderColor: "var(--color-dusty-blue)",
-      }}
-    >
-      Alle Rezepte <ArrowRight size={14} />
-    </Link>
-  </div>
-</section>
+      {/* ── Hero ── */}
+      <section
+        style={{
+          position: "relative",
+          minHeight: "100svh",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src={heroImage}
+          alt=""
+          fetchPriority="high"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            backgroundColor: "var(--color-ink)",
+          }}
+        />
+        <div style={{ position: "relative", zIndex: 1, textAlign: "center", paddingBottom: 48 }}>
+          <AnimatedLogo />
+          <p
+            className="font-body"
+            style={{
+              color: "var(--color-cream)",
+              fontSize: 15,
+              lineHeight: 1.7,
+              maxWidth: 380,
+              margin: "6px auto 20px",
+              opacity: 0.92,
+            }}
+          >
+            Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
+            einfach hängen bleibt.
+          </p>
+          <Link
+            to="/rezepte"
+            className="btn-primary"
+            style={{
+              backgroundColor: "var(--color-dusty-blue)",
+              color: "var(--color-maroon)",
+              borderColor: "var(--color-dusty-blue)",
+            }}
+          >
+            Alle Rezepte <ArrowRight size={14} />
+          </Link>
+        </div>
+      </section>
 
       {/* ── Marquee: drifts right → left ── */}
       <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
@@ -291,7 +298,7 @@ export default function Home() {
       {/* ── Kategorien: drifts left → right, scrollable/draggable by hand ── */}
       <section style={{ backgroundColor: "var(--color-cream)", paddingBlock: 40 }}>
         <div className="wrap" style={{ marginBottom: 40 }}>
-          <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>Kategorien</h2>
+          <h2 style={{ fontSize: 36, margin: 0 }}>Kategorien</h2>
         </div>
 
         <div className="categories-scroll" ref={catContainerRef}>
@@ -352,7 +359,7 @@ export default function Home() {
               marginBottom: 40,
             }}
           >
-            <h2 className="font-display" style={{ fontSize: 36, margin: 0 }}>
+            <h2 style={{ fontSize: 36, margin: 0 }}>
               Neue Rezepte
             </h2>
             <Link to="/rezepte" style={{ fontSize: 14, borderBottom: "1px solid var(--color-ink)" }}>
@@ -434,7 +441,6 @@ export default function Home() {
             Noch nichts geplant?
           </p>
           <h2
-            className="font-display"
             style={{
               fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
               color: "var(--color-maroon)",
@@ -486,8 +492,7 @@ export default function Home() {
                 </span>
 
                 <p
-                  className="font-display"
-                  style={{ fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)", margin: "0 0 12px", lineHeight: 1.2, minHeight: "3.6em" }}
+                  style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)", margin: "0 0 12px", lineHeight: 1.2, minHeight: "3.6em" }}
                 >
                   {suggestion.title}
                 </p>
