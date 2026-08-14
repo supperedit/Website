@@ -63,10 +63,56 @@ button:focus-visible {
   padding-inline: clamp(20px, 5vw, 56px);
 }
 
-.font-display {
-  .font-display {
+/* ─── Headings ───────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.15;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+/* h1: display / Dreamland for hero moments */
+h1 {
   font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+}
+
+/* h2: section headings — Elms Sans light so they feel editorial, not heavy */
+h2 {
+  font-family: var(--font-body);
   font-weight: 300;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  letter-spacing: 0.02em;
+}
+
+/* h3: recipe card titles and sub-headings — Elms Sans light */
+h3 {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+}
+
+h4, h5, h6 {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 0.9rem;
+}
+
+/* Utility: opt back in to Dreamland for decorative headings */
+.heading-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+/* Utility: smaller letter-spacing variant for sans headings */
+.heading-sans {
+  font-family: var(--font-body);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+}
+
+.font-display {
+  font-family: var(--font-display);
 }
 
 /* ─── Marquee ───────────────────────────────────────────────────────────── */
