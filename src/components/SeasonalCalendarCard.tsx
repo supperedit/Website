@@ -362,7 +362,6 @@ export default function SeasonalCalendarCard() {
           flex-direction: column;
           height: 100%;
           box-sizing: border-box;
-          overflow: hidden;
         }
 
         .sc-month-row {
