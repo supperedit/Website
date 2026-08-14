@@ -20,6 +20,8 @@ import PastaIcon from "../assets/icons/pasta.svg?react";
 import SnackIcon from "../assets/icons/snack.svg?react";
 import SlowSipsIcon from "../assets/icons/slow-sips.svg?react";
 import PantryIcon from "../assets/icons/pantry.svg?react";
+import SlowSipsIcon from "../assets/icons/slow-sips.svg?react";
+import PantryIcon from "../assets/icons/pantry.svg?react";
 import picnicImage from "../assets/images/picnic.jpg";
 
 const marqueeText = "Recipes for people who don't follow recipes.";
@@ -35,6 +37,8 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
   bites: { Icon: SnackIcon, height: 110 },
   bread: { Icon: ButterIcon, height: 67 },
   pasta: { Icon: PastaIcon, height: 69 },
+  "slow-sips": { Icon: SlowSipsIcon, height: 90 },
+  pantry: { Icon: PantryIcon, height: 90 },
   "slow-sips": { Icon: SlowSipsIcon, height: 90 },
   pantry: { Icon: PantryIcon, height: 90 },
 };
