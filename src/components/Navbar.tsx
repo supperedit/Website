@@ -23,6 +23,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const iconColor = isHome && !scrolled ? "var(--color-cream)" : "var(--color-maroon)";
+
   return (
     <>
       <header
@@ -52,12 +54,9 @@ export default function Navbar() {
             backgroundColor: scrolled ? "rgba(247, 246, 236, 0.35)" : "transparent",
             backdropFilter: scrolled ? "blur(14px)" : "none",
             WebkitBackdropFilter: scrolled ? "blur(10px)" : "none",
-
             boxShadow: scrolled ? "0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03)" : "none",
-  
             transition: "background-color 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease",
-  }}
-          
+          }}
         >
           {!isHome && (
             <Link
@@ -76,8 +75,9 @@ export default function Navbar() {
               background: "none",
               border: "none",
               fontSize: 20,
-              color: "var(--color-maroon)",
+              color: iconColor,
               cursor: "pointer",
+              transition: "color 0.25s ease",
             }}
           >
             Menü
@@ -86,9 +86,14 @@ export default function Navbar() {
           <Link
             to="/merkliste"
             aria-label={favorites.length > 0 ? `Merkliste, ${favorites.length} gemerkt` : "Merkliste"}
-            style={{ display: "flex", alignItems: "center", color: "var(--color-maroon)" }}
+            style={{ display: "flex", alignItems: "center", color: iconColor, transition: "color 0.25s ease" }}
           >
-            <Heart size={20} fill={favorites.length > 0 ? "var(--color-maroon)" : "none"} aria-hidden="true" />
+            <Heart
+              size={20}
+              fill={favorites.length > 0 ? iconColor : "none"}
+              aria-hidden="true"
+              style={{ transition: "fill 0.25s ease" }}
+            />
           </Link>
         </div>
       </header>
