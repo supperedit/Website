@@ -134,7 +134,7 @@ export default function Home() {
     const onWindowScroll = () => {
       const delta = window.scrollY - prevScrollY;
       prevScrollY = window.scrollY;
-      catVelocity += delta * 0.09;
+      catVelocity += delta * 0.06;
     };
     window.addEventListener("scroll", onWindowScroll, { passive: true });
 
