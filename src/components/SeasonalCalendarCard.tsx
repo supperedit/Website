@@ -592,7 +592,7 @@ export default function SeasonalCalendarCard() {
           .sc-root { aspect-ratio: auto; overflow: visible; }
           .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
           .sc-card { flex: none; width: 100%; height: auto; overflow: visible; }
-          .sc-grid { grid-auto-rows: auto; overflow: visible; }
+          .sc-grid { grid-auto-rows: minmax(40px, auto); overflow: visible; }
           .sc-seasonal { width: 100%; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
