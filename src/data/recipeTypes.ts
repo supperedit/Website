@@ -26,4 +26,6 @@ export interface Recipe {
   image?: string;
   ingredientGroups: IngredientGroup[];
   steps: RecipeStep[];
+  pinterestTitle?: string | null;
+  pinterestDescription?: string | null;
 }
