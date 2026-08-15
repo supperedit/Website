@@ -465,7 +465,7 @@ export default function SeasonalCalendarCard() {
           position: absolute;
           top: 50%; left: 50%;
           transform: translate(-50%, -50%);
-          width: 210%;
+          width: 150%;
           background: none; border: none;
           cursor: pointer;
           display: flex;
