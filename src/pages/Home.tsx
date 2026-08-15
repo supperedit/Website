@@ -20,8 +20,6 @@ import PastaIcon from "../assets/icons/pasta.svg?react";
 import SnackIcon from "../assets/icons/snack.svg?react";
 import SlowSipsIcon from "../assets/icons/slow-sips.svg?react";
 import PantryIcon from "../assets/icons/pantry.svg?react";
-import SlowSipsIcon from "../assets/icons/slow-sips.svg?react";
-import PantryIcon from "../assets/icons/pantry.svg?react";
 import picnicImage from "../assets/images/picnic.jpg";
 
 const marqueeText = "Recipes for people who don't follow recipes.";
@@ -370,7 +368,7 @@ export default function Home() {
                 title={r.title}
                 category={r.category}
                 image={resizeDriveUrl(r.image, "w600")}
-                titleSize={24}
+                titleSize={18}
               />
             ))}
           </div>
@@ -412,6 +410,7 @@ export default function Home() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           paddingBlock: 64,
+          overflow: "hidden",
         }}
       >
         <SeasonalCalendarCard />
@@ -586,6 +585,7 @@ export default function Home() {
             gap: 16px;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
+            scroll-padding-left: 20px;
             padding-bottom: 8px;
             margin-inline: -20px;
             padding-inline: 20px;
