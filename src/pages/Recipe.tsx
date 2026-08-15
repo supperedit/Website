@@ -141,6 +141,9 @@ export default function Recipe() {
       <SEO
         title={recipe.title}
         description={recipe.intro ?? `${recipe.title}, ein Rezept von Supper Edit.`}
+        ogTitle={recipe.pinterestTitle ?? undefined}
+        ogDescription={recipe.pinterestDescription ?? undefined}
+        ogImage={recipe.image ? resizeDriveUrl(recipe.image, "w1200") : undefined}
       />
       <script
         type="application/ld+json"
