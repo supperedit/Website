@@ -144,6 +144,7 @@ export default function Recipe() {
         ogTitle={recipe.pinterestTitle ?? undefined}
         ogDescription={recipe.pinterestDescription ?? undefined}
         ogImage={recipe.image ? resizeDriveUrl(recipe.image, "w1200") : undefined}
+        ogImageAlt={recipe.altText ?? recipe.title}
       />
       <script
         type="application/ld+json"
