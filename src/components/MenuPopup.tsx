@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
-import { navItems, legalItems } from "../data/navigation";
 
 interface MenuPopupProps {
   onClose: () => void;
@@ -81,14 +80,12 @@ export default function MenuPopup({ onClose }: MenuPopupProps) {
                   Start
                 </Link>
               </li>
-              {navItems.map((item, i) => (
-                <li key={item.path} className="menu-nav-item" style={{ animationDelay: `${0.13 + i * 0.07}s` }}>
-                  <Link to={item.path} onClick={handleClose} className="font-display menu-nav-link">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-              <li className="menu-nav-item" style={{ animationDelay: `${0.13 + navItems.length * 0.07}s` }}>
+              <li className="menu-nav-item" style={{ animationDelay: "0.15s" }}>
+                <Link to="/rezepte" onClick={handleClose} className="font-display menu-nav-link">
+                  Rezepte
+                </Link>
+              </li>
+              <li className="menu-nav-item" style={{ animationDelay: "0.22s" }}>
                 <span className="font-display menu-nav-link menu-nav-link--muted">
                   Journal
                   <span className="menu-nav-soon">bald</span>
@@ -96,18 +93,6 @@ export default function MenuPopup({ onClose }: MenuPopupProps) {
               </li>
             </ul>
           </nav>
-
-          <div className="menu-popup-divider" />
-
-          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {legalItems.map((item) => (
-              <li key={item.path}>
-                <Link to={item.path} onClick={handleClose} className="font-body menu-legal-link">
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
 
@@ -187,27 +172,6 @@ export default function MenuPopup({ onClose }: MenuPopupProps) {
           letter-spacing: 0.1em;
           opacity: 0.7;
           margin-top: 4px;
-        }
-        .menu-popup-divider {
-          width: 32px;
-          height: 1px;
-          background: var(--color-maroon);
-          opacity: 0.25;
-          margin: 6% 0;
-        }
-        .menu-legal-link {
-          display: block;
-          font-size: clamp(9px, 2.8vw, 11px);
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: var(--color-maroon);
-          text-decoration: none;
-          opacity: 0.5;
-          padding: 3px 0;
-          transition: opacity 0.15s ease;
-        }
-        .menu-legal-link:hover {
-          opacity: 0.9;
         }
         .menu-popup-close {
           top: 15%;
