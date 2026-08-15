@@ -332,7 +332,7 @@ export default function Recipe() {
             </div>
 
             {veganMode && (
-              <p style={{ fontSize: 11, color: "var(--color-mustard)", marginTop: 12, textAlign: "center" }}>
+              <p style={{ fontSize: 11, color: "var(--color-mustard)", marginTop: 20, marginBottom: 12, textAlign: "center" }}>
                 Vegane Alternativen sind markiert.
               </p>
             )}
