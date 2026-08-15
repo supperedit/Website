@@ -161,11 +161,6 @@ export default function Recipe() {
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         )}
-        <FavoriteButton
-          slug={recipe.slug}
-          title={recipe.title}
-          style={{ position: "absolute", top: 12, right: 12 }}
-        />
       </div>
 
       <div className="wrap" style={{ paddingBlock: 64 }}>
