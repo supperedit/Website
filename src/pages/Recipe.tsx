@@ -6,7 +6,6 @@ import { scaleAmount, scaleServingsText } from "../data/scaleAmount";
 import FavoriteButton from "../components/FavoriteButton";
 import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
-
 export default function Recipe() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -15,22 +14,25 @@ export default function Recipe() {
   const [copied, setCopied] = useState(false);
   const [servings, setServings] = useState<number | null>(null);
   const recipe = recipes.find((r) => r.slug === slug);
-
   useEffect(() => {
     setServings(recipe?.baseServings ?? null);
   }, [recipe?.slug, recipe?.baseServings]);
-
   const scaleFactor =
     recipe?.baseServings && servings ? servings / recipe.baseServings : 1;
-
+  const hasManualRelated = Boolean(recipe?.related && recipe.related.length > 0);
   const relatedRecipes = useMemo(() => {
     if (!recipe) return [];
+    if (recipe.related && recipe.related.length > 0) {
+      return recipe.related
+        .map((s) => recipes.find((r) => r.slug === s))
+        .filter((r): r is typeof recipes[number] => r !== undefined)
+        .slice(0, 3);
+    }
     return [...recipes]
       .reverse()
       .filter((r) => r.slug !== recipe.slug && r.category === recipe.category)
       .slice(0, 3);
   }, [recipes, recipe]);
-
   const canShare = typeof navigator !== "undefined" && "share" in navigator;
   const shareRecipe = async () => {
     try {
@@ -41,7 +43,6 @@ export default function Recipe() {
       });
     } catch {}
   };
-
   const goBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -49,7 +50,6 @@ export default function Recipe() {
       navigate("/rezepte");
     }
   };
-
   if (loading) {
     return (
       <div className="wrap" style={{ paddingBlock: 96, textAlign: "center", color: "var(--color-muted)" }}>
@@ -57,7 +57,6 @@ export default function Recipe() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="wrap" style={{ paddingBlock: 96, textAlign: "center", color: "var(--color-muted)" }}>
@@ -65,7 +64,6 @@ export default function Recipe() {
       </div>
     );
   }
-
   if (!recipe) {
     return (
       <div className="wrap" style={{ paddingBlock: 96, textAlign: "center" }}>
@@ -79,7 +77,6 @@ export default function Recipe() {
       </div>
     );
   }
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -98,7 +95,6 @@ export default function Recipe() {
       text: step.content,
     })),
   };
-
   const fallbackCopy = (text: string) => {
     const textarea = document.createElement("textarea");
     textarea.value = text;
@@ -113,7 +109,6 @@ export default function Recipe() {
     } catch {}
     document.body.removeChild(textarea);
   };
-
   const copyIngredients = () => {
     const lines: string[] = [recipe.title, ""];
     recipe.ingredientGroups.forEach((group) => {
@@ -135,7 +130,6 @@ export default function Recipe() {
       fallbackCopy(text);
     }
   };
-
   return (
     <>
       <SEO
@@ -150,7 +144,6 @@ export default function Recipe() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
       <div className="recipe-mobile-hero">
         {recipe.image && (
           <img
@@ -162,9 +155,7 @@ export default function Recipe() {
           />
         )}
       </div>
-
       <div className="wrap" style={{ paddingBlock: 64 }}>
-
         <button
           onClick={goBack}
           className="recipe-back-btn"
@@ -173,7 +164,6 @@ export default function Recipe() {
           <ChevronLeft size={14} />
           Zurück
         </button>
-
         <div className="recipe-header">
           <span style={{ fontSize: 12, color: "var(--color-terracotta)" }}>{recipe.category}</span>
           <h1 className="font-display" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", margin: "8px 0" }}>
@@ -223,7 +213,6 @@ export default function Recipe() {
                 />
               </span>
             </button>
-
             {canShare && (
               <button
                 onClick={shareRecipe}
@@ -241,9 +230,7 @@ export default function Recipe() {
             )}
           </div>
         </div>
-
         <div className="recipe-grid">
-
           <div
             className="recipe-ingredients"
             style={{
@@ -310,7 +297,6 @@ export default function Recipe() {
                   </p>
                 )}
               </div>
-
               <button
                 onClick={copyIngredients}
                 aria-label="Zutatenliste kopieren"
@@ -325,13 +311,11 @@ export default function Recipe() {
                 {copied ? "kopiert" : "kopieren"}
               </button>
             </div>
-
             {veganMode && (
               <p style={{ fontSize: 11, color: "var(--color-mustard)", marginTop: 20, marginBottom: 12, textAlign: "center" }}>
                 Vegane Alternativen sind markiert.
               </p>
             )}
-
             {recipe.ingredientGroups.map((group, gi) => (
               <div key={gi} style={{ marginTop: 20 }}>
                 {group.group && (
@@ -376,7 +360,6 @@ export default function Recipe() {
               </div>
             ))}
           </div>
-
           <div className="recipe-content">
             <div className="recipe-desktop-image">
               {recipe.image && (
@@ -398,7 +381,6 @@ export default function Recipe() {
                 style={{ position: "absolute", top: 12, right: 12 }}
               />
             </div>
-
             <h2 className="font-display" style={{ fontSize: 26, marginBottom: 20 }}>
               Zubereitung
             </h2>
@@ -433,9 +415,9 @@ export default function Recipe() {
           </div>
         </div>
       </div>
-
       {relatedRecipes.length > 0 && (
         <section
+          aria-label={hasManualRelated ? "Das passt dazu" : `Mehr aus ${recipe.category}`}
           style={{
             backgroundColor: "var(--color-cream)",
             borderTop: "1px solid var(--color-line)",
@@ -444,7 +426,7 @@ export default function Recipe() {
         >
           <div className="wrap">
             <h2 className="font-display" style={{ fontSize: 28, marginBottom: 32 }}>
-              Mehr aus {recipe.category}
+              {hasManualRelated ? "Das passt dazu" : `Mehr aus ${recipe.category}`}
             </h2>
             <div
               style={{
@@ -467,7 +449,6 @@ export default function Recipe() {
           </div>
         </section>
       )}
-
       <style>{`
         .recipe-back-btn {
           display: inline-flex;
@@ -481,7 +462,6 @@ export default function Recipe() {
           cursor: pointer;
           margin-bottom: 16px;
         }
-
         .recipe-desktop-image {
           position: relative;
           aspect-ratio: 4/3;
@@ -490,7 +470,6 @@ export default function Recipe() {
           border-radius: 4px;
           background-color: var(--color-dusty-blue);
         }
-
         .recipe-mobile-hero {
           display: none;
           position: relative;
@@ -498,7 +477,6 @@ export default function Recipe() {
           overflow: hidden;
           background-color: var(--color-dusty-blue);
         }
-
         .recipe-header {
           text-align: center;
           max-width: 680px;
@@ -506,14 +484,12 @@ export default function Recipe() {
           margin-bottom: 48px;
           padding-top: 30px;
         }
-
         .recipe-grid {
           display: grid;
           grid-template-columns: minmax(260px, 340px) 1fr;
           gap: 40px;
           align-items: start;
         }
-
         @media (max-width: 780px) {
           .recipe-mobile-hero {
             display: block;
