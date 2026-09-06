@@ -15,6 +15,7 @@ interface NotionProperty {
   number?: number | null;
   url?: string | null;
   files?: { type: string; file?: { url: string }; external?: { url: string }; name: string }[];
+  relation?: { id: string }[];
 }
 
 interface NotionPage {
@@ -39,9 +40,10 @@ function slugify(text: string): string {
 }
 
 function parseIngredients(cell: string) {
-  const groups: { group: string | null; items: { amount: string; name: string; veganAmount: string | null; veganName: string | null }[] }[] = [
-    { group: null, items: [] },
-  ];
+  const groups: {
+    group: string | null;
+    items: { amount: string; name: string; veganAmount: string | null; veganName: string | null }[];
+  }[] = [{ group: null, items: [] }];
   const lines = cell.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   lines.forEach((line) => {
     if (line.startsWith("##")) {
@@ -87,7 +89,6 @@ function imageUrl(prop: NotionProperty | undefined): string | undefined {
 async function queryAll(databaseId: string, token: string): Promise<NotionPage[]> {
   const pages: NotionPage[] = [];
 
-  // Retrieve the database to discover its data_source IDs (required for multi-source databases)
   const dbRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -123,7 +124,11 @@ async function queryAll(databaseId: string, token: string): Promise<NotionPage[]
         const errBody = await res.text();
         throw new Error(`Notion API error: ${res.status} — ${errBody}`);
       }
-      const data = (await res.json()) as { results: NotionPage[]; has_more: boolean; next_cursor: string | null };
+      const data = (await res.json()) as {
+        results: NotionPage[];
+        has_more: boolean;
+        next_cursor: string | null;
+      };
       pages.push(...data.results);
       cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
     } while (cursor);
@@ -145,6 +150,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   try {
     const pages = await queryAll(NOTION_DATABASE_ID, NOTION_TOKEN);
 
+    const pageIdToInfo = new Map<string, { slug: string; title: string }>();
+    for (const page of pages) {
+      const p = page.properties;
+      const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
+      const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
+      if (slug) pageIdToInfo.set(page.id.replace(/-/g, ""), { slug, title });
+    }
+
     const recipes = pages
       .filter((page) => {
         const status = page.properties["Status"];
@@ -158,9 +171,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
         const baseServingsNum = p["Portionenzahl"]?.number ?? p["portionenzahl"]?.number ?? null;
 
+        const linkedIngredients = (p["Rezept-Zutaten"]?.relation ?? [])
+          .map((r: { id: string }) => pageIdToInfo.get(r.id.replace(/-/g, "")))
+          .filter((r): r is { slug: string; title: string } => r !== undefined && Boolean(r.slug));
+
+        const related = (p["Verwandte Rezepte"]?.relation ?? [])
+          .map((r: { id: string }) => pageIdToInfo.get(r.id.replace(/-/g, ""))?.slug)
+          .filter((s): s is string => Boolean(s));
+
         return {
           slug,
-          category: (p["Kategorie"] ?? p["kategorie"])?.select?.name ?? richText(p["Kategorie"] ?? p["kategorie"]) ?? "",
+          category:
+            (p["Kategorie"] ?? p["kategorie"])?.select?.name ??
+            richText(p["Kategorie"] ?? p["kategorie"]) ??
+            "",
           title,
           servings: richText(p["Portionen"] ?? p["portionen"]),
           baseServings: baseServingsNum && baseServingsNum > 0 ? baseServingsNum : null,
@@ -168,6 +192,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           image: imageUrl(p["Bild"] ?? p["bild"]),
           ingredientGroups: parseIngredients(richText(p["Zutaten"] ?? p["zutaten"])),
           steps: parseSteps(richText(p["Zubereitung"] ?? p["zubereitung"])),
+          linkedIngredients,
+          related,
         };
       })
       .filter((r) => r.title);
