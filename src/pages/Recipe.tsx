@@ -50,6 +50,12 @@ export default function Recipe() {
       navigate("/rezepte");
     }
   };
+  const getLinkedIngredient = (name: string) => {
+    if (!recipe?.linkedIngredients) return undefined;
+    return recipe.linkedIngredients.find(
+      (li) => name.toLowerCase() === li.title.toLowerCase(),
+    );
+  };
   if (loading) {
     return (
       <div className="wrap" style={{ paddingBlock: 96, textAlign: "center", color: "var(--color-muted)" }}>
@@ -331,6 +337,8 @@ export default function Recipe() {
                 <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                   {group.items.map((item, ii) => {
                     const showVegan = veganMode && (item.veganAmount || item.veganName);
+                    const displayName = showVegan ? item.veganName || item.name : item.name;
+                    const linked = !showVegan ? getLinkedIngredient(item.name) : undefined;
                     return (
                       <li
                         key={ii}
@@ -352,7 +360,21 @@ export default function Recipe() {
                             scaleFactor,
                           )}
                         </span>
-                        <span>{showVegan ? item.veganName || item.name : item.name}</span>
+                        <span>
+                          {linked ? (
+                            <Link
+                              to={`/rezepte/${linked.slug}`}
+                              style={{
+                                color: "inherit",
+                                textDecoration: "underline",
+                                textDecorationColor: "var(--color-terracotta)",
+                                textUnderlineOffset: 3,
+                              }}
+                            >
+                              {displayName}
+                            </Link>
+                          ) : displayName}
+                        </span>
                       </li>
                     );
                   })}
