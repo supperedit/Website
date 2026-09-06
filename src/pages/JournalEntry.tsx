@@ -5,6 +5,203 @@ import { useRecipes } from "../data/useRecipes";
 import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
 
+const herbariumEntryStyles = `
+  .entry-page {
+    background: var(--color-cream, #faf8f2);
+    min-height: 100vh;
+  }
+  .entry-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-muted, #9a8a7a);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 0;
+    margin-bottom: 52px;
+    font-style: italic;
+    transition: color 0.15s ease;
+  }
+  .entry-back-btn:hover {
+    color: var(--color-maroon, #5c2d1e);
+  }
+  .entry-back-btn:focus-visible {
+    outline: 2px solid var(--color-terracotta, #c0604a);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  .entry-inner {
+    max-width: 760px;
+    margin-inline: auto;
+    padding-inline: 28px;
+    padding-top: 100px;
+    padding-bottom: 80px;
+  }
+  .entry-classification {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-maroon, #5c2d1e) 25%, transparent);
+  }
+  .entry-class-category {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-terracotta, #c0604a);
+    font-style: italic;
+  }
+  .entry-class-divider {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-maroon, #5c2d1e) 30%, transparent);
+    align-self: center;
+  }
+  .entry-class-season {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted, #9a8a7a);
+    font-style: italic;
+  }
+  .entry-title {
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    color: var(--color-maroon, #5c2d1e);
+    line-height: 1.0;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+  .entry-intro {
+    font-size: 1.1rem;
+    color: var(--color-muted, #9a8a7a);
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 0;
+    padding-bottom: 36px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-maroon, #5c2d1e) 15%, transparent);
+  }
+  .entry-figure {
+    margin: 40px 0 48px;
+    position: relative;
+  }
+  .entry-figure::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border: 1px solid color-mix(in srgb, var(--color-maroon, #5c2d1e) 20%, transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .entry-img {
+    width: 100%;
+    display: block;
+    max-height: 500px;
+    object-fit: cover;
+    filter: sepia(8%) saturate(88%);
+  }
+  .entry-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .entry-section {
+    padding: 36px 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-maroon, #5c2d1e) 15%, transparent);
+    position: relative;
+  }
+  .entry-section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted, #9a8a7a);
+    font-style: italic;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .entry-section-heading {
+    font-size: 1.5rem;
+    color: var(--color-maroon, #5c2d1e);
+    margin-bottom: 14px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .entry-section-text {
+    font-size: 1rem;
+    color: color-mix(in srgb, var(--color-maroon, #5c2d1e) 75%, var(--color-cream, #faf8f2));
+    line-height: 1.75;
+  }
+  .entry-note {
+    margin-top: 40px;
+    padding: 28px 32px;
+    border: 1px solid var(--color-terracotta, #c0604a);
+    position: relative;
+  }
+  .entry-note::before {
+    content: "Notiz";
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--color-cream, #faf8f2);
+    padding: 0 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-terracotta, #c0604a);
+    font-style: italic;
+  }
+  .entry-note-text {
+    font-size: 1rem;
+    color: var(--color-maroon, #5c2d1e);
+    line-height: 1.7;
+    font-style: italic;
+    margin: 0;
+  }
+  .entry-recipes-section {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-inline: 28px;
+    padding-top: 0;
+    padding-bottom: 100px;
+  }
+  .entry-recipes-divider {
+    height: 1px;
+    background: color-mix(in srgb, var(--color-maroon, #5c2d1e) 20%, transparent);
+    margin-bottom: 48px;
+  }
+  .entry-recipes-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted, #9a8a7a);
+    font-style: italic;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .entry-recipes-heading {
+    font-size: 1.8rem;
+    color: var(--color-maroon, #5c2d1e);
+    margin-bottom: 36px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .entry-recipes-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 340px));
+    gap: 28px;
+    justify-content: center;
+  }
+`;
+
 export default function JournalEntry() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -29,8 +226,12 @@ export default function JournalEntry() {
           alignItems: "center",
           justifyContent: "center",
         }}
+        role="status"
+        aria-live="polite"
       >
-        <p style={{ color: "var(--color-muted)", fontSize: "0.9rem" }}>Wird geladen …</p>
+        <p style={{ color: "var(--color-muted)", fontSize: "0.9rem", fontStyle: "italic" }}>
+          Wird geladen …
+        </p>
       </div>
     );
   }
@@ -46,8 +247,9 @@ export default function JournalEntry() {
           flexDirection: "column",
           gap: 16,
         }}
+        role="main"
       >
-        <p style={{ color: "var(--color-muted)" }}>Eintrag nicht gefunden.</p>
+        <p style={{ color: "var(--color-muted)", fontStyle: "italic" }}>Eintrag nicht gefunden.</p>
         <Link to="/journal" style={{ color: "var(--color-terracotta)", fontSize: "0.9rem" }}>
           Zum Journal
         </Link>
@@ -56,7 +258,7 @@ export default function JournalEntry() {
   }
 
   const linkedRecipeCards = entry.linkedRecipes
-    .map((id) => recipes.find((r) => r.slug === id || r.slug))
+    .map((id) => recipes.find((r) => r.slug === id))
     .filter(Boolean)
     .slice(0, 3);
 
@@ -68,207 +270,101 @@ export default function JournalEntry() {
 
   return (
     <>
+      <style>{herbariumEntryStyles}</style>
       <SEO
         title={`${entry.title} – Journal – Supper Edit`}
         description={entry.intro ?? `${entry.title} im Supper Edit Journal.`}
         image={entry.image}
       />
 
-      <article>
-        <div
-          style={{
-            maxWidth: 740,
-            marginInline: "auto",
-            paddingInline: 24,
-            paddingTop: 100,
-            paddingBottom: 80,
-          }}
-        >
+      <article className="entry-page" lang="de">
+        <div className="entry-inner">
           <button
             type="button"
             onClick={goBack}
-            aria-label="Zurück"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--color-muted)",
-              fontSize: "0.875rem",
-              padding: "4px 0",
-              marginBottom: 40,
-            }}
+            aria-label="Zurueck zum Journal"
+            className="entry-back-btn"
           >
-            <ChevronLeft size={16} aria-hidden="true" />
-            Zurück
+            <ChevronLeft size={14} aria-hidden="true" />
+            Zurueck
           </button>
 
-          <header style={{ marginBottom: 40 }}>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginBottom: 14,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              {entry.category && (
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--color-terracotta)",
-                  }}
-                >
-                  {entry.category}
-                </span>
-              )}
-              {entry.season && (
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--color-muted)",
-                  }}
-                >
-                  {entry.season}
-                </span>
-              )}
-            </div>
+          <header>
+            {(entry.category || entry.season) && (
+              <div className="entry-classification" aria-label="Klassifikation">
+                {entry.category && (
+                  <span className="entry-class-category">{entry.category}</span>
+                )}
+                {entry.category && entry.season && (
+                  <span className="entry-class-divider" aria-hidden="true" />
+                )}
+                {entry.season && (
+                  <span className="entry-class-season">{entry.season}</span>
+                )}
+              </div>
+            )}
 
-            <h1
-              className="font-display"
-              style={{
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                color: "var(--color-maroon)",
-                lineHeight: 1.1,
-                marginBottom: 20,
-              }}
-            >
-              {entry.title}
-            </h1>
+            <h1 className="entry-title font-display">{entry.title}</h1>
 
             {entry.intro && (
-              <p
-                style={{
-                  fontSize: "1.1rem",
-                  color: "var(--color-muted)",
-                  lineHeight: 1.65,
-                  fontStyle: "italic",
-                }}
-              >
-                {entry.intro}
-              </p>
+              <p className="entry-intro">{entry.intro}</p>
             )}
           </header>
 
           {entry.image && (
-            <figure style={{ margin: "0 0 48px" }}>
+            <figure className="entry-figure" aria-label={`Bild: ${entry.title}`}>
               <img
                 src={entry.image}
                 alt={entry.title}
-                style={{
-                  width: "100%",
-                  borderRadius: 16,
-                  display: "block",
-                  maxHeight: 480,
-                  objectFit: "cover",
-                }}
+                className="entry-img"
               />
             </figure>
           )}
 
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: 40 }}
-          >
+          <div className="entry-sections">
             {sections.map((section) => (
-              <section key={section.label} aria-labelledby={`section-${section.label}`}>
+              <section
+                key={section.label}
+                className="entry-section"
+                aria-labelledby={`section-${section.label}`}
+              >
+                <span className="entry-section-label" aria-hidden="true">
+                  {section.label === "Hintergrund" && "Historia"}
+                  {section.label === "Geschmacksprofil" && "Gustus"}
+                  {section.label === "Fun Fact" && "Curiositas"}
+                </span>
                 <h2
                   id={`section-${section.label}`}
-                  className="font-display"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: "var(--color-maroon)",
-                    marginBottom: 12,
-                  }}
+                  className="entry-section-heading font-display"
                 >
                   {section.label}
                 </h2>
-                <p
-                  style={{
-                    fontSize: "1rem",
-                    color: "var(--color-text, var(--color-maroon))",
-                    lineHeight: 1.7,
-                    opacity: 0.85,
-                  }}
-                >
-                  {section.content}
-                </p>
+                <p className="entry-section-text">{section.content}</p>
               </section>
             ))}
-
-            {entry.myNote && (
-              <aside
-                aria-label="Persönlicher Kommentar"
-                style={{
-                  borderLeft: "3px solid var(--color-terracotta)",
-                  paddingLeft: 20,
-                  marginTop: 8,
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "1rem",
-                    color: "var(--color-maroon)",
-                    lineHeight: 1.7,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {entry.myNote}
-                </p>
-              </aside>
-            )}
           </div>
+
+          {entry.myNote && (
+            <aside className="entry-note" aria-label="Persoenlicher Kommentar">
+              <p className="entry-note-text">{entry.myNote}</p>
+            </aside>
+          )}
         </div>
 
         {linkedRecipeCards.length > 0 && (
           <section
             aria-labelledby="linked-recipes-heading"
-            style={{
-              maxWidth: 1180,
-              marginInline: "auto",
-              paddingInline: 24,
-              paddingBottom: 80,
-            }}
+            className="entry-recipes-section"
           >
+            <div className="entry-recipes-divider" aria-hidden="true" />
+            <span className="entry-recipes-label" aria-hidden="true">Receptura</span>
             <h2
               id="linked-recipes-heading"
-              className="font-display"
-              style={{
-                fontSize: "1.6rem",
-                color: "var(--color-maroon)",
-                marginBottom: 28,
-              }}
+              className="entry-recipes-heading font-display"
             >
               Passende Rezepte
             </h2>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 340px))",
-                gap: 28,
-                justifyContent: "center",
-              }}
-            >
+            <ul className="entry-recipes-grid" aria-label="Verlinkte Rezepte">
               {linkedRecipeCards.map(
                 (recipe) =>
                   recipe && (
