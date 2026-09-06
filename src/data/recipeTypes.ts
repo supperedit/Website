@@ -28,4 +28,6 @@ export interface Recipe {
   steps: RecipeStep[];
   pinterestTitle?: string | null;
   pinterestDescription?: string | null;
+  related: string[];
+  linkedIngredients: { title: string; slug: string }[];
 }
