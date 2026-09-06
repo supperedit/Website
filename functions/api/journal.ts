@@ -1,6 +1,7 @@
 interface Env {
   NOTION_TOKEN: string;
   NOTION_JOURNAL_DATABASE_ID: string;
+  NOTION_DATABASE_ID: string;
 }
 
 interface NotionRichText {
@@ -85,7 +86,7 @@ async function queryAll(databaseId: string, token: string): Promise<NotionPage[]
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
-  const { NOTION_TOKEN, NOTION_JOURNAL_DATABASE_ID } = context.env;
+  const { NOTION_TOKEN, NOTION_JOURNAL_DATABASE_ID, NOTION_DATABASE_ID } = context.env;
 
   if (!NOTION_TOKEN || !NOTION_JOURNAL_DATABASE_ID) {
     return new Response(
@@ -95,9 +96,20 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    const pages = await queryAll(NOTION_JOURNAL_DATABASE_ID, NOTION_TOKEN);
+    const [journalPages, recipePages] = await Promise.all([
+      queryAll(NOTION_JOURNAL_DATABASE_ID, NOTION_TOKEN),
+      NOTION_DATABASE_ID ? queryAll(NOTION_DATABASE_ID, NOTION_TOKEN) : Promise.resolve([]),
+    ]);
 
-    const entries = pages
+    const recipeIdToSlug = new Map<string, string>();
+    for (const page of recipePages) {
+      const p = page.properties;
+      const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
+      const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
+      if (slug) recipeIdToSlug.set(page.id.replace(/-/g, ""), slug);
+    }
+
+    const entries = journalPages
       .filter((page) => {
         const status = page.properties["Status"];
         if (!status) return true;
@@ -109,8 +121,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
         const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
         const linkedRecipes = (p["Verlinkte Rezepte"]?.relation ?? [])
-          .map((r: { id: string }) => r.id)
-          .filter(Boolean);
+          .map((r: { id: string }) => recipeIdToSlug.get(r.id.replace(/-/g, "")))
+          .filter((s): s is string => Boolean(s));
 
         return {
           slug,
