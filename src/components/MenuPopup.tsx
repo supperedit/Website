@@ -86,10 +86,9 @@ export default function MenuPopup({ onClose }: MenuPopupProps) {
                 </Link>
               </li>
               <li className="menu-nav-item" style={{ animationDelay: "0.22s" }}>
-                <span className="font-display menu-nav-link menu-nav-link--muted">
-                  Journal
-                  <span className="menu-nav-soon">bald</span>
-                </span>
+                <Link to="/journal" onClick={handleClose} className="font-display menu-nav-link">
+  Journal
+</Link>
               </li>
             </ul>
           </nav>
