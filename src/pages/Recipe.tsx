@@ -150,17 +150,6 @@ export default function Recipe() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="recipe-mobile-hero">
-        {recipe.image && (
-          <img
-            src={resizeDriveUrl(recipe.image, "w1200")}
-            alt={recipe.title}
-            loading="eager"
-            decoding="async"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-          />
-        )}
-      </div>
       <div className="wrap" style={{ paddingBlock: 64 }}>
         <button
           onClick={goBack}
@@ -237,172 +226,170 @@ export default function Recipe() {
           </div>
         </div>
         <div className="recipe-grid">
-          <div
-            className="recipe-ingredients"
-            style={{
-              borderRadius: 4,
-              backgroundColor: "#ffffff",
-              padding: "24px 20px",
-              position: "sticky",
-              top: 100,
-            }}
-          >
+          <div className="recipe-left-col">
+            {recipe.image && (
+              <div className="recipe-portrait-image">
+                <img
+                  src={resizeDriveUrl(recipe.image, "w800")}
+                  alt={recipe.title}
+                  loading="eager"
+                  decoding="async"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+                <FavoriteButton
+                  slug={recipe.slug}
+                  title={recipe.title}
+                  style={{ position: "absolute", top: 12, right: 12 }}
+                />
+              </div>
+            )}
             <div
+              className="recipe-ingredients"
               style={{
-                display: "flex", alignItems: "baseline", justifyContent: "space-between",
-                borderBottom: "2px solid var(--color-ink)", paddingBottom: 12, marginBottom: 4,
+                borderRadius: recipe.image ? "0 0 4px 4px" : 4,
+                backgroundColor: "#ffffff",
+                padding: "24px 20px",
+                position: "sticky",
+                top: 100,
               }}
             >
-              <div>
-                <p className="font-display" style={{ fontSize: 22, margin: 0 }}>Zutaten</p>
-                {recipe.baseServings && servings ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                    <button
-                      type="button"
-                      onClick={() => setServings((s) => Math.max(1, (s ?? 1) - 1))}
-                      aria-label="Weniger Portionen"
-                      style={{
-                        width: 20, height: 20, borderRadius: "50%",
-                        border: "1px solid var(--color-ink)", background: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", flexShrink: 0,
-                      }}
-                    >
-                      <Minus size={11} />
-                    </button>
-                    <span
-                      style={{
-                        fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-                        color: "var(--color-muted)", minWidth: 62, textAlign: "center",
-                      }}
-                    >
-                      {scaleServingsText(recipe.servings, scaleFactor)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setServings((s) => (s ?? 1) + 1)}
-                      aria-label="Mehr Portionen"
-                      style={{
-                        width: 20, height: 20, borderRadius: "50%",
-                        border: "1px solid var(--color-ink)", background: "none",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", flexShrink: 0,
-                      }}
-                    >
-                      <Plus size={11} />
-                    </button>
-                  </div>
-                ) : (
-                  <p
-                    style={{
-                      fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-                      color: "var(--color-muted)", margin: 0,
-                    }}
-                  >
-                    {recipe.servings}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={copyIngredients}
-                aria-label="Zutatenliste kopieren"
+              <div
                 style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  background: "none", border: "1px solid var(--color-ink)",
-                  borderRadius: 999, padding: "6px 10px",
-                  fontSize: 11, color: "var(--color-ink)", cursor: "pointer",
+                  display: "flex", alignItems: "baseline", justifyContent: "space-between",
+                  borderBottom: "2px solid var(--color-ink)", paddingBottom: 12, marginBottom: 4,
                 }}
               >
-                {copied ? <Check size={13} /> : <Copy size={13} />}
-                {copied ? "kopiert" : "kopieren"}
-              </button>
-            </div>
-            {veganMode && (
-              <p style={{ fontSize: 11, color: "var(--color-mustard)", marginTop: 20, marginBottom: 12, textAlign: "center" }}>
-                Vegane Alternativen sind markiert.
-              </p>
-            )}
-            {recipe.ingredientGroups.map((group, gi) => (
-              <div key={gi} style={{ marginTop: 20 }}>
-                {group.group && (
-                  <p
-                    style={{
-                      fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em",
-                      color: "var(--color-terracotta)", marginBottom: 6, textAlign: "center",
-                    }}
-                  >
-                    {group.group}
-                  </p>
-                )}
-                <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                  {group.items.map((item, ii) => {
-                    const showVegan = veganMode && (item.veganAmount || item.veganName);
-                    const displayName = showVegan ? item.veganName || item.name : item.name;
-                    const linked = !showVegan ? getLinkedIngredient(item.name) : undefined;
-                    return (
-                      <li
-                        key={ii}
+                <div>
+                  <p className="font-display" style={{ fontSize: 22, margin: 0 }}>Zutaten</p>
+                  {recipe.baseServings && servings ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                      <button
+                        type="button"
+                        onClick={() => setServings((s) => Math.max(1, (s ?? 1) - 1))}
+                        aria-label="Weniger Portionen"
                         style={{
-                          display: "flex", gap: 18,
-                          borderBottom: "1px solid var(--color-line)",
-                          padding: "10px 0", fontSize: 13.5, alignItems: "center",
+                          width: 20, height: 20, borderRadius: "50%",
+                          border: "1px solid var(--color-ink)", background: "none",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer", flexShrink: 0,
                         }}
                       >
-                        <span
+                        <Minus size={11} />
+                      </button>
+                      <span
+                        style={{
+                          fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
+                          color: "var(--color-muted)", minWidth: 62, textAlign: "center",
+                        }}
+                      >
+                        {scaleServingsText(recipe.servings, scaleFactor)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setServings((s) => (s ?? 1) + 1)}
+                        aria-label="Mehr Portionen"
+                        style={{
+                          width: 20, height: 20, borderRadius: "50%",
+                          border: "1px solid var(--color-ink)", background: "none",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer", flexShrink: 0,
+                        }}
+                      >
+                        <Plus size={11} />
+                      </button>
+                    </div>
+                  ) : (
+                    <p
+                      style={{
+                        fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
+                        color: "var(--color-muted)", margin: 0,
+                      }}
+                    >
+                      {recipe.servings}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={copyIngredients}
+                  aria-label="Zutatenliste kopieren"
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    background: "none", border: "1px solid var(--color-ink)",
+                    borderRadius: 999, padding: "6px 10px",
+                    fontSize: 11, color: "var(--color-ink)", cursor: "pointer",
+                  }}
+                >
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  {copied ? "kopiert" : "kopieren"}
+                </button>
+              </div>
+              {veganMode && (
+                <p style={{ fontSize: 11, color: "var(--color-mustard)", marginTop: 20, marginBottom: 12, textAlign: "center" }}>
+                  Vegane Alternativen sind markiert.
+                </p>
+              )}
+              {recipe.ingredientGroups.map((group, gi) => (
+                <div key={gi} style={{ marginTop: 20 }}>
+                  {group.group && (
+                    <p
+                      style={{
+                        fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em",
+                        color: "var(--color-terracotta)", marginBottom: 6, textAlign: "center",
+                      }}
+                    >
+                      {group.group}
+                    </p>
+                  )}
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                    {group.items.map((item, ii) => {
+                      const showVegan = veganMode && (item.veganAmount || item.veganName);
+                      const displayName = showVegan ? item.veganName || item.name : item.name;
+                      const linked = !showVegan ? getLinkedIngredient(item.name) : undefined;
+                      return (
+                        <li
+                          key={ii}
                           style={{
-                            width: 65, flexShrink: 0, textAlign: "left", fontWeight: 500,
-                            color: showVegan ? "var(--color-mustard)" : "var(--color-terracotta)",
-                            paddingRight: 14, borderRight: "1px solid var(--color-line)",
+                            display: "flex", gap: 18,
+                            borderBottom: "1px solid var(--color-line)",
+                            padding: "10px 0", fontSize: 13.5, alignItems: "center",
                           }}
                         >
-                          {scaleAmount(
-                            showVegan ? item.veganAmount || item.amount : item.amount,
-                            scaleFactor,
-                          )}
-                        </span>
-                        <span>
-                          {linked ? (
-                            <Link
-                              to={`/rezepte/${linked.slug}`}
-                              style={{
-                                color: "inherit",
-                                textDecoration: "underline",
-                                textDecorationColor: "var(--color-terracotta)",
-                                textUnderlineOffset: 3,
-                              }}
-                            >
-                              {displayName}
-                            </Link>
-                          ) : displayName}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+                          <span
+                            style={{
+                              width: 65, flexShrink: 0, textAlign: "left", fontWeight: 500,
+                              color: showVegan ? "var(--color-mustard)" : "var(--color-terracotta)",
+                              paddingRight: 14, borderRight: "1px solid var(--color-line)",
+                            }}
+                          >
+                            {scaleAmount(
+                              showVegan ? item.veganAmount || item.amount : item.amount,
+                              scaleFactor,
+                            )}
+                          </span>
+                          <span>
+                            {linked ? (
+                              <Link
+                                to={`/rezepte/${linked.slug}`}
+                                style={{
+                                  color: "inherit",
+                                  textDecoration: "underline",
+                                  textDecorationColor: "var(--color-terracotta)",
+                                  textUnderlineOffset: 3,
+                                }}
+                              >
+                                {displayName}
+                              </Link>
+                            ) : displayName}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="recipe-content">
-            <div className="recipe-desktop-image">
-              {recipe.image && (
-                <img
-                  src={resizeDriveUrl(recipe.image, "w1200")}
-                  alt={recipe.title}
-                  loading="lazy"
-                  decoding="async"
-                  style={{
-                    position: "absolute", inset: 0,
-                    width: "100%", height: "100%",
-                    objectFit: "cover", display: "block",
-                  }}
-                />
-              )}
-              <FavoriteButton
-                slug={recipe.slug}
-                title={recipe.title}
-                style={{ position: "absolute", top: 12, right: 12 }}
-              />
-            </div>
             <h2 className="font-display" style={{ fontSize: 26, marginBottom: 20 }}>
               Zubereitung
             </h2>
@@ -484,19 +471,11 @@ export default function Recipe() {
           cursor: pointer;
           margin-bottom: 16px;
         }
-        .recipe-desktop-image {
+        .recipe-portrait-image {
           position: relative;
-          aspect-ratio: 4/3;
-          margin-bottom: 32px;
+          aspect-ratio: 3 / 4;
           overflow: hidden;
-          border-radius: 4px;
-          background-color: var(--color-dusty-blue);
-        }
-        .recipe-mobile-hero {
-          display: none;
-          position: relative;
-          aspect-ratio: 16/9;
-          overflow: hidden;
+          border-radius: 4px 4px 0 0;
           background-color: var(--color-dusty-blue);
         }
         .recipe-header {
@@ -506,23 +485,20 @@ export default function Recipe() {
           margin-bottom: 48px;
           padding-top: 30px;
         }
+        .recipe-left-col {
+          display: flex;
+          flex-direction: column;
+        }
         .recipe-grid {
           display: grid;
           grid-template-columns: minmax(260px, 340px) 1fr;
           gap: 40px;
           align-items: start;
         }
+        .recipe-content {
+          padding-top: 4px;
+        }
         @media (max-width: 780px) {
-          .recipe-mobile-hero {
-            display: block;
-          }
-          .recipe-desktop-image {
-            display: none;
-          }
-          .recipe-back-btn {
-            display: inline-flex;
-            margin-bottom: 12px;
-          }
           .recipe-header {
             padding-top: 8px;
             margin-bottom: 24px;
@@ -533,6 +509,10 @@ export default function Recipe() {
           }
           .recipe-ingredients {
             position: static !important;
+            border-radius: 0 0 4px 4px !important;
+          }
+          .recipe-portrait-image {
+            aspect-ratio: 4 / 3;
           }
         }
       `}</style>
