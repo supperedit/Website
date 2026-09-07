@@ -149,9 +149,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           background: richText(p["Hintergrund"] ?? p["hintergrund"]) || null,
           funFact: richText(p["Fun Fact"] ?? p["fun fact"]) || null,
           tastingNotes: richText(p["Geschmacksprofil"] ?? p["geschmacksprofil"]) || null,
-          myNote: richText(p["Mein Kommentar"] ?? p["mein kommentar"]) || null,
           image: imageUrl(p["Bild"] ?? p["bild"]),
           linkedRecipes,
+          latinName: richText(p["Lateinischer Name"] ?? p["lateinischer name"]) || null,
+          plantFamily: richText(p["Pflanzenfamilie"] ?? p["pflanzenfamilie"]) || null,
+          typ: (p["Typ"] ?? p["typ"])?.select?.name ?? null,
+          bloomTime: richText(p["Blütezeit"] ?? p["bluezeit"] ?? p["Bluezeit"] ?? p["blütezeit"]) || null,
+          location: richText(p["Standort"] ?? p["standort"]) || null,
+          appearance: richText(p["Erkennungsmerkmale"] ?? p["erkennungsmerkmale"]) || null,
+          healing: richText(p["Heilwirkung"] ?? p["heilwirkung"]) || null,
+          temperament: richText(p["Temperament"] ?? p["temperament"]) || null,
         };
       })
       .filter((e) => e.title);
