@@ -7,7 +7,14 @@ export interface JournalEntry {
   background: string | null;
   funFact: string | null;
   tastingNotes: string | null;
-  myNote: string | null;
   image?: string;
   linkedRecipes: string[];
+  latinName: string | null;
+  plantFamily: string | null;
+  typ: string | null;
+  bloomTime: string | null;
+  location: string | null;
+  appearance: string | null;
+  healing: string | null;
+  temperament: string | null;
 }
