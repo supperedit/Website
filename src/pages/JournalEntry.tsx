@@ -5,6 +5,63 @@ import { useRecipes } from "../data/useRecipes";
 import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
 
+function StampBadge({ text }: { text: string }) {
+  const upper = text.toUpperCase();
+  const repeated = `${upper} · ${upper} · ${upper} · `;
+  return (
+    <svg
+      width="96"
+      height="96"
+      viewBox="0 0 96 96"
+      aria-label={text}
+      role="img"
+      style={{ display: "block" }}
+    >
+      <defs>
+        <path
+          id="je-stamp-path"
+          d="M48,48 m-34,0 a34,34 0 1,1 68,0 a34,34 0 1,1-68,0"
+        />
+      </defs>
+      <circle
+        cx="48"
+        cy="48"
+        r="45"
+        fill="var(--color-cream,#faf8f2)"
+        stroke="var(--color-maroon,#5c2d1e)"
+        strokeWidth="1"
+      />
+      <circle
+        cx="48"
+        cy="48"
+        r="39"
+        fill="none"
+        stroke="var(--color-maroon,#5c2d1e)"
+        strokeWidth="0.5"
+      />
+      <text
+        fontSize="6"
+        fill="var(--color-maroon,#5c2d1e)"
+        letterSpacing="3"
+        fontFamily="var(--font-body,sans-serif)"
+      >
+        <textPath href="#je-stamp-path">{repeated}</textPath>
+      </text>
+      <text
+        x="48"
+        y="52"
+        textAnchor="middle"
+        fontSize="9"
+        fill="var(--color-maroon,#5c2d1e)"
+        fontFamily="var(--font-body,sans-serif)"
+        letterSpacing="0.5"
+      >
+        ◆
+      </text>
+    </svg>
+  );
+}
+
 export default function JournalEntry() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -62,6 +119,52 @@ export default function JournalEntry() {
     .filter(Boolean)
     .slice(0, 3);
 
+  const steckbriefRows: { label: string; value: string; span?: boolean }[] = [
+    entry.category
+      ? { label: "Kategorie", value: entry.category }
+      : null,
+    entry.season ? { label: "Saison", value: entry.season } : null,
+    entry.plantFamily
+      ? { label: "Pflanzenfamilie", value: entry.plantFamily, span: true }
+      : null,
+    entry.latinName
+      ? { label: "Lateinischer Name", value: entry.latinName, span: true }
+      : null,
+    entry.bloomTime ? { label: "Blütezeit", value: entry.bloomTime } : null,
+    entry.location ? { label: "Standort", value: entry.location } : null,
+    entry.appearance
+      ? { label: "Erkennungsmerkmale", value: entry.appearance, span: true }
+      : null,
+    entry.tastingNotes
+      ? { label: "Geschmacksprofil", value: entry.tastingNotes, span: true }
+      : null,
+    entry.healing
+      ? { label: "Heilwirkung", value: entry.healing, span: true }
+      : null,
+    entry.temperament
+      ? { label: "Temperament", value: entry.temperament, span: true }
+      : null,
+  ].filter(Boolean) as { label: string; value: string; span?: boolean }[];
+
+  const pairedRows: ({ label: string; value: string; span?: boolean } | null)[][] = [];
+  let i = 0;
+  while (i < steckbriefRows.length) {
+    const cur = steckbriefRows[i];
+    if (cur.span) {
+      pairedRows.push([cur]);
+      i++;
+    } else {
+      const next = steckbriefRows[i + 1];
+      if (next && !next.span) {
+        pairedRows.push([cur, next]);
+        i += 2;
+      } else {
+        pairedRows.push([cur]);
+        i++;
+      }
+    }
+  }
+
   return (
     <>
       <SEO
@@ -71,58 +174,54 @@ export default function JournalEntry() {
       />
 
       <style>{`
-        .je-herbar-grid {
+        .je-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: clamp(32px, 5vw, 72px);
+          grid-template-columns: minmax(0,2fr) minmax(0,3fr);
+          gap: clamp(32px, 5vw, 80px);
           align-items: start;
         }
-        @media (max-width: 700px) {
-          .je-herbar-grid {
-            grid-template-columns: 1fr;
-          }
+        @media (max-width: 720px) {
+          .je-grid { grid-template-columns: 1fr; }
         }
-        .je-field {
-          padding: 16px 20px;
-          border: 1px solid var(--color-border, #e0d8cc);
-        }
-        .je-field + .je-field {
-          border-top: none;
-        }
-        .je-field-label {
-          font-size: 0.63rem;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--color-muted, #9a8a7a);
-          margin-bottom: 5px;
-        }
-        .je-field-value {
-          font-size: 0.93rem;
-          color: var(--color-maroon, #5c2d1e);
-          line-height: 1.55;
-        }
-        .je-field-row {
+        .je-field-pair {
           display: grid;
           grid-template-columns: 1fr 1fr;
         }
-        .je-field-row .je-field:first-child {
+        .je-field-pair > .je-field:first-child {
           border-right: none;
         }
-        @media (max-width: 400px) {
-          .je-field-row {
-            grid-template-columns: 1fr;
-          }
-          .je-field-row .je-field:first-child {
-            border-right: 1px solid var(--color-border, #e0d8cc);
-            border-bottom: none;
-          }
+        @media (max-width: 420px) {
+          .je-field-pair { grid-template-columns: 1fr; }
+          .je-field-pair > .je-field:first-child { border-right: 1px solid var(--color-border,#e0d8cc); border-bottom: none; }
+        }
+        .je-field {
+          padding: 14px 18px;
+          border: 1px solid var(--color-border,#e0d8cc);
+        }
+        .je-field + .je-field,
+        .je-field-pair + .je-field,
+        .je-field-pair + .je-field-pair,
+        .je-field + .je-field-pair {
+          border-top: none;
+        }
+        .je-label {
+          font-size: 0.6rem;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: var(--color-muted,#9a8a7a);
+          margin-bottom: 5px;
+        }
+        .je-value {
+          font-size: 0.9rem;
+          color: var(--color-maroon,#5c2d1e);
+          line-height: 1.6;
         }
       `}</style>
 
       <article>
         <div
           style={{
-            maxWidth: 1120,
+            maxWidth: 1140,
             marginInline: "auto",
             paddingInline: "clamp(20px, 5vw, 60px)",
             paddingTop: 100,
@@ -140,97 +239,110 @@ export default function JournalEntry() {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "var(--color-muted, #9a8a7a)",
-              fontSize: "0.75rem",
-              letterSpacing: "0.08em",
+              color: "var(--color-muted,#9a8a7a)",
+              fontSize: "0.72rem",
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
               padding: "4px 0",
-              marginBottom: 52,
+              marginBottom: 48,
             }}
           >
-            <ChevronLeft size={14} aria-hidden="true" />
+            <ChevronLeft size={13} aria-hidden="true" />
             Journal
           </button>
 
-          <h1
-            className="font-display"
+          <div
             style={{
-              fontSize: "clamp(3.5rem, 9vw, 7.5rem)",
-              color: "var(--color-maroon, #5c2d1e)",
-              lineHeight: 0.92,
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "space-between",
+              gap: 24,
               marginBottom: 52,
-              letterSpacing: "-0.025em",
+              flexWrap: "wrap",
             }}
           >
-            {entry.title}
-          </h1>
+            <h1
+              className="font-display"
+              style={{
+                fontSize: "clamp(3.5rem, 9vw, 8rem)",
+                color: "var(--color-maroon,#5c2d1e)",
+                lineHeight: 0.9,
+                letterSpacing: "-0.03em",
+                flex: "1 1 auto",
+              }}
+            >
+              {entry.title}
+            </h1>
+            {entry.typ && (
+              <div style={{ flexShrink: 0 }} aria-label={`Typ: ${entry.typ}`}>
+                <StampBadge text={entry.typ} />
+              </div>
+            )}
+          </div>
 
-          <div className="je-herbar-grid">
-            {entry.image ? (
-              <figure
-                style={{ margin: 0 }}
-                aria-label={`Bild von ${entry.title}`}
-              >
-                <img
-                  src={entry.image}
-                  alt={entry.title}
+          <div className="je-grid">
+            <div style={{ position: "relative" }}>
+              {entry.image ? (
+                <figure style={{ margin: 0 }}>
+                  <img
+                    src={entry.image}
+                    alt={entry.title}
+                    style={{
+                      width: "100%",
+                      aspectRatio: "3 / 4",
+                      objectFit: "cover",
+                      display: "block",
+                      border: "1px solid var(--color-border,#e0d8cc)",
+                    }}
+                  />
+                </figure>
+              ) : (
+                <div
+                  aria-hidden="true"
                   style={{
-                    width: "100%",
-                    aspectRatio: "4 / 5",
-                    objectFit: "cover",
-                    display: "block",
-                    border: "1px solid var(--color-border, #e0d8cc)",
+                    aspectRatio: "3 / 4",
+                    background: "var(--color-border,#e0d8cc)",
                   }}
                 />
-              </figure>
-            ) : (
-              <div
-                aria-hidden="true"
-                style={{
-                  aspectRatio: "4 / 5",
-                  background: "var(--color-border, #e0d8cc)",
-                }}
-              />
-            )}
+              )}
+            </div>
 
             <div>
-              {(entry.category || entry.season) && (
-                <div className="je-field-row" role="list" aria-label="Kategorie und Saison">
-                  {entry.category && (
-                    <div className="je-field" role="listitem">
-                      <div className="je-field-label">Kategorie</div>
-                      <div className="je-field-value">{entry.category}</div>
+              <div role="list" aria-label="Steckbrief">
+                {pairedRows.map((pair, rowIdx) => {
+                  if (pair.length === 2) {
+                    return (
+                      <div key={rowIdx} className="je-field-pair" role="listitem">
+                        {pair.map((field) =>
+                          field ? (
+                            <div key={field.label} className="je-field">
+                              <div className="je-label">{field.label}</div>
+                              <div className="je-value">{field.value}</div>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    );
+                  }
+                  const field = pair[0];
+                  if (!field) return null;
+                  return (
+                    <div key={rowIdx} className="je-field" role="listitem">
+                      <div className="je-label">{field.label}</div>
+                      <div className="je-value">{field.value}</div>
                     </div>
-                  )}
-                  {entry.season && (
-                    <div className="je-field" role="listitem">
-                      <div className="je-field-label">Saison</div>
-                      <div className="je-field-value">{entry.season}</div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {entry.tastingNotes && (
-                <div className="je-field" role="region" aria-label="Geschmacksprofil">
-                  <div className="je-field-label">Geschmacksprofil</div>
-                  <p
-                    className="je-field-value"
-                    style={{ margin: 0, lineHeight: 1.65 }}
-                  >
-                    {entry.tastingNotes}
-                  </p>
-                </div>
-              )}
+                  );
+                })}
+              </div>
 
               {entry.intro && (
                 <p
                   style={{
-                    fontSize: "1rem",
-                    color: "var(--color-muted, #9a8a7a)",
+                    fontSize: "0.97rem",
+                    color: "var(--color-muted,#9a8a7a)",
                     lineHeight: 1.72,
                     fontStyle: "italic",
-                    marginTop: 36,
+                    marginTop: 32,
                   }}
                 >
                   {entry.intro}
@@ -241,9 +353,8 @@ export default function JournalEntry() {
         </div>
 
         <div
-          style={{
-            borderTop: "1px solid var(--color-border, #e0d8cc)",
-          }}
+          style={{ borderTop: "1px solid var(--color-border,#e0d8cc)" }}
+          role="separator"
         />
 
         <div
@@ -257,16 +368,16 @@ export default function JournalEntry() {
         >
           {entry.background && (
             <section
-              aria-labelledby="hintergrund-heading"
+              aria-labelledby="je-hintergrund"
               style={{ marginBottom: 56 }}
             >
               <h2
-                id="hintergrund-heading"
+                id="je-hintergrund"
                 className="font-display"
                 style={{
-                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
-                  color: "var(--color-maroon, #5c2d1e)",
-                  marginBottom: 20,
+                  fontSize: "clamp(1.5rem, 2.5vw, 1.9rem)",
+                  color: "var(--color-maroon,#5c2d1e)",
+                  marginBottom: 18,
                   letterSpacing: "-0.01em",
                 }}
               >
@@ -275,7 +386,7 @@ export default function JournalEntry() {
               <p
                 style={{
                   fontSize: "1.05rem",
-                  color: "var(--color-maroon, #5c2d1e)",
+                  color: "var(--color-maroon,#5c2d1e)",
                   lineHeight: 1.78,
                   opacity: 0.82,
                   margin: 0,
@@ -291,19 +402,19 @@ export default function JournalEntry() {
               aria-label="Fun Fact"
               style={{
                 marginBottom: 56,
-                padding: "28px 32px",
-                background: "rgba(192, 96, 74, 0.04)",
-                borderTop: "1px solid var(--color-border, #e0d8cc)",
-                borderBottom: "1px solid var(--color-border, #e0d8cc)",
+                padding: "26px 30px",
+                borderTop: "1px solid var(--color-border,#e0d8cc)",
+                borderBottom: "1px solid var(--color-border,#e0d8cc)",
+                background: "rgba(192,96,74,0.035)",
               }}
             >
               <div
                 style={{
-                  fontSize: "0.63rem",
-                  letterSpacing: "0.16em",
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  color: "var(--color-terracotta, #c0604a)",
-                  marginBottom: 14,
+                  color: "var(--color-terracotta,#c0604a)",
+                  marginBottom: 12,
                   fontWeight: 600,
                 }}
               >
@@ -312,7 +423,7 @@ export default function JournalEntry() {
               <p
                 style={{
                   fontSize: "1rem",
-                  color: "var(--color-maroon, #5c2d1e)",
+                  color: "var(--color-maroon,#5c2d1e)",
                   lineHeight: 1.72,
                   fontStyle: "italic",
                   margin: 0,
@@ -322,61 +433,30 @@ export default function JournalEntry() {
               </p>
             </aside>
           )}
-
-          {entry.myNote && (
-            <section
-              aria-labelledby="mynote-heading"
-            >
-              <h2
-                id="mynote-heading"
-                className="font-display"
-                style={{
-                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
-                  color: "var(--color-maroon, #5c2d1e)",
-                  marginBottom: 20,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Mein Kommentar
-              </h2>
-              <p
-                style={{
-                  fontSize: "1.05rem",
-                  color: "var(--color-maroon, #5c2d1e)",
-                  lineHeight: 1.78,
-                  fontStyle: "italic",
-                  opacity: 0.85,
-                  margin: 0,
-                }}
-              >
-                {entry.myNote}
-              </p>
-            </section>
-          )}
         </div>
 
         {linkedRecipeCards.length > 0 && (
           <section
-            aria-labelledby="linked-recipes-heading"
+            aria-labelledby="je-rezepte"
             style={{
-              borderTop: "1px solid var(--color-border, #e0d8cc)",
+              borderTop: "1px solid var(--color-border,#e0d8cc)",
               paddingTop: 60,
               paddingBottom: 96,
             }}
           >
             <div
               style={{
-                maxWidth: 1120,
+                maxWidth: 1140,
                 marginInline: "auto",
                 paddingInline: "clamp(20px, 5vw, 60px)",
               }}
             >
               <h2
-                id="linked-recipes-heading"
+                id="je-rezepte"
                 className="font-display"
                 style={{
-                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
-                  color: "var(--color-maroon, #5c2d1e)",
+                  fontSize: "clamp(1.5rem, 2.5vw, 1.9rem)",
+                  color: "var(--color-maroon,#5c2d1e)",
                   marginBottom: 36,
                   letterSpacing: "-0.01em",
                 }}
@@ -389,8 +469,7 @@ export default function JournalEntry() {
                   padding: 0,
                   margin: 0,
                   display: "grid",
-                  gridTemplateColumns:
-                    "repeat(auto-fill, minmax(260px, 340px))",
+                  gridTemplateColumns: "repeat(auto-fill,minmax(260px,340px))",
                   gap: 28,
                 }}
               >
