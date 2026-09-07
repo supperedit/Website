@@ -13,11 +13,8 @@ export default function JournalEntry() {
   const entry = entries.find((e) => e.slug === slug);
 
   const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/journal");
-    }
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/journal");
   };
 
   if (loading) {
@@ -30,7 +27,9 @@ export default function JournalEntry() {
           justifyContent: "center",
         }}
       >
-        <p style={{ color: "var(--color-muted)", fontSize: "0.9rem" }}>Wird geladen …</p>
+        <p style={{ color: "var(--color-muted)", fontSize: "0.9rem" }}>
+          Wird geladen …
+        </p>
       </div>
     );
   }
@@ -48,7 +47,10 @@ export default function JournalEntry() {
         }}
       >
         <p style={{ color: "var(--color-muted)" }}>Eintrag nicht gefunden.</p>
-        <Link to="/journal" style={{ color: "var(--color-terracotta)", fontSize: "0.9rem" }}>
+        <Link
+          to="/journal"
+          style={{ color: "var(--color-terracotta)", fontSize: "0.9rem" }}
+        >
           Zum Journal
         </Link>
       </div>
@@ -60,12 +62,6 @@ export default function JournalEntry() {
     .filter(Boolean)
     .slice(0, 3);
 
-  const sections = [
-    { label: "Hintergrund", content: entry.background },
-    { label: "Geschmacksprofil", content: entry.tastingNotes },
-    { label: "Fun Fact", content: entry.funFact },
-  ].filter((s) => s.content);
-
   return (
     <>
       <SEO
@@ -74,210 +70,340 @@ export default function JournalEntry() {
         image={entry.image}
       />
 
+      <style>{`
+        .je-herbar-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: clamp(32px, 5vw, 72px);
+          align-items: start;
+        }
+        @media (max-width: 700px) {
+          .je-herbar-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .je-field {
+          padding: 16px 20px;
+          border: 1px solid var(--color-border, #e0d8cc);
+        }
+        .je-field + .je-field {
+          border-top: none;
+        }
+        .je-field-label {
+          font-size: 0.63rem;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--color-muted, #9a8a7a);
+          margin-bottom: 5px;
+        }
+        .je-field-value {
+          font-size: 0.93rem;
+          color: var(--color-maroon, #5c2d1e);
+          line-height: 1.55;
+        }
+        .je-field-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+        .je-field-row .je-field:first-child {
+          border-right: none;
+        }
+        @media (max-width: 400px) {
+          .je-field-row {
+            grid-template-columns: 1fr;
+          }
+          .je-field-row .je-field:first-child {
+            border-right: 1px solid var(--color-border, #e0d8cc);
+            border-bottom: none;
+          }
+        }
+      `}</style>
+
       <article>
         <div
           style={{
-            maxWidth: 740,
+            maxWidth: 1120,
             marginInline: "auto",
-            paddingInline: 24,
+            paddingInline: "clamp(20px, 5vw, 60px)",
             paddingTop: 100,
-            paddingBottom: 80,
+            paddingBottom: 72,
           }}
         >
           <button
             type="button"
             onClick={goBack}
-            aria-label="Zurück"
+            aria-label="Zurück zum Journal"
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 4,
+              gap: 6,
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "var(--color-muted)",
-              fontSize: "0.875rem",
+              color: "var(--color-muted, #9a8a7a)",
+              fontSize: "0.75rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
               padding: "4px 0",
-              marginBottom: 40,
+              marginBottom: 52,
             }}
           >
-            <ChevronLeft size={16} aria-hidden="true" />
-            Zurück
+            <ChevronLeft size={14} aria-hidden="true" />
+            Journal
           </button>
 
-          <header style={{ marginBottom: 40 }}>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginBottom: 14,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              {entry.category && (
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: "var(--color-terracotta)",
-                  }}
-                >
-                  {entry.category}
-                </span>
-              )}
-              {entry.season && (
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: "var(--color-muted)",
-                  }}
-                >
-                  {entry.season}
-                </span>
-              )}
-            </div>
+          <h1
+            className="font-display"
+            style={{
+              fontSize: "clamp(3.5rem, 9vw, 7.5rem)",
+              color: "var(--color-maroon, #5c2d1e)",
+              lineHeight: 0.92,
+              marginBottom: 52,
+              letterSpacing: "-0.025em",
+            }}
+          >
+            {entry.title}
+          </h1>
 
-            <h1
-              className="font-display"
-              style={{
-                fontSize: "clamp(2rem, 5vw, 3.5rem)",
-                color: "var(--color-maroon)",
-                lineHeight: 1.1,
-                marginBottom: 20,
-              }}
-            >
-              {entry.title}
-            </h1>
-
-            {entry.intro && (
-              <p
-                style={{
-                  fontSize: "1.1rem",
-                  color: "var(--color-muted)",
-                  lineHeight: 1.65,
-                  fontStyle: "italic",
-                }}
+          <div className="je-herbar-grid">
+            {entry.image ? (
+              <figure
+                style={{ margin: 0 }}
+                aria-label={`Bild von ${entry.title}`}
               >
-                {entry.intro}
-              </p>
-            )}
-          </header>
-
-          {entry.image && (
-            <figure style={{ margin: "0 0 48px" }}>
-              <img
-                src={entry.image}
-                alt={entry.title}
+                <img
+                  src={entry.image}
+                  alt={entry.title}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "4 / 5",
+                    objectFit: "cover",
+                    display: "block",
+                    border: "1px solid var(--color-border, #e0d8cc)",
+                  }}
+                />
+              </figure>
+            ) : (
+              <div
+                aria-hidden="true"
                 style={{
-                  width: "100%",
-                  borderRadius: 16,
-                  display: "block",
-                  maxHeight: 480,
-                  objectFit: "cover",
+                  aspectRatio: "4 / 5",
+                  background: "var(--color-border, #e0d8cc)",
                 }}
               />
-            </figure>
-          )}
+            )}
 
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: 40 }}
-          >
-            {sections.map((section) => (
-              <section key={section.label} aria-labelledby={`section-${section.label}`}>
-                <h2
-                  id={`section-${section.label}`}
-                  className="font-display"
-                  style={{
-                    fontSize: "1.4rem",
-                    color: "var(--color-maroon)",
-                    marginBottom: 12,
-                  }}
-                >
-                  {section.label}
-                </h2>
+            <div>
+              {(entry.category || entry.season) && (
+                <div className="je-field-row" role="list" aria-label="Kategorie und Saison">
+                  {entry.category && (
+                    <div className="je-field" role="listitem">
+                      <div className="je-field-label">Kategorie</div>
+                      <div className="je-field-value">{entry.category}</div>
+                    </div>
+                  )}
+                  {entry.season && (
+                    <div className="je-field" role="listitem">
+                      <div className="je-field-label">Saison</div>
+                      <div className="je-field-value">{entry.season}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {entry.tastingNotes && (
+                <div className="je-field" role="region" aria-label="Geschmacksprofil">
+                  <div className="je-field-label">Geschmacksprofil</div>
+                  <p
+                    className="je-field-value"
+                    style={{ margin: 0, lineHeight: 1.65 }}
+                  >
+                    {entry.tastingNotes}
+                  </p>
+                </div>
+              )}
+
+              {entry.intro && (
                 <p
                   style={{
                     fontSize: "1rem",
-                    color: "var(--color-text, var(--color-maroon))",
-                    lineHeight: 1.7,
-                    opacity: 0.85,
+                    color: "var(--color-muted, #9a8a7a)",
+                    lineHeight: 1.72,
+                    fontStyle: "italic",
+                    marginTop: 36,
                   }}
                 >
-                  {section.content}
+                  {entry.intro}
                 </p>
-              </section>
-            ))}
+              )}
+            </div>
+          </div>
+        </div>
 
-            {entry.myNote && (
-              <aside
-                aria-label="Persönlicher Kommentar"
+        <div
+          style={{
+            borderTop: "1px solid var(--color-border, #e0d8cc)",
+          }}
+        />
+
+        <div
+          style={{
+            maxWidth: 680,
+            marginInline: "auto",
+            paddingInline: "clamp(20px, 5vw, 40px)",
+            paddingTop: 72,
+            paddingBottom: 96,
+          }}
+        >
+          {entry.background && (
+            <section
+              aria-labelledby="hintergrund-heading"
+              style={{ marginBottom: 56 }}
+            >
+              <h2
+                id="hintergrund-heading"
+                className="font-display"
                 style={{
-                  borderLeft: "3px solid var(--color-terracotta)",
-                  paddingLeft: 20,
-                  marginTop: 8,
+                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  marginBottom: 20,
+                  letterSpacing: "-0.01em",
                 }}
               >
-                <p
-                  style={{
-                    fontSize: "1rem",
-                    color: "var(--color-maroon)",
-                    lineHeight: 1.7,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {entry.myNote}
-                </p>
-              </aside>
-            )}
-          </div>
+                Hintergrund
+              </h2>
+              <p
+                style={{
+                  fontSize: "1.05rem",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  lineHeight: 1.78,
+                  opacity: 0.82,
+                  margin: 0,
+                }}
+              >
+                {entry.background}
+              </p>
+            </section>
+          )}
+
+          {entry.funFact && (
+            <aside
+              aria-label="Fun Fact"
+              style={{
+                marginBottom: 56,
+                padding: "28px 32px",
+                background: "rgba(192, 96, 74, 0.04)",
+                borderTop: "1px solid var(--color-border, #e0d8cc)",
+                borderBottom: "1px solid var(--color-border, #e0d8cc)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.63rem",
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  color: "var(--color-terracotta, #c0604a)",
+                  marginBottom: 14,
+                  fontWeight: 600,
+                }}
+              >
+                Fun Fact
+              </div>
+              <p
+                style={{
+                  fontSize: "1rem",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  lineHeight: 1.72,
+                  fontStyle: "italic",
+                  margin: 0,
+                }}
+              >
+                {entry.funFact}
+              </p>
+            </aside>
+          )}
+
+          {entry.myNote && (
+            <section
+              aria-labelledby="mynote-heading"
+            >
+              <h2
+                id="mynote-heading"
+                className="font-display"
+                style={{
+                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  marginBottom: 20,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Mein Kommentar
+              </h2>
+              <p
+                style={{
+                  fontSize: "1.05rem",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  lineHeight: 1.78,
+                  fontStyle: "italic",
+                  opacity: 0.85,
+                  margin: 0,
+                }}
+              >
+                {entry.myNote}
+              </p>
+            </section>
+          )}
         </div>
 
         {linkedRecipeCards.length > 0 && (
           <section
             aria-labelledby="linked-recipes-heading"
             style={{
-              maxWidth: 1180,
-              marginInline: "auto",
-              paddingInline: 24,
-              paddingBottom: 80,
+              borderTop: "1px solid var(--color-border, #e0d8cc)",
+              paddingTop: 60,
+              paddingBottom: 96,
             }}
           >
-            <h2
-              id="linked-recipes-heading"
-              className="font-display"
+            <div
               style={{
-                fontSize: "1.6rem",
-                color: "var(--color-maroon)",
-                marginBottom: 28,
+                maxWidth: 1120,
+                marginInline: "auto",
+                paddingInline: "clamp(20px, 5vw, 60px)",
               }}
             >
-              Passende Rezepte
-            </h2>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 340px))",
-                gap: 28,
-                justifyContent: "center",
-              }}
-            >
-              {linkedRecipeCards.map(
-                (recipe) =>
-                  recipe && (
-                    <li key={recipe.slug}>
-                      <RecipeCard recipe={recipe} />
-                    </li>
-                  )
-              )}
-            </ul>
+              <h2
+                id="linked-recipes-heading"
+                className="font-display"
+                style={{
+                  fontSize: "clamp(1.6rem, 3vw, 2rem)",
+                  color: "var(--color-maroon, #5c2d1e)",
+                  marginBottom: 36,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Passende Rezepte
+              </h2>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(auto-fill, minmax(260px, 340px))",
+                  gap: 28,
+                }}
+              >
+                {linkedRecipeCards.map(
+                  (recipe) =>
+                    recipe && (
+                      <li key={recipe.slug}>
+                        <RecipeCard recipe={recipe} />
+                      </li>
+                    )
+                )}
+              </ul>
+            </div>
           </section>
         )}
       </article>
