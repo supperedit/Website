@@ -174,6 +174,8 @@ export default function JournalEntry() {
       />
 
       <style>{`
+        article, article * { list-style: none; }
+        article *::marker { content: none; }
         .je-grid {
           display: grid;
           grid-template-columns: minmax(0,2fr) minmax(0,3fr);
@@ -197,6 +199,7 @@ export default function JournalEntry() {
         .je-field {
           padding: 14px 18px;
           border: 1px solid var(--color-border,#e0d8cc);
+          background: #fff;
         }
         .je-field + .je-field,
         .je-field-pair + .je-field,
