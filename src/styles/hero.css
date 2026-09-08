@@ -49,7 +49,7 @@
   min-height: 58px;
   padding: 17px 27px;
   border: 1px solid rgba(67, 9, 8, .12);
-  border-radius: 3px;
+  border-radius: 999px;
   background: var(--color-cream);
   color: var(--color-maroon);
   font-family: var(--font-body);
@@ -65,7 +65,7 @@
   position: absolute;
   inset: 5px;
   border: 1px solid rgba(67, 9, 8, .28);
-  border-radius: 1px;
+  border-radius: inherit;
   pointer-events: none;
 }
 .hero-menu-link svg { flex-shrink: 0; transition: transform .24s ease; }
