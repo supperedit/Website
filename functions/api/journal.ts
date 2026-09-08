@@ -13,6 +13,7 @@ interface NotionProperty {
   title?: NotionRichText[];
   rich_text?: NotionRichText[];
   select?: { name: string } | null;
+  multi_select?: { name: string }[];
   url?: string | null;
   files?: { type: string; file?: { url: string }; external?: { url: string }; name: string }[];
   relation?: { id: string }[];
@@ -143,6 +144,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return {
           slug,
           title,
+          usage: richText(p["Verwendung"]) || null,
+          pairings: richText(p["Passt zu"]) || null,
+          goodToKnow: richText(p["Gut zu wissen"]) || null,
+          supperIdeas: richText(p["Supper Edit Ideen"]) || null,
+          seasonMonths: p["Saisonmonate"]?.multi_select?.map((month) => month.name) ?? [],
           category: (p["Kategorie"] ?? p["kategorie"])?.select?.name ?? "",
           season: (p["Saison"] ?? p["saison"])?.select?.name ?? null,
           intro: richText(p["Intro"] ?? p["intro"]) || null,
