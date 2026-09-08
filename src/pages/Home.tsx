@@ -10,6 +10,7 @@ import AnimatedLogo from "../components/AnimatedLogo";
 import SeasonalCalendarCard from "../components/SeasonalCalendarCard";
 import SupperPairing from "../components/SupperPairing";
 import heroImage from "../assets/images/hero.jpg";
+import "../styles/hero.css";
 import CookieIcon from "../assets/icons/cookie.svg?react";
 import RollIcon from "../assets/icons/roll.svg?react";
 import DrinkIcon from "../assets/icons/drink.svg?react";
@@ -195,69 +196,23 @@ export default function Home() {
         description="Eine kuratierte Rezeptsammlung aus dem Alltag. Einfach in der Zubereitung, nie langweilig im Ergebnis."
       />
 
-      <section
-        style={{
-          position: "relative",
-          minHeight: "100svh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        <img
-          src={heroImage}
-          alt=""
-          fetchPriority="high"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            backgroundColor: "var(--color-ink)",
-          }}
-        />
-        <div style={{ position: "relative", zIndex: 1 }}>
-            <AnimatedLogo />
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              zIndex: 1,
-              top: "calc(50% + min(90px, 17vw) + 48px)",
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              padding: "0 20px",
-            }}
-          >
-            <p
-              className="font-body"
-              style={{
-                color: "var(--color-cream)",
-                fontSize: 15,
-                lineHeight: 1.7,
-                maxWidth: 380,
-                margin: "0 auto 20px",
-                opacity: 0.92,
-              }}
-            >
-              Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
-              einfach hängen bleibt.
-            </p>
-            <Link
-              to="/rezepte"
-              className="btn-primary"
-              style={{
-                backgroundColor: "var(--color-dusty-blue)",
-                color: "var(--color-maroon)",
-                borderColor: "var(--color-dusty-blue)",
-              }}
-            >
-              Alle Rezepte <ArrowRight size={14} />
-            </Link>
-          </div>
+      <section className="supper-hero" aria-label="Supper Edit – Rezepte für lange Abende">
+        <img className="supper-hero__image" src={heroImage} alt="" fetchPriority="high" />
+        <div className="supper-hero__shade" aria-hidden="true" />
+        <div className="supper-hero__logo">
+          <AnimatedLogo />
+        </div>
+        <div className="supper-hero__content">
+          <p className="supper-hero__description">
+            Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
+            einfach hängen bleibt.
+          </p>
+          <Link to="/rezepte" className="hero-menu-link">
+            <span>Rezepte entdecken</span>
+            <ArrowRight size={22} strokeWidth={1.25} aria-hidden="true" />
+          </Link>
+        </div>
+        <span className="supper-hero__caption" aria-hidden="true">Rezepte für lange Abende</span>
       </section>
 
       <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
