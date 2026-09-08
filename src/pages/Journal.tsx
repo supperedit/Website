@@ -31,8 +31,8 @@ export default function Journal() {
       <div className="herbarium-tools">
         <nav className="herbarium-categories" aria-label="Pflanzengruppen filtern">{categories.map(group => <button type="button" key={group} aria-pressed={category === group} onClick={() => update('kategorie', group)}>{group}<sup>{group === 'Alle' ? entries.length : entries.filter(e => plantGroup(e) === group).length}</sup></button>)}</nav>
         <div className="herbarium-search-row">
-          <label className="herbarium-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Im Herbarium suchen</span><input type="search" value={query} onChange={e => update('suche', e.target.value)} placeholder="Name, Geschmack, botanischer Name …" /></label>
-          <label className="herbarium-season"><span>Saison</span><select value={season} onChange={e => update('saison', e.target.value)}><option value="">Alle Jahreszeiten</option>{seasons.map(value => <option key={value}>{value}</option>)}</select></label>
+          <label className="herbarium-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Im Herbarium suchen</span><input type="search" value={query} onChange={e => update('suche', e.target.value)} placeholder="Im Herbarium stöbern …" /></label>
+          <label className="herbarium-season"><span className="sr-only">Saison</span><select value={season} onChange={e => update('saison', e.target.value)}><option value="">Alle Jahreszeiten</option>{seasons.map(value => <option key={value}>{value}</option>)}</select></label>
         </div>
       </div>
       <div className="herbarium-index"><p role="status" aria-live="polite">{loading ? 'Die Sammlung wird geladen …' : error ? 'Sammlung nicht verfügbar' : `${filtered.length} ${filtered.length === 1 ? 'Eintrag' : 'Einträge'}`}</p><span>Alphabetisch · A–Z</span></div>
