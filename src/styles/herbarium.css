@@ -12,7 +12,7 @@
 .herbarium-heading h1 { font-size: clamp(60px,8.5vw,108px); line-height: 1; letter-spacing: -.035em; color: var(--color-maroon); }
 .herbarium-heading-dot { color: var(--color-terracotta); }
 .herbarium-introduction { max-width: 340px; padding-top: 12px; }
-.herbarium-introduction p { font-family: Georgia,serif; font-size: clamp(23px,2.7vw,32px); line-height: 1.3; margin: 0 0 20px; }
+.herbarium-introduction p { font-family: var(--font-body); font-size: clamp(23px,2.7vw,32px); line-height: 1.3; margin: 0 0 20px; }
 .herbarium-introduction em { font-weight: 400; }
 .herbarium-introduction > span { display: block; font-size: 13px; line-height: 1.7; color: var(--herb-muted); max-width: 300px; }
 .herbarium-tools { border-top: 1px solid var(--color-maroon); border-bottom: 1px solid var(--herb-line); }
@@ -38,20 +38,20 @@
 .specimen-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
 .specimen-type { background: #eae8dc; aspect-ratio: 4/5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; border: 1px solid var(--herb-line); outline: 1px solid var(--herb-line); outline-offset: -9px; padding: 28px; }
 .specimen-type > span { font-family: var(--font-display); font-size: clamp(90px,12vw,170px); line-height: 1; color: #5e6449; }
-.specimen-type em { font-family: Georgia,serif; font-size: 13px; text-align: center; }
+.specimen-type em { font-family: var(--font-body); font-size: 13px; text-align: center; }
 .specimen-title { display: flex; gap: 16px; align-items: baseline; justify-content: space-between; margin-top: 23px; }
 .specimen-title h2 { font-family: var(--font-display); font-size: 32px; line-height: 1.15; color: var(--color-maroon); overflow-wrap: anywhere; }
 .specimen-title svg { flex-shrink: 0; transition: transform .25s ease; }
-.specimen-latin { font-family: Georgia,serif; font-style: italic; font-size: 13px; color: var(--herb-muted); margin: 7px 0 14px; }
+.specimen-latin { font-family: var(--font-body); font-style: italic; font-size: 13px; color: var(--herb-muted); margin: 7px 0 14px; }
 .specimen-intro { font-size: 13px; line-height: 1.8; color: var(--herb-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 14px 0 20px; }
 .specimen-read { display: flex; gap: 10px; font-size: 11px; margin-top: 20px; }
 @media (hover:hover) { .specimen:hover .specimen-title svg { transform: translate(3px,-3px); } .specimen:hover img { transform: scale(1.025); } .specimen:hover .specimen-read { text-decoration: underline; text-underline-offset: 4px; } }
 .herbarium-colophon { border-top: 1px solid var(--herb-line); margin-top: 80px; padding-top: 24px; display: flex; justify-content: space-between; gap: 20px; align-items: start; }
-.herbarium-colophon > span { font: italic 21px Georgia,serif; }
+.herbarium-colophon > span { font: italic 21px var(--font-body); }
 .herbarium-colophon p { color: var(--herb-muted); font-size: 11px; line-height: 1.7; margin: 0; }
 .herbarium-colophon a { display: inline-flex; align-items: center; gap: 14px; }
 .herbarium-empty { padding-block: 48px; }
-.herbarium-empty h2 { font-family: Georgia,serif; font-size: 26px; }
+.herbarium-empty h2 { font-family: var(--font-display); font-size: 26px; }
 .herbarium-empty p { color: var(--herb-muted); }
 .herbarium-empty button { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--color-maroon); border: 1px solid var(--herb-line); border-radius: 30px; padding: 12px 20px; }
 .herbarium-loading { display: grid; grid-template-columns: repeat(3,1fr); gap: 30px; }
@@ -60,13 +60,13 @@
 .plant-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--herb-line); padding-bottom: 44px; margin-bottom: 44px; }
 .plant-heading h1 { font-size: clamp(48px,7.5vw,96px); color: var(--color-maroon); line-height: 1.1; overflow-wrap: anywhere; }
 .plant-heading > div { min-width: 0; }
-.plant-latin { font: italic 20px/1.5 Georgia,serif; color: var(--herb-muted); margin: 16px 0 0; }
-.plant-season-stamp { flex-shrink: 0; width: 116px; min-height: 116px; border: 1px solid var(--herb-line); outline: 1px solid var(--herb-line); outline-offset: -6px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; text-align: center; padding: 20px 12px; font: italic 16px Georgia,serif; }
+.plant-latin { font: italic 20px/1.5 var(--font-body); color: var(--herb-muted); margin: 16px 0 0; }
+.plant-season-stamp { flex-shrink: 0; width: 116px; min-height: 116px; border: 1px solid var(--herb-line); outline: 1px solid var(--herb-line); outline-offset: -6px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; text-align: center; padding: 20px 12px; font: italic 16px var(--font-body); }
 .plant-season-stamp > span { font: 9px var(--font-body); text-transform: uppercase; letter-spacing: .12em; }
 .plant-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: clamp(32px,6vw,80px); align-items: start; }
 .plant-sheet figure { margin: 0 0 32px; }
 .plant-sheet figure img { width: 100%; max-height: 620px; object-fit: contain; background: #eae8dc; }
-.plant-sheet figcaption { font: italic 12px Georgia,serif; margin-top: 10px; color: var(--herb-muted); }
+.plant-sheet figcaption { font: italic 12px var(--font-body); margin-top: 10px; color: var(--herb-muted); }
 .plant-sheet > .herbarium-kicker { margin-bottom: 16px; }
 .plant-facts { margin: 0; border-top: 1px solid var(--herb-line); }
 .plant-facts > div { padding: 14px 0; border-bottom: 1px solid var(--herb-line); display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; }
@@ -76,12 +76,12 @@
 .plant-calendar ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(6,1fr); gap: 4px; }
 .plant-calendar li { padding: 8px 2px; background: #eae8dc; text-align: center; font-size: 10px; }
 .plant-calendar li.in-season { background: #5e6449; color: var(--color-cream); }
-.plant-intro { font: 25px/1.55 Georgia,serif; margin: 0 0 38px; }
+.plant-intro { font: 25px/1.55 var(--font-body); margin: 0 0 38px; }
 .plant-section { border-top: 1px solid var(--herb-line); padding-top: 25px; margin-top: 30px; }
-.plant-section h2, .plant-extra h2 { font-family: Georgia,serif; font-size: 21px; letter-spacing: 0; color: var(--color-maroon); }
+.plant-section h2, .plant-extra h2 { font-family: var(--font-display); font-size: 21px; letter-spacing: 0; color: var(--color-maroon); }
 .plant-section p, .plant-extra p { font-size: 14px; line-height: 1.9; white-space: pre-line; color: #665a4e; margin: 15px 0 0; }
 .plant-note { border-left: 2px solid #8a916f; padding: 5px 0 5px 24px; margin: 40px 0; }
-.plant-note p { font: italic 17px/1.8 Georgia,serif; margin: 13px 0 0; }
+.plant-note p { font: italic 17px/1.8 var(--font-body); margin: 13px 0 0; }
 .plant-extra { border-block: 1px solid var(--herb-line); padding-block: 18px; margin-top: 32px; }
 .plant-extra summary { cursor: pointer; font-size: 12px; }
 .plant-extra section { margin: 24px 0; }
