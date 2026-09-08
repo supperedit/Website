@@ -32,7 +32,11 @@ export default function App() {
   const [imagesReady, setImagesReady] = useState(false);
 
   useEffect(() => {
-    if (loading || recipes.length === 0) return;
+    if (loading) return;
+    if (recipes.length === 0) {
+      setImagesReady(true);
+      return;
+    }
 
     const previewImages = [...recipes]
       .reverse()
