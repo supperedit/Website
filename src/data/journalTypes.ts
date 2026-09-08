@@ -1,4 +1,9 @@
 export interface JournalEntry {
+  usage?: string | null;
+  pairings?: string | null;
+  goodToKnow?: string | null;
+  supperIdeas?: string | null;
+  seasonMonths?: string[];
   slug: string;
   title: string;
   category: string;
