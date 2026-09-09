@@ -16,19 +16,7 @@ export default function NotFound() {
         <p style={{ fontSize: 15, color: "var(--color-muted)", marginBottom: 32 }}>
           Vielleicht wurde das Rezept umbenannt oder der Link ist veraltet.
         </p>
-        <Link
-          to="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            backgroundColor: "var(--color-terracotta)",
-            color: "var(--color-cream)",
-            borderRadius: 999,
-            padding: "10px 24px",
-            fontSize: 14,
-          }}
-        >
+        <Link to="/" className="btn-primary">
           Zur Startseite
         </Link>
       </section>
