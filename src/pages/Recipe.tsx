@@ -160,7 +160,7 @@ export default function Recipe() {
           Zurück
         </button>
         <div className="recipe-header">
-          <span style={{ fontSize: 12, color: "var(--color-terracotta)" }}>{recipe.category}</span>
+          <span className="category-label">{recipe.category}</span>
           <h1 className="font-display" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", margin: "8px 0" }}>
             {recipe.title}
           </h1>
