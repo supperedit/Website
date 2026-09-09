@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { seasonalCalendar } from "../data/seasonalCalendar";
 import { dinnerIdeas, type DinnerIdea } from "../data/dinnerIdeas";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
+import { useJournal } from "../data/useJournal";
 import type { Recipe } from "../data/recipeTypes";
 
 const MONTH_NAMES = [
@@ -124,10 +125,19 @@ export default function SeasonalCalendarCard() {
   const [monthIndex0, setMonthIndex0] = useState(today.getMonth());
   const [activePopup, setActivePopup] = useState<ActivePopup>(null);
   const { recipes } = useRecipes();
+  const { entries } = useJournal();
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
 
-  const monthData = seasonalCalendar[monthIndex0] ?? { items: [] };
+  const currentMonthName = MONTH_NAMES[monthIndex0];
+
+  const seasonalEntries = useMemo(() => {
+    return entries.filter(entry =>
+      entry.seasonMonths?.some(m =>
+        m.toLowerCase().includes(currentMonthName.toLowerCase().slice(0, 3))
+      )
+    ).slice(0, 6);
+  }, [entries, currentMonthName]);
 
   const ideaDays = useMemo(() => {
     const s = new Set<number>();
@@ -176,23 +186,11 @@ export default function SeasonalCalendarCard() {
 
         <div className="sc-card">
           <div className="sc-month-row">
-            <button
-              type="button"
-              className="sc-nav"
-              onClick={() => goToMonth(-1)}
-              aria-label="Vorheriger Monat"
-            >
+            <button type="button" className="sc-nav" onClick={() => goToMonth(-1)} aria-label="Vorheriger Monat">
               <ChevronLeft size={14} aria-hidden />
             </button>
-            <h2 className="sc-month-title">
-              {MONTH_NAMES[monthIndex0].toUpperCase()}
-            </h2>
-            <button
-              type="button"
-              className="sc-nav"
-              onClick={() => goToMonth(1)}
-              aria-label="Nächster Monat"
-            >
+            <h2 className="sc-month-title">{MONTH_NAMES[monthIndex0].toUpperCase()}</h2>
+            <button type="button" className="sc-nav" onClick={() => goToMonth(1)} aria-label="Nächster Monat">
               <ChevronRight size={14} aria-hidden />
             </button>
           </div>
@@ -210,46 +208,21 @@ export default function SeasonalCalendarCard() {
             {weeks.map((week, wi) =>
               week.map((cell, di) => {
                 const key = `${wi}-${di}`;
-
-                if (cell.day === null) {
-                  return <div key={key} className="sc-cell sc-cell-empty" />;
-                }
-
+                if (cell.day === null) return <div key={key} className="sc-cell sc-cell-empty" />;
                 const hasIdea = !!cell.idea;
                 const hasRecipe = !!cell.recipe;
-
                 return (
-                  <div
-                    key={key}
-                    className={`sc-cell${cell.isToday ? " sc-cell-today" : ""}${hasRecipe ? " sc-cell-recipe" : ""}${hasIdea ? " sc-cell-idea" : ""}`}
-                  >
-                    {!hasRecipe && !hasIdea && (
-                      <span className="sc-day-num">{cell.day}</span>
-                    )}
-
+                  <div key={key} className={`sc-cell${cell.isToday ? " sc-cell-today" : ""}${hasRecipe ? " sc-cell-recipe" : ""}${hasIdea ? " sc-cell-idea" : ""}`}>
+                    {!hasRecipe && !hasIdea && <span className="sc-day-num">{cell.day}</span>}
                     {hasRecipe && cell.recipe && (
-                      <Link
-                        to={`/rezepte/${cell.recipe.slug}`}
-                        className="sc-recipe-link"
-                        aria-label={cell.recipe.title}
-                      >
+                      <Link to={`/rezepte/${cell.recipe.slug}`} className="sc-recipe-link" aria-label={cell.recipe.title}>
                         {cell.recipe.image && (
-                          <img
-                            src={resizeDriveUrl(cell.recipe.image, "w300")}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          <img src={resizeDriveUrl(cell.recipe.image, "w300")} alt="" loading="lazy" decoding="async" />
                         )}
                       </Link>
                     )}
-
                     {hasIdea && cell.idea && (
-                      <button
-                        type="button"
-                        className="sc-idea-btn"
-                        onClick={(e) => openPopup(cell.idea!, e.currentTarget)}
-                      >
+                      <button type="button" className="sc-idea-btn" onClick={(e) => openPopup(cell.idea!, e.currentTarget)}>
                         <SpiralCircle />
                         <span className="sc-idea-title">{cell.idea.title}</span>
                       </button>
@@ -261,39 +234,19 @@ export default function SeasonalCalendarCard() {
           </div>
 
           {activePopup && (
-            <div
-              className="sc-overlay"
-              onClick={(e) => { if (e.target === e.currentTarget) closePopup(); }}
-            >
-              <div
-                className="sc-popup"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="sc-popup-title"
-              >
-                <button
-                  type="button"
-                  ref={closeRef}
-                  className="sc-popup-close"
-                  onClick={closePopup}
-                  aria-label="Schließen"
-                >
+            <div className="sc-overlay" onClick={(e) => { if (e.target === e.currentTarget) closePopup(); }}>
+              <div className="sc-popup" role="dialog" aria-modal="true" aria-labelledby="sc-popup-title">
+                <button type="button" ref={closeRef} className="sc-popup-close" onClick={closePopup} aria-label="Schließen">
                   <X size={13} aria-hidden />
                 </button>
-                <span className="sc-popup-eyebrow">
-                  {activePopup.idea.day}. {MONTH_NAMES[activePopup.idea.month - 1]}
-                </span>
-                <h3 id="sc-popup-title" className="sc-popup-title">
-                  {activePopup.idea.title}
-                </h3>
+                <span className="sc-popup-eyebrow">{activePopup.idea.day}. {MONTH_NAMES[activePopup.idea.month - 1]}</span>
+                <h3 id="sc-popup-title" className="sc-popup-title">{activePopup.idea.title}</h3>
                 <p className="sc-popup-idea">{activePopup.idea.idea}</p>
                 {(activePopup.idea.onTheTable || activePopup.idea.kochen) && (
                   <div className="sc-popup-section">
                     <p className="sc-popup-label">Auf dem Tisch</p>
                     <ul className="sc-popup-list">
-                      {(activePopup.idea.onTheTable || activePopup.idea.kochen)!.map((e) => (
-                        <li key={e}>{e}</li>
-                      ))}
+                      {(activePopup.idea.onTheTable || activePopup.idea.kochen)!.map((e) => <li key={e}>{e}</li>)}
                     </ul>
                   </div>
                 )}
@@ -306,9 +259,7 @@ export default function SeasonalCalendarCard() {
                 {activePopup.idea.afterDinner && (
                   <div className="sc-popup-section">
                     <p className="sc-popup-label">Nach dem Essen</p>
-                    <ul className="sc-popup-list">
-                      {activePopup.idea.afterDinner.map((e) => <li key={e}>{e}</li>)}
-                    </ul>
+                    <ul className="sc-popup-list">{activePopup.idea.afterDinner.map((e) => <li key={e}>{e}</li>)}</ul>
                   </div>
                 )}
               </div>
@@ -318,22 +269,43 @@ export default function SeasonalCalendarCard() {
 
         <div className="sc-seasonal">
           <div className="sc-seasonal-header">
-            <span className="sc-seasonal-title">Das hat Saison:</span>
+            <span className="sc-seasonal-title">Jetzt Saison:</span>
           </div>
-          <div className="sc-seasonal-pills">
-            {(monthData.items ?? []).map((item) => (
-              <span key={item.slug} className="sc-seasonal-pill">
-                {item.name}
-              </span>
-            ))}
-          </div>
+
+          {seasonalEntries.length > 0 ? (
+            <div className="sc-herb-list">
+              {seasonalEntries.map(entry => (
+                <Link
+                  key={entry.slug}
+                  to={`/journal/${entry.slug}`}
+                  className="sc-herb-item"
+                >
+                  {entry.image
+                    ? <img src={entry.image} alt="" loading="lazy" className="sc-herb-img" />
+                    : <div className="sc-herb-img sc-herb-placeholder" aria-hidden="true">
+                        <span>{entry.title.slice(0, 1)}</span>
+                      </div>
+                  }
+                  <span className="sc-herb-name">{entry.title}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="sc-seasonal-pills">
+              {(seasonalCalendar[monthIndex0]?.items ?? []).map((item) => (
+                <span key={item.slug} className="sc-seasonal-pill">{item.name}</span>
+              ))}
+            </div>
+          )}
+
+          <Link to={`/journal?saison=${encodeURIComponent(currentMonthName.slice(0,3))}`} className="sc-herb-more">
+            Alle ansehen →
+          </Link>
         </div>
 
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap');
-
         .sc-root {
           position: relative;
           width: 100%;
@@ -341,7 +313,6 @@ export default function SeasonalCalendarCard() {
           margin: 0 auto;
           aspect-ratio: 16 / 9;
         }
-
         .sc-layout {
           position: relative; z-index: 1;
           display: flex;
@@ -351,7 +322,6 @@ export default function SeasonalCalendarCard() {
           height: 100%;
           box-sizing: border-box;
         }
-
         .sc-card {
           position: relative;
           flex: 0 0 60%;
@@ -363,7 +333,6 @@ export default function SeasonalCalendarCard() {
           height: 100%;
           box-sizing: border-box;
         }
-
         .sc-month-row {
           display: flex;
           align-items: center;
@@ -393,7 +362,6 @@ export default function SeasonalCalendarCard() {
           cursor: pointer; opacity: 0.5; transition: opacity 0.15s;
         }
         .sc-nav:hover { opacity: 1; }
-
         .sc-weekdays {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
@@ -410,7 +378,6 @@ export default function SeasonalCalendarCard() {
           letter-spacing: 0.02em;
         }
         .sc-dow-short { display: none; }
-
         .sc-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
@@ -419,7 +386,6 @@ export default function SeasonalCalendarCard() {
           min-height: 0;
           overflow: visible;
         }
-
         .sc-cell {
           position: relative;
           border-right: 0.7px solid rgba(43,18,16,0.13);
@@ -432,7 +398,6 @@ export default function SeasonalCalendarCard() {
           box-shadow: inset 0 0 0 1.5px var(--color-maroon, #8b2e2e);
           border-radius: 2px;
         }
-
         .sc-day-num {
           position: absolute;
           top: 5px; left: 6px;
@@ -443,7 +408,6 @@ export default function SeasonalCalendarCard() {
           line-height: 1;
           z-index: 2;
         }
-
         .sc-cell-recipe { overflow: hidden; }
         .sc-recipe-link {
           position: absolute;
@@ -458,9 +422,7 @@ export default function SeasonalCalendarCard() {
           transition: transform 0.3s ease;
         }
         .sc-recipe-link:hover img { transform: scale(1.04); }
-
         .sc-cell-idea { z-index: 4; }
-
         .sc-idea-btn {
           position: absolute;
           top: 50%; left: 50%;
@@ -476,7 +438,6 @@ export default function SeasonalCalendarCard() {
           z-index: 5;
           padding: 0;
         }
-
         .sc-spiral {
           position: absolute;
           inset: 0;
@@ -485,7 +446,6 @@ export default function SeasonalCalendarCard() {
           pointer-events: none;
           overflow: visible;
         }
-
         .sc-idea-title {
           position: relative; z-index: 1;
           font-family: 'Homemade Apple', cursive;
@@ -495,7 +455,6 @@ export default function SeasonalCalendarCard() {
           white-space: normal;
           padding: 20% 12%;
         }
-
         .sc-overlay {
           position: absolute; inset: 0; z-index: 20;
           background: rgba(20,8,4,0.55);
@@ -549,13 +508,13 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           display: flex; flex-direction: column; gap: 2px;
         }
-
         .sc-seasonal {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 12px;
           padding-top: 2px;
+          min-height: 0;
         }
         .sc-seasonal-header {
           background: #F7F6EC;
@@ -572,6 +531,66 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
+        .sc-herb-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          overflow-y: auto;
+          flex: 1;
+          min-height: 0;
+        }
+        .sc-herb-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #F7F6EC;
+          border-radius: 10px;
+          padding: 6px 10px 6px 6px;
+          text-decoration: none;
+          transition: background 0.15s ease;
+        }
+        .sc-herb-item:hover {
+          background: var(--color-blush, #f6cdd6);
+        }
+        .sc-herb-img {
+          width: clamp(28px, 4vw, 40px);
+          height: clamp(28px, 4vw, 40px);
+          border-radius: 6px;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+        .sc-herb-placeholder {
+          background: color-mix(in srgb, var(--color-sky, #c7dfe3) 30%, #F7F6EC 70%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .sc-herb-placeholder span {
+          font-family: var(--font-display);
+          font-size: clamp(12px, 2vw, 18px);
+          color: var(--color-dusty-blue, #85a9c7);
+          line-height: 1;
+        }
+        .sc-herb-name {
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-weight: 300;
+          font-size: clamp(11px, 1.3vw, 14px);
+          color: var(--color-ink, #2b1210);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .sc-herb-more {
+          font-family: var(--font-body, 'Elms Sans', sans-serif);
+          font-size: clamp(9px, 1.1vw, 11px);
+          color: var(--color-maroon, #430908);
+          opacity: 0.45;
+          text-decoration: none;
+          align-self: flex-start;
+          letter-spacing: 0.04em;
+          transition: opacity 0.15s ease;
+        }
+        .sc-herb-more:hover { opacity: 0.9; }
         .sc-seasonal-pills {
           display: flex;
           flex-wrap: wrap;
@@ -587,7 +606,6 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
-
         @media (max-width: 700px) {
           .sc-root { aspect-ratio: auto; overflow: visible; }
           .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
@@ -598,12 +616,17 @@ export default function SeasonalCalendarCard() {
           .sc-dow-short { display: inline; }
           .sc-cell { overflow: visible; }
           .sc-idea-title { font-size: 9px; }
-          .sc-seasonal-pill { font-size: 11px; padding: 5px 12px; }
+          .sc-herb-list { flex-direction: row; flex-wrap: wrap; overflow: visible; }
+          .sc-herb-item { flex: 0 0 auto; }
+          .sc-herb-name { max-width: 80px; }
         }
         @media (min-width: 701px) and (max-width: 960px) {
           .sc-root { aspect-ratio: auto; min-height: 500px; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .sc-recipe-link img, .sc-herb-item { transition: none; }
         }
       `}</style>
     </div>
