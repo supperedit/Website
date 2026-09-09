@@ -144,6 +144,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return {
           slug,
           title,
+          edibleParts: richText(p["Essbare Teile"]) || null,
+          sowingTime: richText(p["Aussaat"]) || null,
+          plantingTime: richText(p["Pflanzzeit"]) || null,
+          harvest: richText(p["Ernte"]) || null,
+          wellnessNote: richText(p["Wohlfühlnotiz"]) || null,
           usage: richText(p["Verwendung"]) || null,
           pairings: richText(p["Passt zu"]) || null,
           goodToKnow: richText(p["Gut zu wissen"]) || null,
