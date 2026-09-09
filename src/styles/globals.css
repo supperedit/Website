@@ -108,6 +108,51 @@ h4, h5, h6 {
   font-family: var(--font-display);
 }
 
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--color-blush);
+  color: var(--color-maroon);
+  border: 1px solid var(--color-blush);
+  transition: opacity 0.2s ease;
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  color: var(--color-maroon);
+  border: 1px solid var(--color-line);
+  transition: background 0.2s ease;
+}
+.btn-secondary:hover { background: rgba(67, 9, 8, 0.04); }
+
+.btn-small { padding: 10px 20px; font-size: 13px; }
+
+.category-label {
+  display: inline-block;
+  background: var(--color-blush);
+  color: var(--color-maroon);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
 @keyframes marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
