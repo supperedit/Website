@@ -8,9 +8,11 @@ export default function LoadingScreen({ visible }: LoadingScreenProps) {
   return (
     <div
       className={`loading-screen ${!visible ? "loading-screen-hidden" : ""}`}
+      role="status"
+      aria-label="Seite wird geladen"
       aria-hidden={!visible}
     >
-      <Logo className="loading-logo" />
+      <Logo className="loading-logo" aria-hidden="true" />
 
       <style>{`
         .loading-screen {
@@ -21,7 +23,7 @@ export default function LoadingScreen({ visible }: LoadingScreenProps) {
           align-items: center;
           justify-content: center;
           background-color: var(--color-lavender);
-          transition: opacity 0.5s ease, visibility 0.5s ease;
+          transition: opacity 0.4s ease, visibility 0.4s ease;
           opacity: 1;
           visibility: visible;
         }
@@ -34,17 +36,16 @@ export default function LoadingScreen({ visible }: LoadingScreenProps) {
           width: min(420px, 80vw);
           height: auto;
           aspect-ratio: 132.21 / 53.77;
-          animation: loadingLogoIn 1.4s ease-in-out infinite;
-          will-change: transform, opacity;
-          transform: translateZ(0);
+          animation: loadingLogoIn 0.5s ease-out forwards;
+          will-change: opacity, transform;
           backface-visibility: hidden;
         }
         .loading-logo, .loading-logo path {
           fill: var(--color-cream) !important;
         }
         @keyframes loadingLogoIn {
-          0%, 100% { opacity: 0.5; transform: translateZ(0) scale(0.96); }
-          50% { opacity: 1; transform: translateZ(0) scale(1); }
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @media (prefers-reduced-motion: reduce) {
           .loading-screen { transition: none; }
