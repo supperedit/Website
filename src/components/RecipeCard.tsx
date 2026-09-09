@@ -5,16 +5,10 @@ interface RecipeCardProps {
   slug: string;
   title: string;
   category: string;
-  /** Resolved image URL (already sized for this context) */
   image?: string;
-  /** Font size for the recipe title. Default: 20 */
   titleSize?: number;
 }
 
-/**
- * Shared recipe card used on the Home page and the Recipes listing.
- * Hover animation comes from the global `.recipe-card-hover` / `.recipe-card-image` styles.
- */
 export default function RecipeCard({
   slug,
   title,
@@ -24,7 +18,7 @@ export default function RecipeCard({
 }: RecipeCardProps) {
   return (
     <Link to={`/rezepte/${slug}`} className="recipe-card-hover">
-      <div className="recipe-card-image" style={{ aspectRatio: "3/4" }}>
+      <div className="recipe-card-image" style={{ aspectRatio: "4/5" }}>
         {image ? (
           <img
             src={image}
@@ -47,19 +41,10 @@ export default function RecipeCard({
         />
       </div>
 
-      <span
-        style={{
-          display: "block",
-          marginTop: 12,
-          fontSize: 12,
-          color: "var(--color-terracotta)",
-        }}
-      >
+      <span className="category-label" style={{ marginTop: 12 }}>
         {category}
       </span>
-      <h3
-        style={{ fontSize: titleSize, margin: "2px 0 0" }}
-      >
+      <h3 style={{ fontSize: titleSize, margin: "6px 0 0" }}>
         {title}
       </h3>
     </Link>
