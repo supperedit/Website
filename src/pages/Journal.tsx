@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowUpRight, Search, X } from 'lucide-react';
 import { useJournal } from '../data/useJournal';
-import { matchesSearch, plantGroup } from '../data/herbarium';
+import { matchesSearch, matchesSeason, plantGroup } from '../data/herbarium';
 import SEO from '../components/SEO';
 import '../styles/herbarium.css';
 
@@ -14,22 +14,22 @@ export default function Journal() {
   const query = params.get('suche') || '';
   const sorted = useMemo(() => [...entries].sort((a,b) => a.title.localeCompare(b.title, 'de')), [entries]);
   const categories = ['Alle', ...new Set(sorted.map(plantGroup))];
-  const seasons = [...new Set(entries.map(entry => entry.season).filter((value): value is string => Boolean(value)))].sort((a,b) => a.localeCompare(b,'de'));
-  const filtered = sorted.filter(entry => (category === 'Alle' || plantGroup(entry) === category) && (!season || entry.season === season) && matchesSearch(entry, query));
+  const seasons = ['Frühling', 'Sommer', 'Herbst', 'Winter'].filter(value => entries.some(entry => matchesSeason(entry, value)));
+  const filtered = sorted.filter(entry => (category === 'Alle' || plantGroup(entry) === category) && (!season || matchesSeason(entry, season)) && matchesSearch(entry, query));
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value && value !== 'Alle') next.set(key, value); else next.delete(key);
     setParams(next, { replace: true });
   };
   return <>
-    <SEO title="Herbarium" description="Eine wachsende Sammlung von Obst, Gemüse, Kräutern und essbaren Blüten. Botanische Notizen und Ideen für deine Küche." />
+    <SEO title="Herbarium" description="Saisonale Zutaten, kurze Küchenideen und kleine Impulse für dein Wohlbefinden. Geschmack, Verwendung und Ideen für deine Wohlfühlküche." />
     <div className="herbarium">
       <header className="herbarium-heading">
         <div><p className="herbarium-kicker">Supper Edit / Das Zutatenarchiv</p><h1>Herbarium<span className="herbarium-heading-dot">.</span></h1></div>
-        <div className="herbarium-introduction"><p>Was wächst.<br />Was schmeckt.<br /><em>Was auf den Tisch kommt.</em></p><span>Eine wachsende Sammlung von Obst, Gemüse, Kräutern und essbaren Blüten.</span></div>
+        <div className="herbarium-introduction"><p>Was wächst.<br />Was schmeckt.<br /><em>Was auf den Tisch kommt.</em></p><span>Saisonale Zutaten, kurze Küchenideen und kleine Impulse für dein Wohlbefinden.</span></div>
       </header>
       <div className="herbarium-tools">
-        <nav className="herbarium-categories" aria-label="Pflanzengruppen filtern">{categories.map(group => <button type="button" key={group} aria-pressed={category === group} onClick={() => update('kategorie', group)}>{group}<sup>{group === 'Alle' ? entries.length : entries.filter(e => plantGroup(e) === group).length}</sup></button>)}</nav>
+        <nav className="herbarium-categories" aria-label="Pflanzengruppen filtern">{categories.map(group => <button type="button" key={group} aria-pressed={category === group} onClick={() => update('kategorie', group)}>{group}<span className="herbarium-category-count">{group === 'Alle' ? entries.length : entries.filter(e => plantGroup(e) === group).length}</span></button>)}</nav>
         <div className="herbarium-search-row">
           <label className="herbarium-search"><Search size={17} aria-hidden="true" /><span className="sr-only">Im Herbarium suchen</span><input type="search" value={query} onChange={e => update('suche', e.target.value)} placeholder="Im Herbarium stöbern …" /></label>
           <label className="herbarium-season"><span className="sr-only">Saison</span><select value={season} onChange={e => update('saison', e.target.value)}><option value="">Alle Jahreszeiten</option>{seasons.map(value => <option key={value}>{value}</option>)}</select></label>
