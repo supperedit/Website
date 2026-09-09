@@ -11,18 +11,7 @@ export default function Contact() {
         <p style={{ color: "var(--color-muted)", fontSize: 14, marginBottom: 32 }}>
           Fragen, Ideen oder Kooperationen, immer gern per Mail.
         </p>
-        <a
-          href="mailto:suppereditclub@gmail.com"
-          className="btn-primary"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            backgroundColor: "var(--color-terracotta)",
-            color: "var(--color-cream)",
-            borderColor: "var(--color-terracotta)",
-          }}
-        >
+        <a href="mailto:suppereditclub@gmail.com" className="btn-primary">
           E-Mail schreiben
         </a>
       </section>
