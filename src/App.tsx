@@ -40,7 +40,7 @@ export default function App() {
 
     const previewImages = [...recipes]
       .reverse()
-      .slice(0, 4)
+      .slice(0, 2)
       .map((r) => r.image)
       .filter((src): src is string => Boolean(src));
 
@@ -71,7 +71,7 @@ export default function App() {
         settled = true;
         setImagesReady(true);
       }
-    }, 1500);
+    }, 600);
 
     return () => clearTimeout(timeout);
   }, [loading, recipes]);
