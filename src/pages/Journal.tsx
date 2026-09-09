@@ -43,7 +43,6 @@ export default function Journal() {
           <div className="specimen-title"><h2>{entry.title}</h2><ArrowUpRight size={23} strokeWidth={1.2} aria-hidden="true" /></div>
           {entry.latinName && <p className="specimen-latin">{entry.latinName}</p>}
           {entry.intro && <p className="specimen-intro">{entry.intro}</p>}
-          <span className="specimen-read">Steckbrief entdecken <span aria-hidden="true">↗</span></span>
         </Link>
       </li>)}</ul> : <div className="herbarium-empty"><h2>{entries.length ? 'Hier wächst noch kein Treffer.' : 'Die Sammlung beginnt hier.'}</h2><p>{entries.length ? 'Versuche einen anderen Suchbegriff oder öffne die gesamte Sammlung.' : 'Die ersten Pflanzenporträts folgen bald.'}</p>{(query || season || category !== 'Alle') && <button type="button" onClick={() => setParams({})}><X size={15} aria-hidden="true" /> Filter zurücksetzen</button>}</div>}
       <footer className="herbarium-colophon"><span>Von der Pflanze zum Teller.</span><p>Zum Nachschlagen, Wiederentdecken<br />und Ausprobieren.</p></footer>
