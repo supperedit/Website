@@ -141,7 +141,7 @@ export default function Recipes() {
 
       <style>{`
         .recipe-skeleton-image {
-          aspect-ratio: 3/4;
+          aspect-ratio: 4/5;
           border-radius: 12px;
           background: linear-gradient(90deg, var(--color-line) 25%, rgba(43,18,16,0.08) 50%, var(--color-line) 75%);
           background-size: 200% 100%;
