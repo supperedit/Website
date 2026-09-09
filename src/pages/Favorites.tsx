@@ -26,14 +26,14 @@ export default function Favorites() {
         {error && <p style={{ color: "var(--color-muted)" }}>Rezepte konnten gerade nicht geladen werden.</p>}
 
         {!loading && !error && savedRecipes.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 340px))", justifyContent: "center", gap: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 300px))", justifyContent: "center", gap: 28 }}>
             {savedRecipes.map((r) => (
               <Link key={r.slug} to={`/rezepte/${r.slug}`} className="recipe-card-hover">
                 <div
                   className="recipe-card-image"
                   style={{
                     position: "relative",
-                    aspectRatio: "3/4",
+                    aspectRatio: "4/5",
                     borderRadius: 12,
                     backgroundColor: r.image ? "transparent" : "var(--color-sky)",
                     backgroundImage: r.image ? `url(${r.image})` : undefined,
@@ -43,8 +43,8 @@ export default function Favorites() {
                 >
                   <FavoriteButton slug={r.slug} title={r.title} style={{ position: "absolute", top: 10, right: 10 }} />
                 </div>
-                <span style={{ display: "block", marginTop: 12, fontSize: 12, color: "var(--color-terracotta)" }}>{r.category}</span>
-                <h3 className="font-display" style={{ fontSize: 20, margin: 0 }}>{r.title}</h3>
+                <span className="category-label" style={{ marginTop: 12 }}>{r.category}</span>
+                <h3 className="font-display" style={{ fontSize: 20, margin: "6px 0 0" }}>{r.title}</h3>
               </Link>
             ))}
           </div>
