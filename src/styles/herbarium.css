@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap');
 .herbarium {
   --herb-line: rgba(67,9,8,.22);
   --herb-muted: #746658;
@@ -15,12 +16,12 @@
 .herbarium-introduction p { font-family: var(--font-body); font-size: clamp(23px,2.7vw,32px); line-height: 1.3; margin: 0 0 20px; }
 .herbarium-introduction em { font-weight: 400; }
 .herbarium-introduction > span { display: block; font-size: 13px; line-height: 1.7; color: var(--herb-muted); max-width: 300px; }
-.herbarium-tools { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 22px 32px; padding: 8px 0 18px; }
-.herbarium-categories { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1 1 220px; }
-.herbarium-categories button { position: relative; min-height: 44px; padding: 11px 20px; background: transparent; border: 1px solid transparent; border-radius: 999px; color: var(--color-maroon); font-size: 14px; line-height: 1.4; transition: background-color .2s ease, transform .2s ease; }
-.herbarium-categories button[aria-pressed="true"] { background: var(--color-dusty-blue); color: var(--color-maroon); }
-.herbarium-categories sup { margin-left: 7px; font-size: 9px; }
-.herbarium-search-row { display: flex; align-items: center; gap: 12px; flex: 1 1 460px; max-width: 610px; min-width: 0; }
+.herbarium-tools { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; padding: 8px 0 24px; }
+.herbarium-categories { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.herbarium-categories button { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--color-line); background: transparent; color: var(--color-ink); font: 400 13px/1.5 var(--font-body); cursor: pointer; max-width: 100%; overflow-wrap: anywhere; transition: background-color .2s ease; }
+.herbarium-categories button[aria-pressed="true"] { background: var(--color-terracotta); color: var(--color-cream); }
+.herbarium-category-count { margin-left: 6px; opacity: .65; font-size: 11px; }
+.herbarium-search-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(180px,240px); align-items: center; gap: 20px; width: 100%; min-width: 0; }
 .herbarium-search { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; min-height: 48px; padding: 0 18px; background: rgba(133,169,199,.12); border: 1px solid rgba(67,9,8,.16); border-radius: 999px; transition: background-color .2s ease, border-color .2s ease; }
 .herbarium-search svg { flex-shrink: 0; color: var(--color-maroon); }
 .herbarium-search:focus-within { border-color: var(--color-maroon); background: rgba(133,169,199,.2); outline: 2px solid var(--color-cream); outline-offset: 2px; }
@@ -28,10 +29,11 @@
 .herbarium-search input::placeholder { color: var(--herb-muted); opacity: 1; }
 .herbarium .herbarium-search input:focus-visible { outline: none; }
 .herbarium select:focus-visible, .herbarium summary:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 4px; }
-.herbarium-season { position: relative; display: flex; align-items: center; flex-shrink: 0; }
+.herbarium-season { position: relative; display: block; min-width: 0; }
+.herbarium-season > span { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .herbarium-season::after { content: ''; position: absolute; right: 18px; top: calc(50% - 4px); width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg); pointer-events: none; }
-.herbarium-season select { appearance: none; -webkit-appearance: none; max-width: 220px; min-height: 48px; background: transparent; font: inherit; font-size: 13px; color: var(--color-maroon); border: 1px solid rgba(67,9,8,.24); border-radius: 999px; padding: 12px 38px 12px 20px; cursor: pointer; }
-@media (hover:hover) { .herbarium-categories button:hover { background: rgba(133,169,199,.22); } .herbarium-categories button[aria-pressed="true"]:hover { background: var(--color-dusty-blue); transform: translateY(-1px); } .herbarium-season select:hover { background: rgba(133,169,199,.12); } }
+.herbarium-season select { appearance: none; -webkit-appearance: none; width: 100%; max-width: 100%; min-height: 48px; background: transparent; font: inherit; font-size: 13px; color: var(--color-maroon); border: 1px solid rgba(67,9,8,.24); border-radius: 999px; padding: 12px 38px 12px 20px; cursor: pointer; }
+@media (hover:hover) { .herbarium-categories button:not([aria-pressed="true"]):hover { background: rgba(124,69,53,.08); } .herbarium-categories button[aria-pressed="true"]:hover { background: var(--color-terracotta); } .herbarium-season select:hover { background: rgba(133,169,199,.12); } }
 .herbarium-index { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; letter-spacing: .06em; color: var(--herb-muted); padding: 20px 0 28px; }
 .herbarium-index p { margin: 0; }
 .herbarium-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 48px 30px; }
@@ -104,13 +106,11 @@
   .herbarium-kicker { margin-bottom: 17px; }
   .herbarium-introduction { padding: 0; max-width: none; }
   .herbarium-introduction p { font-size: 24px; }
-  .herbarium-tools { gap: 18px; }
-  .herbarium-categories { flex-basis: 100%; gap: 6px; }
-  .herbarium-categories button { padding-inline: 17px; }
-  .herbarium-search-row { flex: 1 1 100%; flex-wrap: wrap; gap: 10px; max-width: none; }
-  .herbarium-search { flex-basis: 100%; }
+  .herbarium-tools { gap: 20px; }
+  .herbarium-categories { gap: 8px; }
+  .herbarium-search-row { grid-template-columns: minmax(0,1fr); gap: 12px; }
   .herbarium-search input { font-size: 16px; }
-  .herbarium-season { margin-left: auto; }
+  .herbarium-season { width: 100%; }
   .herbarium-season select { max-width: 100%; font-size: 16px; }
   .herbarium-grid { grid-template-columns: 1fr; gap: 36px; }
   .specimen-image, .specimen-type { aspect-ratio: 1; }
@@ -128,3 +128,20 @@
 @media (prefers-reduced-motion: reduce) { .specimen img, .specimen-title svg { transition: none; } .specimen:hover img, .specimen:hover .specimen-title svg { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) { .herbarium-categories button, .herbarium-search { transition: none; } .herbarium-categories button[aria-pressed="true"]:hover { transform: none; } }
+
+@media (max-width: 600px) {
+  .plant-layout--text .plant-sheet { grid-row: 1; }
+  .plant-layout--text .plant-story { grid-row: 2; }
+}
+
+.plant-lead { max-width: 680px; margin-bottom: 44px; }
+.plant-margin-note { display: flex; align-items: flex-start; gap: 12px; margin: -12px 0 36px; padding: 0 8px 8px; }
+.plant-margin-note svg { flex: 0 0 64px; width: 64px; height: 60px; color: var(--color-terracotta); }
+.plant-margin-note p { font: 15px/1.9 'Homemade Apple', cursive; color: var(--color-maroon); margin: 18px 0 0; max-width: 240px; overflow-wrap: anywhere; transform: rotate(-3deg); }
+.plant-margin-note--text { margin-top: 0; padding-left: 0; }
+.plant-margin-note--text p { margin-top: 0; }
+.plant-story > .plant-section:first-child { margin-top: 0; }
+@media (max-width: 600px) {
+  .plant-margin-note { margin-bottom: 32px; }
+  .plant-margin-note p { font-size: 14px; transform: none; }
+}
