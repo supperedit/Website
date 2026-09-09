@@ -9,7 +9,7 @@ import SEO from "../components/SEO";
 import AnimatedLogo from "../components/AnimatedLogo";
 import SeasonalCalendarCard from "../components/SeasonalCalendarCard";
 import SupperPairing from "../components/SupperPairing";
-import heroImage from "../assets/images/hero.jpg";
+import heroImage from "../assets/images/hero.webp";
 import "../styles/hero.css";
 import CookieIcon from "../assets/icons/cookie.svg?react";
 import RollIcon from "../assets/icons/roll.svg?react";
@@ -21,7 +21,7 @@ import PastaIcon from "../assets/icons/pasta.svg?react";
 import SnackIcon from "../assets/icons/snack.svg?react";
 import SlowSipsIcon from "../assets/icons/slow-sips.svg?react";
 import PantryIcon from "../assets/icons/pantry.svg?react";
-import picnicImage from "../assets/images/picnic.jpg";
+import picnicImage from "../assets/images/picnic.webp";
 
 const marqueeText = "Recipes for people who don't follow recipes.";
 const marqueeSeparator = "   ·   ";
