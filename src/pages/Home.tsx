@@ -500,33 +500,6 @@ export default function Home() {
       <SupperPairing />
 
       <style>{`
-        .btn-primary, .btn-secondary {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          border-radius: 999px;
-          padding: 12px 24px;
-          font-size: 14px;
-          text-decoration: none;
-          cursor: pointer;
-          transition: opacity 0.2s ease, background 0.2s ease;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-        .btn-primary {
-          background-color: var(--color-terracotta);
-          color: var(--color-cream);
-          border: 1px solid var(--color-terracotta);
-        }
-        .btn-primary:hover { opacity: 0.9; }
-        .btn-secondary {
-          background: none;
-          color: var(--color-ink);
-          border: 1px solid var(--color-line);
-        }
-        .btn-secondary:hover { background: rgba(43, 18, 16, 0.06); }
-        .btn-small { padding: 10px 20px; font-size: 13px; }
-
         .newest-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
