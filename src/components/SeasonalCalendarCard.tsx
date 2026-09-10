@@ -296,7 +296,7 @@ export default function SeasonalCalendarCard() {
                       aria-hidden={offset !== 0}
                       tabIndex={offset === 0 ? 0 : -1}
                     >
-                      <SpecimenCard entry={entry} showArrow={false} />
+                      <SpecimenCard entry={entry} />
                     </Link>
                   );
                 })}
@@ -564,13 +564,7 @@ export default function SeasonalCalendarCard() {
         .sc-stack-card {
           position: absolute;
           inset: 8px 14px 8px 8px;
-          display: flex;
-          flex-direction: column;
-          background: #FBFAF3;
-          border-radius: 3px;
-          padding: 10px 10px 12px;
           text-decoration: none;
-          border-bottom: none;
           box-shadow: 0 4px 14px rgba(43,18,16,0.14);
           transition: transform 0.25s ease, opacity 0.25s ease;
           pointer-events: none;
@@ -593,21 +587,11 @@ export default function SeasonalCalendarCard() {
         .sc-stack-card.is-active {
           pointer-events: auto;
         }
-        .sc-stack-card .specimen-top { padding-bottom: 6px; }
-        .sc-stack-card .specimen-image,
-        .sc-stack-card .specimen-type {
-          flex: 1;
-          min-height: 0;
-          aspect-ratio: auto;
-          background: #FBFAF3;
-        }
-        .sc-stack-card .specimen-image img {
-          object-fit: contain;
-        }
-        .sc-stack-card .specimen-title { margin-top: 8px; }
-        .sc-stack-card .specimen-title h2 { font-size: clamp(14px, 1.8vw, 17px); }
-        .sc-stack-card .specimen-latin { font-size: 10px; margin: 2px 0 0; }
-        .sc-stack-card .specimen-intro { display: none; }
+        .sc-stack-card .specimen-name { font-size: clamp(14px, 1.8vw, 17px); }
+        .sc-stack-card .specimen-latin { font-size: 10px; }
+        .sc-stack-card .specimen-row { padding: 6px 10px; }
+        .sc-stack-card .specimen-meta-cell { padding: 4px 10px; }
+        .sc-stack-card .specimen-meta-value { font-size: 13px; }
         .sc-stack-nav {
           display: flex;
           align-items: center;
