@@ -1,32 +1,42 @@
-import { Leaf, ArrowUpRight } from "lucide-react";
-import { plantGroup } from "../data/herbarium";
+import { Leaf } from "lucide-react";
 import type { JournalEntry } from "../data/journalTypes";
 
 interface SpecimenCardProps {
   entry: JournalEntry;
-  showArrow?: boolean;
 }
 
-export default function SpecimenCard({ entry, showArrow = true }: SpecimenCardProps) {
+export default function SpecimenCard({ entry }: SpecimenCardProps) {
+  const hasMeta = Boolean(entry.season || entry.edibleParts);
   return (
-    <>
-      <div className="specimen-top">
-        <span>{plantGroup(entry)}</span>
-        <span>{entry.season}</span>
+    <div className="specimen-card">
+      <div className="specimen-photo">
+        {entry.image
+          ? <img src={entry.image} alt="" loading="lazy" />
+          : <div className="specimen-photo-placeholder" aria-hidden="true">
+              <Leaf size={36} strokeWidth={1.2} />
+            </div>
+        }
       </div>
-      {entry.image
-        ? <div className="specimen-image"><img src={entry.image} alt="" loading="lazy" /></div>
-        : <div className="specimen-type" aria-hidden="true">
-            <Leaf size={48} strokeWidth={1.2} />
-            <em>{entry.latinName || "Botanische Notizen"}</em>
-          </div>
-      }
-      <div className="specimen-title">
-        <h2>{entry.title}</h2>
-        {showArrow && <ArrowUpRight size={23} strokeWidth={1.2} aria-hidden="true" />}
+      <div className="specimen-row specimen-row-title">
+        <h2 className="specimen-name">{entry.title}</h2>
+        {entry.latinName && <span className="specimen-latin">{entry.latinName}</span>}
       </div>
-      {entry.latinName && <p className="specimen-latin">{entry.latinName}</p>}
-      {entry.intro && <p className="specimen-intro">{entry.intro}</p>}
-    </>
+      {hasMeta && (
+        <div className="specimen-row specimen-row-meta">
+          {entry.season && (
+            <div className="specimen-meta-cell">
+              <span className="specimen-meta-label">Saison:</span>
+              <span className="specimen-meta-value">{entry.season}</span>
+            </div>
+          )}
+          {entry.edibleParts && (
+            <div className="specimen-meta-cell">
+              <span className="specimen-meta-label">Essbare Teile:</span>
+              <span className="specimen-meta-value">{entry.edibleParts}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
