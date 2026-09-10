@@ -69,29 +69,26 @@
   flex: 1 1 auto;
   min-width: 0;
 }
-.specimen-latin {
-  font-family: 'Homemade Apple', cursive;
-  font-size: clamp(12px, 1.4vw, 16px);
-  color: var(--color-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 40%;
-  flex: 0 1 auto;
-}
-.specimen-row-meta { display: flex; padding: 0; min-height: 62px; }
-.specimen-meta-cell { flex: 1; min-width: 0; padding: 6px 12px; display: flex; flex-direction: column; gap: 2px; justify-content: center; }
-.specimen-meta-cell + .specimen-meta-cell { border-left: 1px solid var(--herb-line); }
-.specimen-meta-label { font-family: var(--font-body); font-size: 10px; color: var(--color-muted); white-space: nowrap; }
+.specimen-inline-fact { display: flex; align-items: baseline; gap: 5px; flex: 0 0 auto; max-width: 42%; }
+.specimen-inline-fact .specimen-meta-label { flex-shrink: 0; }
+.specimen-row-single { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; min-height: 24px; }
+.specimen-meta-label { font-family: var(--font-body); font-size: 10px; color: var(--color-muted); white-space: nowrap; flex-shrink: 0; }
 .specimen-meta-value {
   font-family: 'Homemade Apple', cursive;
-  font-size: clamp(14px, 1.6vw, 18px);
-  line-height: 1.2;
+  font-size: clamp(13px, 1.5vw, 17px);
+  line-height: 1.25;
   color: var(--color-maroon);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.specimen-meta-value--inline {
+  font-size: clamp(12px, 1.4vw, 15px);
+  -webkit-line-clamp: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 @media (hover:hover) {
   .specimen:hover .specimen-photo img { transform: scale(1.025); }
@@ -165,7 +162,6 @@
   .herbarium-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 8px; }
   .herbarium-loading { grid-template-columns: repeat(2,1fr); gap: 8px; }
   .specimen-name { font-size: 16px; }
-  .specimen-latin { display: none; }
   .specimen-meta-label { font-size: 9px; }
   .herbarium-colophon { flex-direction: column; margin-top: 32px; }
   .herbarium-back { margin-bottom: 24px; }
