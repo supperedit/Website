@@ -35,23 +35,39 @@
 .herbarium-index { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; letter-spacing: .06em; color: var(--color-muted); padding: 10px 0 16px; }
 .herbarium-index p { margin: 0; }
 .herbarium-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px 14px; }
-.specimen { display: block; height: 100%; border-bottom: 1px solid var(--herb-line); padding-bottom: 14px; }
-.specimen-top { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; padding-bottom: 8px; color: var(--color-muted); }
-.specimen-image { aspect-ratio: 4/5; overflow: hidden; background: color-mix(in srgb, var(--color-ink) 5%, var(--color-cream) 95%); border-radius: 6px; }
-.specimen-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
-.specimen-type { background: color-mix(in srgb, var(--color-sky) 22%, var(--color-cream) 78%); aspect-ratio: 4/5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; border: 1px solid var(--herb-line); outline: 1px solid var(--herb-line); outline-offset: -7px; padding: 16px; border-radius: 6px; }
-.specimen-type > span { font-family: var(--font-display); font-size: clamp(60px,7vw,100px); line-height: 1; color: var(--color-dusty-blue); }
-.specimen-type svg { color: var(--color-dusty-blue); }
-.specimen-type em { font-family: var(--font-body); font-size: 11px; text-align: center; color: var(--color-muted); }
-.specimen-title { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; margin-top: 12px; }
-.specimen-title h2 { font-family: var(--font-display); font-size: 20px; line-height: 1.2; color: var(--color-maroon); overflow-wrap: anywhere; }
-.specimen-title svg { flex-shrink: 0; opacity: 0; transition: opacity .2s ease, transform .25s ease; }
-.specimen-latin { font-family: var(--font-body); font-style: italic; font-size: 11px; color: var(--color-muted); margin: 4px 0 8px; }
-.specimen-intro { font-size: 12px; line-height: 1.8; color: var(--color-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin: 8px 0 0; }
+.specimen { display: block; height: 100%; text-decoration: none; color: inherit; }
+.specimen-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--herb-line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--color-cream);
+}
+.specimen-photo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cream);
+  padding: 10px;
+}
+.specimen-photo img { max-width: 100%; max-height: 100%; width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .35s ease; }
+.specimen-photo-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--color-dusty-blue); background: color-mix(in srgb, var(--color-sky) 22%, var(--color-cream) 78%); }
+.specimen-row { border-top: 1px solid var(--herb-line); padding: 8px 12px; }
+.specimen-row-title { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.specimen-name { font-family: 'Homemade Apple', cursive; font-size: clamp(18px, 2.4vw, 26px); line-height: 1; color: var(--color-maroon); overflow-wrap: anywhere; }
+.specimen-latin { font-family: 'Homemade Apple', cursive; font-size: clamp(12px, 1.4vw, 16px); color: var(--color-muted); white-space: nowrap; }
+.specimen-row-meta { display: flex; padding: 0; }
+.specimen-meta-cell { flex: 1; min-width: 0; padding: 6px 12px; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.specimen-meta-cell + .specimen-meta-cell { border-left: 1px solid var(--herb-line); }
+.specimen-meta-label { font-family: var(--font-body); font-size: 10px; color: var(--color-muted); white-space: nowrap; }
+.specimen-meta-value { font-family: 'Homemade Apple', cursive; font-size: clamp(14px, 1.6vw, 18px); color: var(--color-maroon); overflow-wrap: anywhere; }
 @media (hover:hover) {
-  .specimen:hover .specimen-title svg { opacity: 1; transform: translate(3px,-3px); }
-  .specimen:hover img { transform: scale(1.025); }
-  .specimen:hover .specimen-title h2 { text-decoration: underline; text-underline-offset: 3px; }
+  .specimen:hover .specimen-photo img { transform: scale(1.025); }
+  .specimen:hover .specimen-name { text-decoration: underline; text-underline-offset: 3px; }
 }
 .herbarium-colophon { border-top: 1px solid var(--herb-line); margin-top: 48px; padding-top: 18px; display: flex; justify-content: space-between; gap: 20px; align-items: start; }
 .herbarium-colophon > span { font: italic 17px var(--font-body); }
@@ -120,11 +136,9 @@
   .herbarium-season select { max-width: 100%; font-size: 16px; }
   .herbarium-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 8px; }
   .herbarium-loading { grid-template-columns: repeat(2,1fr); gap: 8px; }
-  .specimen-title h2 { font-size: 15px; }
+  .specimen-name { font-size: 16px; }
   .specimen-latin { display: none; }
-  .specimen-intro { display: none; }
-  .specimen-top { font-size: 8px; padding-bottom: 6px; }
-  .specimen-type > span { font-size: 68px; }
+  .specimen-meta-label { font-size: 9px; }
   .herbarium-colophon { flex-direction: column; margin-top: 32px; }
   .herbarium-back { margin-bottom: 24px; }
   .plant-heading { align-items: start; gap: 10px; flex-direction: column; }
@@ -134,7 +148,7 @@
   .plant-intro { font-size: 17px; }
   .plant-recipes ul { grid-template-columns: 1fr; }
 }
-@media (prefers-reduced-motion: reduce) { .specimen img, .specimen-title svg { transition: none; } .specimen:hover img { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .specimen-photo img { transition: none; } .specimen:hover .specimen-photo img { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .herbarium-categories button, .herbarium-search { transition: none; } }
 @media (max-width: 600px) {
   .plant-layout--text .plant-sheet { grid-row: 1; }
