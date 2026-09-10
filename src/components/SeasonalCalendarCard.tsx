@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { seasonalCalendar } from "../data/seasonalCalendar";
 import { dinnerIdeas, type DinnerIdea } from "../data/dinnerIdeas";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import { useJournal } from "../data/useJournal";
+import SpecimenCard from "./SpecimenCard";
 import type { Recipe } from "../data/recipeTypes";
+import "../styles/herbarium.css";
 
 const MONTH_NAMES = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -138,6 +140,13 @@ export default function SeasonalCalendarCard() {
       )
     ).slice(0, 6);
   }, [entries, currentMonthName]);
+
+  const [cardIndex, setCardIndex] = useState(0);
+  useEffect(() => { setCardIndex(0); }, [seasonalEntries]);
+  const goToCard = (delta: number) => {
+    if (seasonalEntries.length === 0) return;
+    setCardIndex((i) => (i + delta + seasonalEntries.length) % seasonalEntries.length);
+  };
 
   const ideaDays = useMemo(() => {
     const s = new Set<number>();
@@ -273,23 +282,37 @@ export default function SeasonalCalendarCard() {
           </div>
 
           {seasonalEntries.length > 0 ? (
-            <div className="sc-herb-list">
-              {seasonalEntries.map(entry => (
-                <Link
-                  key={entry.slug}
-                  to={`/journal/${entry.slug}`}
-                  className="sc-herb-item"
-                >
-                  {entry.image
-                    ? <img src={entry.image} alt="" loading="lazy" className="sc-herb-img" />
-                    : <div className="sc-herb-img sc-herb-placeholder" aria-hidden="true">
-                        <span>{entry.title.slice(0, 1)}</span>
-                      </div>
-                  }
-                  <span className="sc-herb-name">{entry.title}</span>
-                </Link>
-              ))}
-            </div>
+            <>
+              <div className="sc-stack" aria-roledescription="Karussell" aria-label="Saisonale Zutaten">
+                {seasonalEntries.map((entry, i) => {
+                  const offset = (i - cardIndex + seasonalEntries.length) % seasonalEntries.length;
+                  if (offset > 2) return null;
+                  return (
+                    <Link
+                      key={entry.slug}
+                      to={`/journal/${entry.slug}`}
+                      className={`sc-stack-card specimen${offset === 0 ? " is-active" : ""}`}
+                      style={{ "--sc-depth": offset } as CSSProperties}
+                      aria-hidden={offset !== 0}
+                      tabIndex={offset === 0 ? 0 : -1}
+                    >
+                      <SpecimenCard entry={entry} showArrow={false} />
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="sc-stack-nav">
+                <button type="button" className="sc-nav" onClick={() => goToCard(-1)} aria-label="Vorherige Zutat">
+                  <ChevronLeft size={14} aria-hidden />
+                </button>
+                <span className="sc-stack-count" aria-live="polite">
+                  {cardIndex + 1} / {seasonalEntries.length}
+                </span>
+                <button type="button" className="sc-nav" onClick={() => goToCard(1)} aria-label="Nächste Zutat">
+                  <ChevronRight size={14} aria-hidden />
+                </button>
+              </div>
+            </>
           ) : (
             <div className="sc-seasonal-pills">
               {(seasonalCalendar[monthIndex0]?.items ?? []).map((item) => (
@@ -531,54 +554,52 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
-        .sc-herb-list {
+        .sc-stack {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 3 / 4;
+        }
+        .sc-stack-card {
+          position: absolute;
+          inset: 0;
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          overflow-y: auto;
+          background: #F7F6EC;
+          border-radius: 12px;
+          padding: 14px 14px 16px;
+          text-decoration: none;
+          border-bottom: none;
+          box-shadow: 0 6px 18px rgba(43,18,16,0.12);
+          transform: translateY(calc(var(--sc-depth) * 10px)) scale(calc(1 - var(--sc-depth) * 0.05));
+          transform-origin: top center;
+          opacity: calc(1 - var(--sc-depth) * 0.35);
+          z-index: calc(10 - var(--sc-depth));
+          pointer-events: none;
+          transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+        .sc-stack-card.is-active {
+          pointer-events: auto;
+        }
+        .sc-stack-card .specimen-image,
+        .sc-stack-card .specimen-type {
           flex: 1;
           min-height: 0;
         }
-        .sc-herb-item {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #F7F6EC;
-          border-radius: 10px;
-          padding: 6px 10px 6px 6px;
-          text-decoration: none;
-          transition: background 0.15s ease;
-        }
-        .sc-herb-item:hover {
-          background: var(--color-blush, #f6cdd6);
-        }
-        .sc-herb-img {
-          width: clamp(28px, 4vw, 40px);
-          height: clamp(28px, 4vw, 40px);
-          border-radius: 6px;
-          object-fit: cover;
-          flex-shrink: 0;
-        }
-        .sc-herb-placeholder {
-          background: color-mix(in srgb, var(--color-sky, #c7dfe3) 30%, #F7F6EC 70%);
+        .sc-stack-card .specimen-intro { display: none; }
+        .sc-stack-nav {
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 14px;
+          padding-top: 6px;
         }
-        .sc-herb-placeholder span {
-          font-family: var(--font-display);
-          font-size: clamp(12px, 2vw, 18px);
-          color: var(--color-dusty-blue, #85a9c7);
-          line-height: 1;
-        }
-        .sc-herb-name {
+        .sc-stack-count {
           font-family: var(--font-body, 'Elms Sans', sans-serif);
-          font-weight: 300;
-          font-size: clamp(11px, 1.3vw, 14px);
+          font-size: clamp(10px, 1.2vw, 12px);
           color: var(--color-ink, #2b1210);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          opacity: 0.55;
+          min-width: 34px;
+          text-align: center;
         }
         .sc-herb-more {
           font-family: var(--font-body, 'Elms Sans', sans-serif);
@@ -616,9 +637,7 @@ export default function SeasonalCalendarCard() {
           .sc-dow-short { display: inline; }
           .sc-cell { overflow: visible; }
           .sc-idea-title { font-size: 9px; }
-          .sc-herb-list { flex-direction: row; flex-wrap: wrap; overflow: visible; }
-          .sc-herb-item { flex: 0 0 auto; }
-          .sc-herb-name { max-width: 80px; }
+          .sc-stack { max-width: 220px; margin-inline: auto; }
         }
         @media (min-width: 701px) and (max-width: 960px) {
           .sc-root { aspect-ratio: auto; min-height: 500px; }
@@ -626,7 +645,7 @@ export default function SeasonalCalendarCard() {
           .sc-dow-short { display: inline; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .sc-recipe-link img, .sc-herb-item { transition: none; }
+          .sc-recipe-link img, .sc-stack-card { transition: none; }
         }
       `}</style>
     </div>
