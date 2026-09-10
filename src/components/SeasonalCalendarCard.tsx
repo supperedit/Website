@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, type CSSProperties } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { seasonalCalendar } from "../data/seasonalCalendar";
@@ -292,7 +292,7 @@ export default function SeasonalCalendarCard() {
                       key={entry.slug}
                       to={`/journal/${entry.slug}`}
                       className={`sc-stack-card specimen${offset === 0 ? " is-active" : ""}`}
-                      style={{ "--sc-depth": offset } as CSSProperties}
+                      data-depth={offset}
                       aria-hidden={offset !== 0}
                       tabIndex={offset === 0 ? 0 : -1}
                     >
@@ -537,6 +537,7 @@ export default function SeasonalCalendarCard() {
           flex-direction: column;
           gap: 12px;
           padding-top: 2px;
+          height: 100%;
           min-height: 0;
         }
         .sc-seasonal-header {
@@ -557,34 +558,55 @@ export default function SeasonalCalendarCard() {
         .sc-stack {
           position: relative;
           width: 100%;
-          aspect-ratio: 3 / 4;
+          flex: 1;
+          min-height: 0;
         }
         .sc-stack-card {
           position: absolute;
-          inset: 0;
+          inset: 8px 14px 8px 8px;
           display: flex;
           flex-direction: column;
-          background: #F7F6EC;
-          border-radius: 12px;
-          padding: 14px 14px 16px;
+          background: #FBFAF3;
+          border-radius: 3px;
+          padding: 10px 10px 12px;
           text-decoration: none;
           border-bottom: none;
-          box-shadow: 0 6px 18px rgba(43,18,16,0.12);
-          transform: translateY(calc(var(--sc-depth) * 10px)) scale(calc(1 - var(--sc-depth) * 0.05));
-          transform-origin: top center;
-          opacity: calc(1 - var(--sc-depth) * 0.35);
-          z-index: calc(10 - var(--sc-depth));
-          pointer-events: none;
+          box-shadow: 0 4px 14px rgba(43,18,16,0.14);
           transition: transform 0.25s ease, opacity 0.25s ease;
+          pointer-events: none;
+        }
+        .sc-stack-card[data-depth="0"] {
+          transform: rotate(-1.5deg);
+          z-index: 3;
+          opacity: 1;
+        }
+        .sc-stack-card[data-depth="1"] {
+          transform: rotate(3deg) translate(10px, 10px);
+          z-index: 2;
+          opacity: 0.9;
+        }
+        .sc-stack-card[data-depth="2"] {
+          transform: rotate(-4deg) translate(-8px, 16px);
+          z-index: 1;
+          opacity: 0.75;
         }
         .sc-stack-card.is-active {
           pointer-events: auto;
         }
+        .sc-stack-card .specimen-top { padding-bottom: 6px; }
         .sc-stack-card .specimen-image,
         .sc-stack-card .specimen-type {
           flex: 1;
           min-height: 0;
+          aspect-ratio: auto;
+          background: #FBFAF3;
         }
+        .sc-stack-card .specimen-image img {
+          object-fit: contain;
+        }
+        .sc-stack-card .specimen-title { margin-top: 8px; }
+        .sc-stack-card .specimen-title h2 { font-size: clamp(14px, 1.8vw, 17px); }
+        .sc-stack-card .specimen-latin { font-size: 10px; margin: 2px 0 0; }
         .sc-stack-card .specimen-intro { display: none; }
         .sc-stack-nav {
           display: flex;
@@ -637,7 +659,7 @@ export default function SeasonalCalendarCard() {
           .sc-dow-short { display: inline; }
           .sc-cell { overflow: visible; }
           .sc-idea-title { font-size: 9px; }
-          .sc-stack { max-width: 220px; margin-inline: auto; }
+          .sc-stack { flex: none; width: 100%; max-width: 260px; aspect-ratio: 3 / 4; margin-inline: auto; }
         }
         @media (min-width: 701px) and (max-width: 960px) {
           .sc-root { aspect-ratio: auto; min-height: 500px; }
