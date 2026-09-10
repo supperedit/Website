@@ -1,6 +1,15 @@
+import { isRateLimited, rateLimitResponse } from "./_rateLimit";
+
 interface Env {
   NOTION_TOKEN: string;
   NOTION_DATABASE_ID: string;
+  RATE_LIMIT?: KVNamespace;
+}
+
+const ALLOWED_ORIGIN = "https://www.supperedit.de";
+
+function corsHeaders(): Record<string, string> {
+  return { "Access-Control-Allow-Origin": ALLOWED_ORIGIN, Vary: "Origin" };
 }
 
 interface NotionRichText {
@@ -138,12 +147,17 @@ async function queryAll(databaseId: string, token: string): Promise<NotionPage[]
 }
 
 export const onRequest: PagesFunction<Env> = async (context) => {
-  const { NOTION_TOKEN, NOTION_DATABASE_ID } = context.env;
+  const { NOTION_TOKEN, NOTION_DATABASE_ID, RATE_LIMIT } = context.env;
+
+  if (await isRateLimited(context.request, RATE_LIMIT, "recipes")) {
+    return rateLimitResponse();
+  }
 
   if (!NOTION_TOKEN || !NOTION_DATABASE_ID) {
-    return new Response(JSON.stringify({ error: "NOTION_TOKEN or NOTION_DATABASE_ID not set" }), {
+    console.error("recipes: NOTION_TOKEN or NOTION_DATABASE_ID not set");
+    return new Response(JSON.stringify({ error: "Server-Konfigurationsfehler" }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders() },
     });
   }
 
@@ -202,13 +216,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "s-maxage=300, stale-while-revalidate=60",
-        "Access-Control-Allow-Origin": "*",
+        ...corsHeaders(),
       },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
+    console.error("recipes:", err);
+    return new Response(JSON.stringify({ error: "Rezepte konnten nicht geladen werden." }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders() },
     });
   }
 };
