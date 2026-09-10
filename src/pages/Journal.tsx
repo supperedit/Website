@@ -1,205 +1,278 @@
-import { isRateLimited, rateLimitResponse } from "./_rateLimit";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ChevronDown, Search, X } from 'lucide-react';
+import { useJournal } from '../data/useJournal';
+import { matchesSearch, matchesSeason, plantGroup } from '../data/herbarium';
+import SpecimenCard from '../components/SpecimenCard';
+import SEO from '../components/SEO';
+import '../styles/herbarium.css';
 
-interface Env {
-  NOTION_TOKEN: string;
-  NOTION_JOURNAL_DATABASE_ID: string;
-  NOTION_DATABASE_ID: string;
-  RATE_LIMIT?: KVNamespace;
+interface SeasonDropdownProps {
+  value: string;
+  options: string[];
+  onChange: (val: string) => void;
 }
 
-const ALLOWED_ORIGIN = "https://www.supperedit.de";
+function SeasonDropdown({ value, options, onChange }: SeasonDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-function corsHeaders(): Record<string, string> {
-  return { "Access-Control-Allow-Origin": ALLOWED_ORIGIN, Vary: "Origin" };
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  const label = value || 'Alle Jahreszeiten';
+
+  return (
+    <div ref={ref} className="season-dropdown" aria-label="Jahreszeit wählen">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        className={`season-dropdown-trigger ${open ? 'is-open' : ''}`}
+      >
+        <span>{label}</span>
+        <ChevronDown size={13} aria-hidden="true" className="season-dropdown-chevron" />
+      </button>
+
+      {open && (
+        <ul role="listbox" aria-label="Jahreszeit" className="season-dropdown-list">
+          {['', ...options].map(opt => (
+            <li
+              key={opt || '__all__'}
+              role="option"
+              aria-selected={value === opt}
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className={`season-dropdown-option ${value === opt ? 'is-selected' : ''}`}
+            >
+              {opt || 'Alle Jahreszeiten'}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <style>{`
+        .season-dropdown {
+          position: relative;
+          min-width: 0;
+        }
+        .season-dropdown-trigger {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          width: 100%;
+          min-height: 40px;
+          padding: 9px 14px 9px 16px;
+          background: transparent;
+          border: 1px solid rgba(67,9,8,.22);
+          border-radius: 999px;
+          color: var(--color-maroon);
+          font: 12px var(--font-body);
+          cursor: pointer;
+          transition: background 0.18s ease, border-color 0.18s ease;
+          white-space: nowrap;
+        }
+        .season-dropdown-trigger:hover,
+        .season-dropdown-trigger.is-open {
+          background: color-mix(in srgb, var(--color-blush) 30%, transparent);
+          border-color: var(--color-maroon);
+        }
+        .season-dropdown-trigger:focus-visible {
+          outline: 2px solid var(--color-terracotta);
+          outline-offset: 3px;
+        }
+        .season-dropdown-chevron {
+          flex-shrink: 0;
+          transition: transform 0.2s ease;
+        }
+        .season-dropdown-trigger.is-open .season-dropdown-chevron {
+          transform: rotate(180deg);
+        }
+        .season-dropdown-list {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          background: var(--color-cream);
+          border: 1px solid rgba(67,9,8,.16);
+          border-radius: 12px;
+          list-style: none;
+          margin: 0;
+          padding: 4px;
+          z-index: 50;
+          box-shadow: 0 6px 20px rgba(43,18,16,0.1);
+          animation: dropdownIn 0.15s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @keyframes dropdownIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .season-dropdown-option {
+          padding: 8px 12px;
+          font: 12px var(--font-body);
+          color: var(--color-maroon);
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background 0.12s ease;
+        }
+        .season-dropdown-option:hover {
+          background: color-mix(in srgb, var(--color-blush) 50%, transparent);
+        }
+        .season-dropdown-option.is-selected {
+          background: var(--color-blush);
+          font-weight: 500;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .season-dropdown-list { animation: none; }
+          .season-dropdown-chevron { transition: none; }
+          .season-dropdown-trigger { transition: none; }
+        }
+      `}</style>
+    </div>
+  );
 }
 
-interface NotionRichText {
-  plain_text: string;
+export default function Journal() {
+  const { entries, loading, error } = useJournal();
+  const [params, setParams] = useSearchParams();
+  const category = params.get('kategorie') || 'Alle';
+  const season = params.get('saison') || '';
+  const query = params.get('suche') || '';
+
+  const sorted = useMemo(() => [...entries].sort((a, b) => a.title.localeCompare(b.title, 'de')), [entries]);
+  const categories = ['Alle', ...new Set(sorted.map(plantGroup))];
+  const seasons = ['Frühling', 'Sommer', 'Herbst', 'Winter'].filter(value =>
+    entries.some(entry => matchesSeason(entry, value))
+  );
+  const filtered = sorted.filter(entry =>
+    (category === 'Alle' || plantGroup(entry) === category) &&
+    (!season || matchesSeason(entry, season)) &&
+    matchesSearch(entry, query)
+  );
+
+  const update = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value && value !== 'Alle') next.set(key, value); else next.delete(key);
+    setParams(next, { replace: true });
+  };
+
+  return (
+    <>
+      <SEO
+        title="Herbarium"
+        description="Saisonale Zutaten, kurze Küchenideen und kleine Impulse für dein Wohlbefinden."
+      />
+      <div className="herbarium">
+        <header className="herbarium-heading">
+          <div>
+            <p className="herbarium-kicker">Supper Edit / Das Zutatenarchiv</p>
+            <h1>Herbarium<span className="herbarium-heading-dot">.</span></h1>
+          </div>
+          <div className="herbarium-introduction">
+            <p>Was wächst.<br />Was schmeckt.<br /><em>Was auf den Tisch kommt.</em></p>
+            <span>Saisonale Zutaten, kurze Küchenideen und kleine Impulse für dein Wohlbefinden.</span>
+          </div>
+        </header>
+
+        <div className="herbarium-tools">
+          <nav className="herbarium-categories" aria-label="Pflanzengruppen filtern">
+            {categories.map(group => (
+              <button
+                type="button"
+                key={group}
+                aria-pressed={category === group}
+                onClick={() => update('kategorie', group)}
+              >
+                {group}
+                <span className="herbarium-category-count">
+                  {group === 'Alle' ? entries.length : entries.filter(e => plantGroup(e) === group).length}
+                </span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="herbarium-search-row">
+            <label className="herbarium-search">
+              <Search size={17} aria-hidden="true" />
+              <span className="sr-only">Im Herbarium suchen</span>
+              <input
+                type="search"
+                value={query}
+                onChange={e => update('suche', e.target.value)}
+                placeholder="Im Herbarium stöbern …"
+              />
+            </label>
+
+            <SeasonDropdown
+              value={season}
+              options={seasons}
+              onChange={val => update('saison', val)}
+            />
+          </div>
+        </div>
+
+        <div className="herbarium-index">
+          <p role="status" aria-live="polite">
+            {loading
+              ? 'Die Sammlung wird geladen …'
+              : error
+              ? 'Sammlung nicht verfügbar'
+              : `${filtered.length} ${filtered.length === 1 ? 'Eintrag' : 'Einträge'}`}
+          </p>
+          <span>Alphabetisch · A–Z</span>
+        </div>
+
+        {error ? (
+          <div className="herbarium-empty">
+            <h2>Die Sammlung lässt sich gerade nicht laden.</h2>
+            <p>Bitte versuche es gleich noch einmal.</p>
+            <button type="button" onClick={() => window.location.reload()}>Erneut laden</button>
+          </div>
+        ) : loading ? (
+          <div className="herbarium-loading" aria-hidden="true">
+            <div /><div /><div /><div />
+          </div>
+        ) : filtered.length ? (
+          <ul className="herbarium-grid" aria-label="Herbarium-Einträge">
+            {filtered.map(entry => (
+              <li key={entry.slug}>
+                <Link
+                  className="specimen"
+                  to={`/journal/${entry.slug}`}
+                  state={{ herbariumSearch: params.toString() }}
+                >
+                  <SpecimenCard entry={entry} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="herbarium-empty">
+            <h2>{entries.length ? 'Hier wächst noch kein Treffer.' : 'Die Sammlung beginnt hier.'}</h2>
+            <p>{entries.length
+              ? 'Versuche einen anderen Suchbegriff oder öffne die gesamte Sammlung.'
+              : 'Die ersten Pflanzenporträts folgen bald.'}
+            </p>
+            {(query || season || category !== 'Alle') && (
+              <button type="button" onClick={() => setParams({})}>
+                <X size={15} aria-hidden="true" /> Filter zurücksetzen
+              </button>
+            )}
+          </div>
+        )}
+
+        <footer className="herbarium-colophon">
+          <span>Von der Pflanze zum Teller.</span>
+          <p>Zum Nachschlagen, Wiederentdecken<br />und Ausprobieren.</p>
+        </footer>
+      </div>
+    </>
+  );
 }
-
-interface NotionProperty {
-  type: string;
-  title?: NotionRichText[];
-  rich_text?: NotionRichText[];
-  select?: { name: string } | null;
-  multi_select?: { name: string }[];
-  url?: string | null;
-  files?: { type: string; file?: { url: string }; external?: { url: string }; name: string }[];
-  relation?: { id: string }[];
-}
-
-interface NotionPage {
-  id: string;
-  properties: Record<string, NotionProperty>;
-}
-
-function richText(prop: NotionProperty | undefined): string {
-  if (!prop) return "";
-  if (prop.type === "title") return prop.title?.map((t) => t.plain_text).join("") ?? "";
-  if (prop.type === "rich_text") return prop.rich_text?.map((t) => t.plain_text).join("") ?? "";
-  return "";
-}
-
-function slugify(text: string): string {
-  const map: Record<string, string> = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
-  return text
-    .toLowerCase()
-    .replace(/[äöüß]/g, (c) => map[c] || c)
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-function imageUrl(prop: NotionProperty | undefined): string | undefined {
-  if (!prop) return undefined;
-  if (prop.type === "url" && prop.url) return prop.url;
-  if (prop.type === "files" && prop.files?.[0]) {
-    const f = prop.files[0];
-    if (f.type === "file" && f.file) return f.file.url;
-    if (f.type === "external" && f.external) return f.external.url;
-  }
-  return undefined;
-}
-
-async function queryAll(databaseId: string, token: string): Promise<NotionPage[]> {
-  const pages: NotionPage[] = [];
-
-  const dbRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Notion-Version": "2026-03-11",
-    },
-  });
-
-  let dataSourceIds: string[] = [databaseId];
-  if (dbRes.ok) {
-    const dbData = (await dbRes.json()) as { data_sources?: { id: string }[] };
-    if (dbData.data_sources && dbData.data_sources.length > 0) {
-      dataSourceIds = dbData.data_sources.map((ds) => ds.id);
-    }
-  }
-
-  for (const dataSourceId of dataSourceIds) {
-    let cursor: string | undefined;
-    do {
-      const body: Record<string, unknown> = { page_size: 100 };
-      if (cursor) body.start_cursor = cursor;
-
-      const res = await fetch(`https://api.notion.com/v1/data_sources/${dataSourceId}/query`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Notion-Version": "2026-03-11",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        throw new Error(`Notion API error: ${res.status} — ${errBody}`);
-      }
-      const data = (await res.json()) as {
-        results: NotionPage[];
-        has_more: boolean;
-        next_cursor: string | null;
-      };
-      pages.push(...data.results);
-      cursor = data.has_more && data.next_cursor ? data.next_cursor : undefined;
-    } while (cursor);
-  }
-
-  return pages;
-}
-
-export const onRequest: PagesFunction<Env> = async (context) => {
-  const { NOTION_TOKEN, NOTION_JOURNAL_DATABASE_ID, NOTION_DATABASE_ID, RATE_LIMIT } = context.env;
-
-  if (await isRateLimited(context.request, RATE_LIMIT, "journal")) {
-    return rateLimitResponse();
-  }
-
-  if (!NOTION_TOKEN || !NOTION_JOURNAL_DATABASE_ID) {
-    console.error("journal: NOTION_TOKEN or NOTION_JOURNAL_DATABASE_ID not set");
-    return new Response(
-      JSON.stringify({ error: "Server-Konfigurationsfehler" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders() } }
-    );
-  }
-
-  try {
-    const [journalPages, recipePages] = await Promise.all([
-      queryAll(NOTION_JOURNAL_DATABASE_ID, NOTION_TOKEN),
-      NOTION_DATABASE_ID ? queryAll(NOTION_DATABASE_ID, NOTION_TOKEN) : Promise.resolve([]),
-    ]);
-
-    const recipeIdToSlug = new Map<string, string>();
-    for (const page of recipePages) {
-      const p = page.properties;
-      const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
-      const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
-      if (slug) recipeIdToSlug.set(page.id.replace(/-/g, ""), slug);
-    }
-
-    const entries = journalPages
-      .filter((page) => {
-        const status = page.properties["Status"];
-        if (!status) return true;
-        if (status.type === "select") return status.select?.name?.toLowerCase() === "aktiv";
-        return true;
-      })
-      .map((page) => {
-        const p = page.properties;
-        const title = richText(p["Titel"] ?? p["titel"] ?? p["Name"] ?? p["name"]);
-        const slug = richText(p["Slug"] ?? p["slug"]) || slugify(title);
-        const linkedRecipes = (p["Verlinkte Rezepte"]?.relation ?? [])
-          .map((r: { id: string }) => recipeIdToSlug.get(r.id.replace(/-/g, "")))
-          .filter((s): s is string => Boolean(s));
-
-        return {
-          slug,
-          title,
-          edibleParts: richText(p["Essbare Teile"]) || null,
-          sowingTime: richText(p["Aussaat"]) || null,
-          plantingTime: richText(p["Pflanzzeit"]) || null,
-          harvest: richText(p["Ernte"]) || null,
-          wellnessNote: richText(p["Wohlfühlnotiz"]) || null,
-          usage: richText(p["Verwendung"]) || null,
-          pairings: richText(p["Passt zu"]) || null,
-          goodToKnow: richText(p["Gut zu wissen"]) || null,
-          supperIdeas: richText(p["Supper Edit Ideen"]) || null,
-          seasonMonths: p["Saisonmonate"]?.multi_select?.map((month) => month.name) ?? [],
-          category: (p["Kategorie"] ?? p["kategorie"])?.select?.name ?? "",
-          season: (p["Saison"] ?? p["saison"])?.select?.name ?? null,
-          intro: richText(p["Intro"] ?? p["intro"]) || null,
-          background: richText(p["Hintergrund"] ?? p["hintergrund"]) || null,
-          funFact: richText(p["Fun Fact"] ?? p["fun fact"]) || null,
-          tastingNotes: richText(p["Geschmacksprofil"] ?? p["geschmacksprofil"]) || null,
-          image: imageUrl(p["Bild"] ?? p["bild"]),
-          linkedRecipes,
-          latinName: richText(p["Lateinischer Name"] ?? p["lateinischer name"]) || null,
-          plantFamily: richText(p["Pflanzenfamilie"] ?? p["pflanzenfamilie"]) || null,
-          typ: (p["Typ"] ?? p["typ"])?.select?.name ?? null,
-          bloomTime: richText(p["Blütezeit"] ?? p["bluezeit"] ?? p["Bluezeit"] ?? p["blütezeit"]) || null,
-          location: richText(p["Standort"] ?? p["standort"]) || null,
-          appearance: richText(p["Erkennungsmerkmale"] ?? p["erkennungsmerkmale"]) || null,
-          healing: richText(p["Heilwirkung"] ?? p["heilwirkung"]) || null,
-          temperament: richText(p["Temperament"] ?? p["temperament"]) || null,
-        };
-      })
-      .filter((e) => e.title);
-
-    return new Response(JSON.stringify(entries), {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "s-maxage=300, stale-while-revalidate=60",
-        ...corsHeaders(),
-      },
-    });
-  } catch (err) {
-    console.error("journal:", err);
-    return new Response(JSON.stringify({ error: "Einträge konnten nicht geladen werden." }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders() },
-    });
-  }
-};
