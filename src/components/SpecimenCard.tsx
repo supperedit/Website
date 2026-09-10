@@ -18,17 +18,18 @@ export default function SpecimenCard({ entry }: SpecimenCardProps) {
       </div>
       <div className="specimen-row specimen-row-title">
         <h2 className="specimen-name">{entry.title}</h2>
-        {entry.latinName && <span className="specimen-latin">{entry.latinName}</span>}
-      </div>
-      <div className="specimen-row specimen-row-meta">
-        <div className="specimen-meta-cell">
+        <div className="specimen-inline-fact">
           <span className="specimen-meta-label">Saison:</span>
-          <span className="specimen-meta-value">{entry.season || "\u2013"}</span>
+          <span className="specimen-meta-value specimen-meta-value--inline">{entry.season || "\u2013"}</span>
         </div>
-        <div className="specimen-meta-cell">
-          <span className="specimen-meta-label">Essbare Teile:</span>
-          <span className="specimen-meta-value">{entry.edibleParts || "\u2013"}</span>
-        </div>
+      </div>
+      <div className="specimen-row specimen-row-single">
+        <span className="specimen-meta-label">Geschmack:</span>
+        <span className="specimen-meta-value">{entry.tastingNotes || "\u2013"}</span>
+      </div>
+      <div className="specimen-row specimen-row-single">
+        <span className="specimen-meta-label">Essbare Teile:</span>
+        <span className="specimen-meta-value">{entry.edibleParts || "\u2013"}</span>
       </div>
     </div>
   );
