@@ -26,7 +26,6 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
   const close = () => { setOpen(false); triggerRef.current?.focus(); };
 
   const handlePrint = () => {
-    close();
     window.setTimeout(() => window.print(), 50);
   };
 
@@ -43,7 +42,6 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
       console.error("Kartenbild konnte nicht erzeugt werden:", err);
     } finally {
       setBusy(false);
-      close();
     }
   };
 
@@ -53,15 +51,10 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
     const description = entry.intro || `${entry.title} im Supper Edit Herbarium`;
     const pinUrl = `https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(pageUrl)}&media=${encodeURIComponent(imageUrl)}&description=${encodeURIComponent(description)}`;
     window.open(pinUrl, "_blank", "noopener,noreferrer,width=750,height=650");
-    close();
   };
 
   return (
     <div className="sc-printable">
-      <div className="sc-printable-card" ref={cardRef}>
-        <SpecimenCard entry={entry} />
-      </div>
-
       <button
         type="button"
         className="sc-printable-trigger"
@@ -69,9 +62,10 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-label={`${entry.title} als Karte drucken oder teilen`}
+        title="Drucken / teilen"
       >
-        <Share2 size={15} aria-hidden="true" />
-        Karte teilen
+        <Printer size={17} aria-hidden="true" />
       </button>
 
       {open && (
@@ -87,42 +81,45 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
             <button type="button" className="sc-printable-close" onClick={close} aria-label="Schließen">
               <X size={18} aria-hidden="true" />
             </button>
-            <p className="sc-printable-title">{entry.title}</p>
-            <button type="button" className="sc-printable-option" onClick={handlePrint}>
-              <Printer size={18} aria-hidden="true" />
-              Drucken
-            </button>
-            <button type="button" className="sc-printable-option" onClick={handleDownload} disabled={busy}>
-              <Download size={18} aria-hidden="true" />
-              {busy ? "Wird erzeugt …" : "Als Bild herunterladen"}
-            </button>
-            <button type="button" className="sc-printable-option" onClick={handlePinterest}>
-              <Share2 size={18} aria-hidden="true" />
-              Bei Pinterest speichern
-            </button>
+
+            <div className="sc-printable-preview">
+              <div className="sc-printable-card" ref={cardRef}>
+                <SpecimenCard entry={entry} />
+              </div>
+            </div>
+
+            <div className="sc-printable-actions">
+              <button type="button" className="sc-printable-option" onClick={handlePrint}>
+                <Printer size={18} aria-hidden="true" />
+                Drucken
+              </button>
+              <button type="button" className="sc-printable-option" onClick={handleDownload} disabled={busy}>
+                <Download size={18} aria-hidden="true" />
+                {busy ? "Wird erzeugt …" : "Als Bild herunterladen"}
+              </button>
+              <button type="button" className="sc-printable-option" onClick={handlePinterest}>
+                <Share2 size={18} aria-hidden="true" />
+                Bei Pinterest speichern
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       <style>{`
-        .sc-printable-card {
-          max-width: 280px;
-          margin: 0 auto;
-        }
         .sc-printable-trigger {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          justify-content: center;
+          width: 34px;
+          height: 34px;
           background: transparent;
           color: var(--color-maroon);
           border: 1px solid var(--herb-line);
-          border-radius: 999px;
-          padding: 9px 18px;
-          font: inherit;
-          font-size: 13px;
+          border-radius: 50%;
           cursor: pointer;
-          margin-top: 14px;
         }
+        .sc-printable-trigger:hover { background: color-mix(in srgb, var(--color-terracotta) 12%, transparent); }
         .sc-printable-overlay {
           position: fixed;
           inset: 0;
@@ -139,10 +136,10 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
           border-radius: 10px;
           padding: 28px 24px 20px;
           width: 100%;
-          max-width: 320px;
+          max-width: 340px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 16px;
           box-shadow: 0 20px 60px rgba(43,18,16,0.3);
         }
         .sc-printable-close {
@@ -155,11 +152,17 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
           cursor: pointer;
           padding: 6px;
         }
-        .sc-printable-title {
-          font-family: var(--font-display);
-          font-size: 18px;
-          color: var(--color-maroon);
-          margin: 0 0 6px;
+        .sc-printable-preview {
+          padding-top: 6px;
+        }
+        .sc-printable-card {
+          max-width: 260px;
+          margin: 0 auto;
+        }
+        .sc-printable-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
         .sc-printable-option {
           display: flex;
@@ -188,8 +191,11 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
             transform: translate(-50%, -50%);
             width: 130mm;
             height: 184mm;
+            max-width: none;
           }
-          .sc-printable-trigger, .sc-printable-overlay { display: none !important; }
+          .sc-printable-trigger, .sc-printable-close, .sc-printable-actions { display: none !important; }
+          .sc-printable-overlay { position: static; background: none; padding: 0; }
+          .sc-printable-dialog { box-shadow: none; padding: 0; max-width: none; }
           @page { size: A6 portrait; margin: 8mm; }
         }
       `}</style>
