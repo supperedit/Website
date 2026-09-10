@@ -11,6 +11,7 @@ interface JournalEntryLite {
   latinName: string | null;
   season: string | null;
   edibleParts: string | null;
+  tastingNotes: string | null;
   image?: string;
 }
 
@@ -43,8 +44,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   }
 
   const title = escapeHtml(entry.title);
-  const latin = entry.latinName ? escapeHtml(entry.latinName) : "";
   const season = escapeHtml(entry.season || "\u2013");
+  const tastingNotes = escapeHtml(entry.tastingNotes || "\u2013");
   const edibleParts = escapeHtml(entry.edibleParts || "\u2013");
   const line = "rgba(67,9,8,.35)";
   const maroon = "#430908";
@@ -62,22 +63,21 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     </div>
     <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:3px solid ${line};padding:24px 40px;">
       <div style="display:flex;font-family:'Homemade Apple';font-size:64px;color:${maroon};">${title}</div>
-      ${latin ? `<div style="display:flex;font-family:'Homemade Apple';font-size:36px;color:${muted};">${latin}</div>` : ""}
+      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Saison:&nbsp;</div>
+      <div style="display:flex;font-family:'Homemade Apple';font-size:36px;color:${maroon};">${season}</div>
     </div>
-    <div style="display:flex;border-top:3px solid ${line};">
-      <div style="display:flex;flex-direction:column;flex:1;padding:20px 40px;gap:6px;">
-        <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Saison:</div>
-        <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${season}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;flex:1;padding:20px 40px;gap:6px;border-left:3px solid ${line};">
-        <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Essbare Teile:</div>
-        <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${edibleParts}</div>
-      </div>
+    <div style="display:flex;flex-direction:column;border-top:3px solid ${line};padding:20px 40px;gap:6px;">
+      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Geschmack:</div>
+      <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${tastingNotes}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;border-top:3px solid ${line};padding:20px 40px;gap:6px;">
+      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Essbare Teile:</div>
+      <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${edibleParts}</div>
     </div>
   </div>`;
 
   try {
-    const fontText = `${entry.title}${entry.latinName || ""}${entry.season || ""}${entry.edibleParts || ""}SaisonEssbareTeile0123456789\u2013`;
+    const fontText = `${entry.title}${entry.season || ""}${entry.tastingNotes || ""}${entry.edibleParts || ""}SaisonGeschmackEssbareTeile0123456789\u2013`;
     const fontData = await loadGoogleFont({ family: "Homemade Apple", text: fontText });
 
     return new ImageResponse(html, {
