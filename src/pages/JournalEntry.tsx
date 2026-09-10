@@ -4,6 +4,7 @@ import { useJournal } from '../data/useJournal';
 import { useRecipes } from '../data/useRecipes';
 import { MONTHS, plantGroup, seasonMonthIndexes } from '../data/herbarium';
 import RecipeCard from '../components/RecipeCard';
+import SpecimenCardPrintable from '../components/SpecimenCardPrintable';
 import SEO from '../components/SEO';
 import '../styles/herbarium.css';
 
@@ -44,6 +45,7 @@ export default function JournalEntry() {
             {entry.image && <svg viewBox="0 0 90 68" fill="none" aria-hidden="true"><path d="M80 59C49 64 30 49 27 12M16 25L27 10L39 23" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>}
             <p>{entry.funFact}</p>
           </aside>}
+          <SpecimenCardPrintable entry={entry} />
           <p className="herbarium-kicker">Auf einen Blick</p>
           <dl className="plant-facts">{facts.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           {months.length > 0 && <div className="plant-calendar"><p className="herbarium-kicker">Saison im Jahreslauf</p><p className="sr-only">Saisonmonate: {months.map(i => MONTHS[i]).join(', ')}</p><ol aria-hidden="true">{MONTHS.map((month,index) => <li key={month} className={months.includes(index) ? 'in-season' : ''} title={month}>{month.slice(0,3)}</li>)}</ol></div>}
