@@ -538,7 +538,7 @@ export default function SeasonalCalendarCard() {
           gap: 12px;
           padding-top: 2px;
           height: 100%;
-          min-height: 0;
+          min-height: 420px;
         }
         .sc-seasonal-header {
           background: #F7F6EC;
@@ -559,7 +559,8 @@ export default function SeasonalCalendarCard() {
           position: relative;
           width: 100%;
           flex: 1;
-          min-height: 0;
+          min-height: 300px;
+          overflow: hidden;
         }
         .sc-stack-card {
           position: absolute;
