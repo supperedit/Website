@@ -589,7 +589,7 @@ export default function SeasonalCalendarCard() {
           pointer-events: auto;
         }
         .sc-stack-card .specimen-name { font-size: clamp(14px, 1.8vw, 17px); }
-        .sc-stack-card .specimen-row { padding: 6px 10px; }
+        .sc-stack-card .specimen-row { padding: 0 10px; }
         .sc-stack-card .specimen-meta-value { font-size: 12px; }
         .sc-stack-card .specimen-meta-value--inline { font-size: 11px; }
         .sc-stack-nav {
