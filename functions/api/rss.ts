@@ -15,12 +15,23 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export const onRequest: PagesFunction = async () => {
+import { isRateLimited, rateLimitResponse } from "./_rateLimit";
+
+interface Env {
+  RATE_LIMIT?: KVNamespace;
+}
+
+export const onRequest: PagesFunction<Env> = async (context) => {
+  if (await isRateLimited(context.request, context.env.RATE_LIMIT, "rss")) {
+    return rateLimitResponse();
+  }
+
   const BASE = "https://www.supperedit.de";
 
   const res = await fetch(`${BASE}/api/recipes`);
   if (!res.ok) {
-    return new Response("Could not load recipes", { status: 502 });
+    console.error("rss: recipes fetch failed with status", res.status);
+    return new Response("Feed konnte nicht geladen werden.", { status: 502 });
   }
 
   const recipes = (await res.json()) as Recipe[];
