@@ -191,14 +191,20 @@ export default function SeasonalCalendarCard() {
 
   return (
     <div className="sc-root">
+      <header className="sc-heading">
+        <p className="sc-eyebrow">Supper Edit · Im Rhythmus der Jahreszeiten</p>
+        <h2>Was die Saison mitbringt</h2>
+      </header>
       <div className="sc-layout">
 
+        <div className="sc-calendar-column">
+          <h3 className="sc-subheading">Der Saisonkalender</h3>
         <div className="sc-card">
           <div className="sc-month-row">
             <button type="button" className="sc-nav" onClick={() => goToMonth(-1)} aria-label="Vorheriger Monat">
               <ChevronLeft size={14} aria-hidden />
             </button>
-            <h2 className="sc-month-title">{MONTH_NAMES[monthIndex0].toUpperCase()}</h2>
+            <h4 className="sc-month-title">{MONTH_NAMES[monthIndex0].toUpperCase()}</h4>
             <button type="button" className="sc-nav" onClick={() => goToMonth(1)} aria-label="Nächster Monat">
               <ChevronRight size={14} aria-hidden />
             </button>
@@ -276,10 +282,10 @@ export default function SeasonalCalendarCard() {
           )}
         </div>
 
+        </div>
+
         <div className="sc-seasonal">
-          <div className="sc-seasonal-header">
-            <span className="sc-seasonal-title">Jetzt Saison:</span>
-          </div>
+          <h3 className="sc-subheading">Aus dem Herbarium · {currentMonthName}</h3>
 
           {seasonalEntries.length > 0 ? (
             <>
@@ -302,13 +308,13 @@ export default function SeasonalCalendarCard() {
                 })}
               </div>
               <div className="sc-stack-nav">
-                <button type="button" className="sc-nav" onClick={() => goToCard(-1)} aria-label="Vorherige Zutat">
+                <button type="button" disabled={seasonalEntries.length < 2} className="sc-stack-arrow" onClick={() => goToCard(-1)} aria-label="Vorherige Zutat">
                   <ChevronLeft size={14} aria-hidden />
                 </button>
                 <span className="sc-stack-count" aria-live="polite">
                   {cardIndex + 1} / {seasonalEntries.length}
                 </span>
-                <button type="button" className="sc-nav" onClick={() => goToCard(1)} aria-label="Nächste Zutat">
+                <button type="button" disabled={seasonalEntries.length < 2} className="sc-stack-arrow" onClick={() => goToCard(1)} aria-label="Nächste Zutat">
                   <ChevronRight size={14} aria-hidden />
                 </button>
               </div>
@@ -321,41 +327,22 @@ export default function SeasonalCalendarCard() {
             </div>
           )}
 
-          <Link to={`/journal?saison=${encodeURIComponent(currentMonthName.slice(0,3))}`} className="sc-herb-more">
-            Alle ansehen →
+          <Link to="/journal" className="sc-herb-more">
+            Das Herbarium entdecken →
           </Link>
         </div>
 
       </div>
 
       <style>{`
-        .sc-root {
-          position: relative;
-          width: 100%;
-          max-width: 1060px;
-          margin: 0 auto;
-          aspect-ratio: 16 / 9;
-        }
-        .sc-layout {
-          position: relative; z-index: 1;
-          display: flex;
-          align-items: flex-start;
-          gap: 2.2%;
-          padding: 3.2% 3%;
-          height: 100%;
-          box-sizing: border-box;
-        }
-        .sc-card {
-          position: relative;
-          flex: 0 0 60%;
-          background: #F7F6EC;
-          border-radius: 14px;
-          padding: 2.4% 2% 1.6%;
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          box-sizing: border-box;
-        }
+        .sc-root { position: relative; width: 100%; max-width: 1180px; margin: 0 auto; padding: 16px clamp(24px, 4vw, 48px); }
+        .sc-heading { color: var(--color-cream); margin-bottom: 44px; }
+        .sc-eyebrow { font: 11px/1.6 var(--font-body); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 16px; }
+        .sc-heading h2 { font: 400 clamp(36px, 4.5vw, 58px)/1.15 var(--font-display); color: inherit; max-width: 780px; }
+        .sc-layout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1fr); align-items: start; gap: clamp(48px, 6vw, 80px); }
+        .sc-calendar-column, .sc-seasonal { min-width: 0; }
+        .sc-subheading { font: 400 12px/1.6 var(--font-body); letter-spacing: .08em; color: var(--color-cream); margin: 0 0 26px; }
+        .sc-card { position: relative; background: var(--color-cream); border-radius: 4px; padding: 22px 18px 18px; display: flex; flex-direction: column; min-height: 490px; }
         .sc-month-row {
           display: flex;
           align-items: center;
@@ -531,93 +518,21 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           display: flex; flex-direction: column; gap: 2px;
         }
-        .sc-seasonal {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding-top: 2px;
-          height: 100%;
-          min-height: 420px;
-        }
-        .sc-seasonal-header {
-          background: #F7F6EC;
-          border-radius: 999px;
-          padding: 10px 22px;
-          display: inline-flex;
-          align-self: flex-start;
-        }
-        .sc-seasonal-title {
-          font-family: var(--font-body, 'Elms Sans', sans-serif);
-          font-weight: 300;
-          font-size: clamp(12px, 1.6vw, 18px);
-          letter-spacing: 0.07em;
-          color: var(--color-ink, #2b1210);
-          white-space: nowrap;
-        }
-        .sc-stack {
-          position: relative;
-          width: 100%;
-          flex: 1;
-          min-height: 300px;
-          overflow: hidden;
-        }
-        .sc-stack-card {
-          position: absolute;
-          inset: 8px 14px 8px 8px;
-          text-decoration: none;
-          box-shadow: 0 4px 14px rgba(43,18,16,0.14);
-          transition: transform 0.25s ease, opacity 0.25s ease;
-          pointer-events: none;
-        }
-        .sc-stack-card[data-depth="0"] {
-          transform: rotate(-1.5deg);
-          z-index: 3;
-          opacity: 1;
-        }
-        .sc-stack-card[data-depth="1"] {
-          transform: rotate(3deg) translate(10px, 10px);
-          z-index: 2;
-          opacity: 0.9;
-        }
-        .sc-stack-card[data-depth="2"] {
-          transform: rotate(-4deg) translate(-8px, 16px);
-          z-index: 1;
-          opacity: 0.75;
-        }
-        .sc-stack-card.is-active {
-          pointer-events: auto;
-        }
-        .sc-stack-card .specimen-name { font-size: clamp(14px, 1.8vw, 17px); }
-        .sc-stack-card .specimen-row { padding: 0 10px; }
-        .sc-stack-card .specimen-meta-value { font-size: 12px; }
-        .sc-stack-card .specimen-meta-value--inline { font-size: 11px; }
-        .sc-stack-nav {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          padding-top: 6px;
-        }
-        .sc-stack-count {
-          font-family: var(--font-body, 'Elms Sans', sans-serif);
-          font-size: clamp(10px, 1.2vw, 12px);
-          color: var(--color-ink, #2b1210);
-          opacity: 0.55;
-          min-width: 34px;
-          text-align: center;
-        }
-        .sc-herb-more {
-          font-family: var(--font-body, 'Elms Sans', sans-serif);
-          font-size: clamp(9px, 1.1vw, 11px);
-          color: var(--color-maroon, #430908);
-          opacity: 0.45;
-          text-decoration: none;
-          align-self: flex-start;
-          letter-spacing: 0.04em;
-          transition: opacity 0.15s ease;
-        }
-        .sc-herb-more:hover { opacity: 0.9; }
+        .sc-seasonal { display: flex; flex-direction: column; }
+        .sc-stack { display: grid; position: relative; isolation: isolate; width: 100%; overflow: visible; }
+        .sc-stack-card { grid-area: 1 / 1; align-self: start; width: 100%; text-decoration: none; box-shadow: 0 3px 9px rgba(43,18,16,.12); transition: transform .25s ease; pointer-events: none; }
+        .sc-stack-card[data-depth="0"] { transform: rotate(-1deg); z-index: 3; }
+        .sc-stack-card[data-depth="1"] { transform: translate(7px, 6px) rotate(2deg); z-index: 2; }
+        .sc-stack-card[data-depth="2"] { transform: translate(-5px, 10px) rotate(-3deg); z-index: 1; }
+        .sc-stack-card.is-active { pointer-events: auto; }
+        .sc-stack-nav { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 30px; }
+        .sc-stack-arrow { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(247,246,236,.7); border-radius: 0; background: rgba(43,18,16,.35); color: var(--color-cream); cursor: pointer; transition: background .15s ease; }
+        .sc-stack-arrow svg { width: 20px; height: 20px; }
+        .sc-stack-arrow:hover:not(:disabled) { background: var(--color-maroon); }
+        .sc-stack-arrow:disabled { opacity: .45; cursor: default; }
+        .sc-stack-arrow:focus-visible, .sc-herb-more:focus-visible, .sc-stack-card:focus-visible { outline: 2px solid var(--color-cream); outline-offset: 5px; }
+        .sc-stack-count { font: 12px/1.5 var(--font-body); color: var(--color-cream); min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+        .sc-herb-more { font: 12px/1.6 var(--font-body); color: var(--color-cream); text-decoration: underline; text-underline-offset: 5px; align-self: center; margin-top: 20px; }
         .sc-seasonal-pills {
           display: flex;
           flex-wrap: wrap;
@@ -633,22 +548,22 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           white-space: nowrap;
         }
-        @media (max-width: 700px) {
-          .sc-root { aspect-ratio: auto; overflow: visible; }
-          .sc-layout { flex-direction: column; padding: 16px; gap: 14px; height: auto; }
-          .sc-card { flex: none; width: 100%; height: auto; overflow: visible; }
-          .sc-grid { grid-auto-rows: minmax(40px, auto); overflow: visible; }
-          .sc-seasonal { width: 100%; }
-          .sc-dow-full { display: none; }
-          .sc-dow-short { display: inline; }
-          .sc-cell { overflow: visible; }
-          .sc-idea-title { font-size: 9px; }
-          .sc-stack { flex: none; width: 100%; max-width: 260px; aspect-ratio: 3 / 4; margin-inline: auto; }
+        @media (max-width: 960px) {
+          .sc-layout { grid-template-columns: minmax(0,1fr); gap: 52px; }
+          .sc-card { min-height: 520px; }
+          .sc-seasonal { width: 100%; max-width: 360px; margin-inline: auto; }
         }
-        @media (min-width: 701px) and (max-width: 960px) {
-          .sc-root { aspect-ratio: auto; min-height: 500px; }
+        @media (max-width: 600px) {
+          .sc-root { padding-inline: 24px; }
+          .sc-heading { margin-bottom: 32px; }
+          .sc-eyebrow { font-size: 10px; }
+          .sc-card { padding: 16px 10px 12px; min-height: 390px; }
+          .sc-month-title { font-size: 19px; letter-spacing: .09em; }
           .sc-dow-full { display: none; }
           .sc-dow-short { display: inline; }
+          .sc-dow, .sc-day-num { font-size: 10px; }
+          .sc-idea-title { font-size: 9px; }
+          .sc-subheading { margin-bottom: 22px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .sc-recipe-link img, .sc-stack-card { transition: none; }
