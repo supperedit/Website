@@ -1,5 +1,5 @@
 import { Leaf } from "lucide-react";
-import type { JournalEntry } from "../data/journalTypes";
+import type { JournalEntry } from "../data/useJournal";
 
 interface SpecimenCardProps {
   entry: JournalEntry;
@@ -7,7 +7,7 @@ interface SpecimenCardProps {
 
 export default function SpecimenCard({ entry }: SpecimenCardProps) {
   return (
-    <div className="specimen-card">
+    <div className="specimen-card" lang="de">
       <div className="specimen-photo">
         {entry.image
           ? <img src={entry.image} alt="" loading="lazy" />
@@ -17,7 +17,10 @@ export default function SpecimenCard({ entry }: SpecimenCardProps) {
         }
       </div>
       <div className="specimen-row specimen-row-title">
-        <h2 className="specimen-name">{entry.title}</h2>
+        <div className="specimen-identity">
+          <h3 className="specimen-name">{entry.title}</h3>
+          {entry.latinName && <p className="specimen-latin">{entry.latinName}</p>}
+        </div>
         <div className="specimen-inline-fact">
           <span className="specimen-meta-label">Saison:</span>
           <span className="specimen-meta-value specimen-meta-value--inline">{entry.season || "\u2013"}</span>
