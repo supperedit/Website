@@ -143,6 +143,7 @@ export default function SeasonalCalendarCard() {
 
   const [cardIndex, setCardIndex] = useState(0);
   useEffect(() => { setCardIndex(0); }, [seasonalEntries]);
+  const activeCardIndex = cardIndex % Math.max(1, seasonalEntries.length);
   const goToCard = (delta: number) => {
     if (seasonalEntries.length === 0) return;
     setCardIndex((i) => (i + delta + seasonalEntries.length) % seasonalEntries.length);
@@ -285,13 +286,13 @@ export default function SeasonalCalendarCard() {
         </div>
 
         <div className="sc-seasonal">
-          <h3 className="sc-subheading">Aus dem Herbarium · {currentMonthName}</h3>
+          <h3 className="sc-subheading">Aus dem Herbarium</h3>
 
           {seasonalEntries.length > 0 ? (
             <>
               <div className="sc-stack" aria-roledescription="Karussell" aria-label="Saisonale Zutaten">
                 {seasonalEntries.map((entry, i) => {
-                  const offset = (i - cardIndex + seasonalEntries.length) % seasonalEntries.length;
+                  const offset = (i - activeCardIndex + seasonalEntries.length) % seasonalEntries.length;
                   if (offset > 2) return null;
                   return (
                     <Link
@@ -312,7 +313,7 @@ export default function SeasonalCalendarCard() {
                   <ChevronLeft size={14} aria-hidden />
                 </button>
                 <span className="sc-stack-count" aria-live="polite">
-                  {cardIndex + 1} / {seasonalEntries.length}
+                  {activeCardIndex + 1} / {seasonalEntries.length}
                 </span>
                 <button type="button" disabled={seasonalEntries.length < 2} className="sc-stack-arrow" onClick={() => goToCard(1)} aria-label="Nächste Zutat">
                   <ChevronRight size={14} aria-hidden />
@@ -339,7 +340,7 @@ export default function SeasonalCalendarCard() {
         .sc-heading { color: var(--color-cream); margin-bottom: 44px; }
         .sc-eyebrow { font: 11px/1.6 var(--font-body); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 16px; }
         .sc-heading h2 { font: 400 clamp(36px, 4.5vw, 58px)/1.15 var(--font-display); color: inherit; max-width: 780px; }
-        .sc-layout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0,1.55fr) minmax(0,1fr); align-items: start; gap: clamp(48px, 6vw, 80px); }
+        .sc-layout { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,300px); align-items: start; gap: clamp(48px, 6vw, 80px); }
         .sc-calendar-column, .sc-seasonal { min-width: 0; }
         .sc-subheading { font: 400 12px/1.6 var(--font-body); letter-spacing: .08em; color: var(--color-cream); margin: 0 0 26px; }
         .sc-card { position: relative; background: var(--color-cream); border-radius: 4px; padding: 22px 18px 18px; display: flex; flex-direction: column; min-height: 490px; }
@@ -518,17 +519,17 @@ export default function SeasonalCalendarCard() {
           color: var(--color-ink, #2b1210);
           display: flex; flex-direction: column; gap: 2px;
         }
-        .sc-seasonal { display: flex; flex-direction: column; }
-        .sc-stack { display: grid; position: relative; isolation: isolate; width: 100%; overflow: visible; }
+        .sc-seasonal { display: flex; flex-direction: column; width: 100%; max-width: 300px; justify-self: center; }
+        .sc-stack { display: grid; position: relative; isolation: isolate; width: 100%; overflow: visible; margin-top: 6px; }
         .sc-stack-card { grid-area: 1 / 1; align-self: start; width: 100%; text-decoration: none; box-shadow: 0 3px 9px rgba(43,18,16,.12); transition: transform .25s ease; pointer-events: none; }
         .sc-stack-card[data-depth="0"] { transform: rotate(-1deg); z-index: 3; }
         .sc-stack-card[data-depth="1"] { transform: translate(7px, 6px) rotate(2deg); z-index: 2; }
         .sc-stack-card[data-depth="2"] { transform: translate(-5px, 10px) rotate(-3deg); z-index: 1; }
         .sc-stack-card.is-active { pointer-events: auto; }
         .sc-stack-nav { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 30px; }
-        .sc-stack-arrow { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(247,246,236,.7); border-radius: 0; background: rgba(43,18,16,.35); color: var(--color-cream); cursor: pointer; transition: background .15s ease; }
-        .sc-stack-arrow svg { width: 20px; height: 20px; }
-        .sc-stack-arrow:hover:not(:disabled) { background: var(--color-maroon); }
+        .sc-stack-arrow { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; color: #fff; cursor: pointer; transition: transform .15s ease; }
+        .sc-stack-arrow svg { width: 24px; height: 24px; stroke: currentColor; }
+        .sc-stack-arrow:hover:not(:disabled) { transform: scale(1.12); }
         .sc-stack-arrow:disabled { opacity: .45; cursor: default; }
         .sc-stack-arrow:focus-visible, .sc-herb-more:focus-visible, .sc-stack-card:focus-visible { outline: 2px solid var(--color-cream); outline-offset: 5px; }
         .sc-stack-count { font: 12px/1.5 var(--font-body); color: var(--color-cream); min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
@@ -551,10 +552,11 @@ export default function SeasonalCalendarCard() {
         @media (max-width: 960px) {
           .sc-layout { grid-template-columns: minmax(0,1fr); gap: 52px; }
           .sc-card { min-height: 520px; }
-          .sc-seasonal { width: 100%; max-width: 360px; margin-inline: auto; }
+          .sc-seasonal { width: 100%; max-width: 300px; margin-inline: auto; }
         }
         @media (max-width: 600px) {
           .sc-root { padding-inline: 24px; }
+          .sc-seasonal { max-width: 280px; }
           .sc-heading { margin-bottom: 32px; }
           .sc-eyebrow { font-size: 10px; }
           .sc-card { padding: 16px 10px 12px; min-height: 390px; }
@@ -566,7 +568,7 @@ export default function SeasonalCalendarCard() {
           .sc-subheading { margin-bottom: 22px; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .sc-recipe-link img, .sc-stack-card { transition: none; }
+          .sc-recipe-link img, .sc-stack-card, .sc-stack-arrow { transition: none; }
         }
       `}</style>
     </div>
