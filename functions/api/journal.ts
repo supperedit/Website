@@ -159,6 +159,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           intro: richText(p["Intro"] ?? p["intro"]) || null,
           background: richText(p["Hintergrund"] ?? p["hintergrund"]) || null,
           funFact: richText(p["Fun Fact"] ?? p["fun fact"]) || null,
+          tastingNotesShort: richText(p["Geschmack kurz"]) || null,
           tastingNotes: richText(p["Geschmacksprofil"] ?? p["geschmacksprofil"]) || null,
           image: imageUrl(p["Bild"] ?? p["bild"]),
           linkedRecipes,
