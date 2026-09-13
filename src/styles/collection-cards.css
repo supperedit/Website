@@ -35,8 +35,8 @@
 }
 
 .recipe-card-caption {
-  padding: 16px var(--card-inset) 20px;
-  border-top: 1px solid var(--card-line);
+  padding: 12px var(--card-inset) 16px;
+  border-top: 0;
 }
 
 .recipe-card-category {
@@ -48,18 +48,25 @@
 
 .recipe-card-caption h3 {
   margin: 0;
-  font-family: var(--font-body);
-  font-weight: 400;
-  line-height: 1.4;
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.25;
   color: var(--color-maroon);
   overflow-wrap: anywhere;
 }
 
 .specimen-card.collection-card {
+  --card-line: color-mix(
+    in srgb,
+    var(--color-maroon) 42%,
+    transparent
+  );
+
+  border-radius: 8px;
   grid-template-rows:
-    minmax(0, 78fr)
-    minmax(0, 12fr)
-    minmax(0, 10fr);
+    minmax(0, 82fr)
+    minmax(0, 9fr)
+    minmax(0, 9fr);
 }
 
 .collection-card .specimen-photo {
@@ -81,24 +88,26 @@
 .collection-card .specimen-row-title {
   border-top: 1px solid var(--card-line);
   grid-template-columns:
-    minmax(0, 1.5fr)
+    minmax(0, 1.65fr)
     minmax(0, 1fr);
 }
 
 .collection-card .specimen-identity {
-  padding: 6px 10px 4px var(--card-inset);
+  padding: 4px 12px 4px var(--card-inset);
 }
 
 .collection-card .specimen-inline-fact {
-  border: 0;
-  padding: 6px var(--card-inset) 4px 8px;
-  gap: 5px;
-  align-items: flex-end;
-  text-align: right;
+  border-left: 1px solid var(--card-line);
+  padding: 4px 10px;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .collection-card .specimen-row-single {
-  padding: 4px var(--card-inset) 12px;
+  border-top: 1px solid var(--card-line);
+  padding: 5px var(--card-inset);
   gap: 10px;
 }
 
@@ -112,7 +121,7 @@
     transform: translateY(-3px) scale(1.01);
     border-color: color-mix(
       in srgb,
-      var(--color-maroon) 35%,
+      var(--color-maroon) 50%,
       transparent
     );
     box-shadow: 0 10px 24px rgba(43, 18, 16, 0.1);
