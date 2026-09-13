@@ -19,7 +19,9 @@ export const onRequest: PagesFunction = async (context) => {
     return new Response("Bild nicht gefunden.", { status: 404 });
   }
 
-  const imageRes = await fetch(recipe.image);
+  const imageRes = await fetch(recipe.image, {
+    cf: { image: { format: "jpeg", quality: 90 } },
+  } as RequestInit);
   if (!imageRes.ok || !imageRes.body) {
     return new Response("Bild konnte nicht geladen werden.", { status: 502 });
   }
