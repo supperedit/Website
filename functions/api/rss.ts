@@ -50,9 +50,10 @@ ${recipes
   .map((r) => {
     const url = `${BASE}/rezepte/${r.slug}`;
     const desc = escapeXml(r.intro || r.category || r.title);
-    const imgTag = r.image
-      ? `      <enclosure url="${escapeXml(r.image)}" type="image/jpeg" length="0"/>
-      <media:content url="${escapeXml(r.image)}" medium="image"/>`
+    const stableImage = r.image ? `${BASE}/img/recipes/${r.slug}` : undefined;
+    const imgTag = stableImage
+      ? `      <enclosure url="${escapeXml(stableImage)}" type="image/jpeg" length="0"/>
+      <media:content url="${escapeXml(stableImage)}" medium="image"/>`
       : "";
     return `    <item>
       <title>${escapeXml(r.title)}</title>
