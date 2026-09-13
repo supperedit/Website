@@ -23,6 +23,32 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function embeddedPhoto(origin: string, slug: string, cream: string): Promise<string> {
+  const fallback = `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
+  try {
+    const imgRes = await fetch(`${origin}/img/journal/${slug}`);
+    if (!imgRes.ok) return fallback;
+    const imgBuf = await imgRes.arrayBuffer();
+    if (imgBuf.byteLength === 0) return fallback;
+    const contentType = imgRes.headers.get("Content-Type") ?? "image/jpeg";
+    const base64 = arrayBufferToBase64(imgBuf);
+    return `<img src="data:${contentType};base64,${base64}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`;
+  } catch (err) {
+    console.error("pin: embeddedPhoto failed", err);
+    return fallback;
+  }
+}
+
 export const onRequest: PagesFunction<Env> = async (context) => {
   if (await isRateLimited(context.request, context.env.RATE_LIMIT, "pin")) {
     return rateLimitResponse();
@@ -53,7 +79,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const cream = "#F7F6EC";
 
   const photo = entry.image
-    ? `<img src="${origin}/img/journal/${entry.slug}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`
+    ? await embeddedPhoto(origin, entry.slug, cream)
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
   const html = `
