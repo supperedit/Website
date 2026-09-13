@@ -5,7 +5,7 @@
     var(--color-maroon) 20%,
     transparent
   );
-  --card-inset: clamp(16px, 1.5vw, 20px);
+  --card-inset: 18px;
 
   border: 1px solid var(--card-line);
   border-radius: 12px;
