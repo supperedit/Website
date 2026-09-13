@@ -33,13 +33,19 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-async function embeddedPhoto(origin: string, slug: string, cream: string): Promise<string> {
+async function embeddedPhoto(imageUrl: string, cream: string): Promise<string> {
   const fallback = `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
   try {
-    const imgRes = await fetch(`${origin}/img/journal/${slug}`);
-    if (!imgRes.ok) return fallback;
+    const imgRes = await fetch(imageUrl);
+    if (!imgRes.ok) {
+      console.error("pin: image fetch failed with status", imgRes.status);
+      return fallback;
+    }
     const imgBuf = await imgRes.arrayBuffer();
-    if (imgBuf.byteLength === 0) return fallback;
+    if (imgBuf.byteLength === 0) {
+      console.error("pin: image fetch returned 0 bytes");
+      return fallback;
+    }
     const contentType = imgRes.headers.get("Content-Type") ?? "image/jpeg";
     const base64 = arrayBufferToBase64(imgBuf);
     return `<img src="data:${contentType};base64,${base64}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`;
@@ -79,7 +85,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const cream = "#F7F6EC";
 
   const photo = entry.image
-    ? await embeddedPhoto(origin, entry.slug, cream)
+    ? await embeddedPhoto(entry.image, cream)
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
   const html = `
