@@ -28,11 +28,17 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     return rateLimitResponse();
   }
 
-  const cache = (caches as unknown as { default: Cache }).default;
-  const cacheKey = new Request(context.request.url, context.request);
-  const cached = await cache.match(cacheKey);
-  if (cached) {
-    return cached;
+  let cache: Cache | undefined;
+  let cacheKey: Request | undefined;
+  try {
+    cache = (caches as unknown as { default: Cache }).default;
+    cacheKey = new Request(context.request.url, context.request);
+    const cached = await cache.match(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  } catch (err) {
+    console.error("pin: cache read failed", err);
   }
 
   const slug = context.params.slug as string;
@@ -104,7 +110,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       },
     });
 
-    context.waitUntil(cache.put(cacheKey, response.clone()));
+    if (cache && cacheKey) {
+      context.waitUntil(
+        cache.put(cacheKey, response.clone()).catch((err) => console.error("pin: cache write failed", err)),
+      );
+    }
 
     return response;
   } catch (err) {
