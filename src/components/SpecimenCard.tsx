@@ -96,9 +96,10 @@ export default function SpecimenCard({
       <div className="specimen-photo">
         {entry.image ? (
           <img
-            src={entry.image}
+            src={`/img/journal/${entry.slug}`}
             alt=""
             loading="lazy"
+            crossOrigin="anonymous"
           />
         ) : (
           <div
