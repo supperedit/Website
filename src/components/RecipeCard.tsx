@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
+import "../styles/collection-cards.css";
 
 interface RecipeCardProps {
   slug: string;
@@ -17,8 +18,14 @@ export default function RecipeCard({
   titleSize = 20,
 }: RecipeCardProps) {
   return (
-    <Link to={`/rezepte/${slug}`} className="recipe-card-hover">
-      <div className="recipe-card-image" style={{ aspectRatio: "4/5" }}>
+    <Link
+      to={`/rezepte/${slug}`}
+      className="recipe-card-hover collection-card"
+    >
+      <div
+        className="recipe-card-image"
+        style={{ aspectRatio: "4/5" }}
+      >
         {image ? (
           <img
             src={image}
@@ -34,19 +41,26 @@ export default function RecipeCard({
             }}
           />
         ) : null}
+
         <FavoriteButton
           slug={slug}
           title={title}
-          style={{ position: "absolute", top: 10, right: 10 }}
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+          }}
         />
       </div>
 
-      <span className="category-label" style={{ marginTop: 12 }}>
-        {category}
-      </span>
-      <h3 style={{ fontSize: titleSize, margin: "6px 0 0" }}>
-        {title}
-      </h3>
+      <div className="recipe-card-caption">
+        <span className="recipe-card-category">
+          {category}
+        </span>
+        <h3 style={{ fontSize: titleSize }}>
+          {title}
+        </h3>
+      </div>
     </Link>
   );
 }
