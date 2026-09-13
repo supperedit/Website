@@ -88,7 +88,7 @@ export default function Recipe() {
     "@type": "Recipe",
     name: recipe.title,
     ...(recipe.intro ? { description: recipe.intro } : {}),
-    ...(recipe.image ? { image: [resizeDriveUrl(recipe.image, "w1200")] } : {}),
+    ...(recipe.image ? { image: [`https://www.supperedit.de/img/recipes/${recipe.slug}`] } : {}),
     recipeCategory: recipe.category,
     recipeYield: recipe.servings,
     recipeIngredient: recipe.ingredientGroups.flatMap((g) =>
@@ -143,7 +143,7 @@ export default function Recipe() {
         description={recipe.intro ?? `${recipe.title}, ein Rezept von Supper Edit.`}
         ogTitle={recipe.pinterestTitle ?? undefined}
         ogDescription={recipe.pinterestDescription ?? undefined}
-        image={recipe.image ? resizeDriveUrl(recipe.image, "w1200") : undefined}
+        image={recipe.image ? `/img/recipes/${recipe.slug}` : undefined}
         imageAlt={recipe.title}
       />
       <script
