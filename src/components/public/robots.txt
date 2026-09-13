@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://supperedit.figma.site/sitemap.xml
+Sitemap: https://www.supperedit.de/sitemap.xml
