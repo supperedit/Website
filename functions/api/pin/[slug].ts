@@ -53,7 +53,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const cream = "#F7F6EC";
 
   const photo = entry.image
-    ? `<img src="${entry.image}" style="width:100%;height:100%;object-fit:contain;" />`
+    ? `<img src="${origin}/img/journal/${entry.slug}" style="width:100%;height:100%;object-fit:contain;" />`
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
   const html = `
