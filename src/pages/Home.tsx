@@ -8,6 +8,7 @@ import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
 import AnimatedLogo from "../components/AnimatedLogo";
 import SeasonalCalendarCard from "../components/SeasonalCalendarCard";
+import HomeHerbarium from "../components/HomeHerbarium";
 import SupperPairing from "../components/SupperPairing";
 import heroImage from "../assets/images/hero.webp";
 import "../styles/hero.css";
@@ -25,9 +26,16 @@ import picnicImage from "../assets/images/picnic.webp";
 
 const marqueeText = "Recipes for people who don't follow recipes.";
 const marqueeSeparator = "   ·   ";
-const marqueeUnit = Array(5).fill(marqueeText).join(marqueeSeparator) + marqueeSeparator;
+const marqueeUnit =
+  Array(5).fill(marqueeText).join(marqueeSeparator) + marqueeSeparator;
 
-const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; height: number }> = {
+const categoryIcons: Record<
+  string,
+  {
+    Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    height: number;
+  }
+> = {
   cookie: { Icon: CookieIcon, height: 78 },
   swirl: { Icon: RollIcon, height: 79 },
   saucy: { Icon: SauceIcon, height: 95 },
@@ -41,32 +49,63 @@ const categoryIcons: Record<string, { Icon: React.ComponentType<React.SVGProps<S
 };
 
 const VIBES = [
-  { key: "alle", label: "Alles", categories: null as string[] | null },
-  { key: "suess", label: "Süßes", categories: ["Bake Club", "Swirl Society"] },
+  {
+    key: "alle",
+    label: "Alles",
+    categories: null as string[] | null,
+  },
+  {
+    key: "suess",
+    label: "Süßes",
+    categories: ["Bake Club", "Swirl Society"],
+  },
   {
     key: "herzhaft",
     label: "Herzhaft",
-    categories: ["Small Bites", "Bread & Butter", "Pasta Night", "Saucy Stuff", "Pickle & Ferment"],
+    categories: [
+      "Small Bites",
+      "Bread & Butter",
+      "Pasta Night",
+      "Saucy Stuff",
+      "Pickle & Ferment",
+    ],
   },
-  { key: "maedelsabend", label: "Mädelsabend", categories: ["Fizz & Friends", "Slow Sips", "Small Bites"] },
+  {
+    key: "maedelsabend",
+    label: "Mädelsabend",
+    categories: ["Fizz & Friends", "Slow Sips", "Small Bites"],
+  },
 ] as const;
 
 export default function Home() {
   const { recipes, loading } = useRecipes();
-  const [vibeKey, setVibeKey] = useState<(typeof VIBES)[number]["key"]>("alle");
+  const [vibeKey, setVibeKey] =
+    useState<(typeof VIBES)[number]["key"]>("alle");
   const [suggestion, setSuggestion] = useState<Recipe | null>(null);
 
-  const activeVibe = VIBES.find((v) => v.key === vibeKey) ?? VIBES[0];
+  const activeVibe =
+    VIBES.find((v) => v.key === vibeKey) ?? VIBES[0];
+
   const vibePool = useMemo(
-    () => (activeVibe.categories ? recipes.filter((r) => activeVibe.categories!.includes(r.category)) : recipes),
+    () =>
+      activeVibe.categories
+        ? recipes.filter((r) =>
+            activeVibe.categories!.includes(r.category),
+          )
+        : recipes,
     [recipes, activeVibe],
   );
 
-  const newestRecipes = useMemo(() => recipes.slice(0, 4), [recipes]);
+  const newestRecipes = useMemo(
+    () => recipes.slice(0, 4),
+    [recipes],
+  );
 
   useEffect(() => {
     if (vibePool.length > 0) {
-      setSuggestion(vibePool[Math.floor(Math.random() * vibePool.length)]);
+      setSuggestion(
+        vibePool[Math.floor(Math.random() * vibePool.length)],
+      );
     } else {
       setSuggestion(null);
     }
@@ -74,12 +113,17 @@ export default function Home() {
 
   const pickRandom = () => {
     if (vibePool.length === 0) return;
-    let next = vibePool[Math.floor(Math.random() * vibePool.length)];
+
+    let next =
+      vibePool[Math.floor(Math.random() * vibePool.length)];
+
     if (vibePool.length > 1 && suggestion) {
       while (next.slug === suggestion.slug) {
-        next = vibePool[Math.floor(Math.random() * vibePool.length)];
+        next =
+          vibePool[Math.floor(Math.random() * vibePool.length)];
       }
     }
+
     setSuggestion(next);
   };
 
@@ -97,18 +141,24 @@ export default function Home() {
 
     const measure = () => {
       catSetWidthRef.current = container.scrollWidth / 2;
-      if (!catInitializedRef.current && catSetWidthRef.current > 0) {
+
+      if (
+        !catInitializedRef.current &&
+        catSetWidthRef.current > 0
+      ) {
         catAdjustingRef.current = true;
         container.scrollLeft = catSetWidthRef.current / 2;
         catInitializedRef.current = true;
       }
     };
+
     measure();
     window.addEventListener("resize", measure);
 
     const wrap = () => {
       const setWidth = catSetWidthRef.current;
       if (setWidth <= 0) return;
+
       if (container.scrollLeft <= 0) {
         catAdjustingRef.current = true;
         container.scrollLeft += setWidth;
@@ -123,9 +173,13 @@ export default function Home() {
         catAdjustingRef.current = false;
         return;
       }
+
       wrap();
     };
-    container.addEventListener("scroll", onContainerScroll, { passive: true });
+
+    container.addEventListener("scroll", onContainerScroll, {
+      passive: true,
+    });
 
     let prevScrollY = window.scrollY;
     let catVelocity = 0;
@@ -135,27 +189,37 @@ export default function Home() {
       prevScrollY = window.scrollY;
       catVelocity += delta * 0.06;
     };
-    window.addEventListener("scroll", onWindowScroll, { passive: true });
+
+    window.addEventListener("scroll", onWindowScroll, {
+      passive: true,
+    });
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
+
       catIsDraggingRef.current = true;
       catDragStartXRef.current = e.clientX;
       catDragStartScrollRef.current = container.scrollLeft;
       container.setPointerCapture(e.pointerId);
       container.style.cursor = "grabbing";
     };
+
     const onPointerMove = (e: PointerEvent) => {
       if (!catIsDraggingRef.current) return;
+
       catAdjustingRef.current = true;
-      container.scrollLeft = catDragStartScrollRef.current - (e.clientX - catDragStartXRef.current);
+      container.scrollLeft =
+        catDragStartScrollRef.current -
+        (e.clientX - catDragStartXRef.current);
       catVelocity = 0;
       wrap();
     };
+
     const endDrag = () => {
       catIsDraggingRef.current = false;
       container.style.cursor = "grab";
     };
+
     container.addEventListener("pointerdown", onPointerDown);
     container.addEventListener("pointermove", onPointerMove);
     container.addEventListener("pointerup", endDrag);
@@ -163,24 +227,39 @@ export default function Home() {
     container.addEventListener("pointerleave", endDrag);
 
     let rafId: number;
+
     const tick = () => {
-      if (!catIsDraggingRef.current && Math.abs(catVelocity) > 0.05) {
+      if (
+        !catIsDraggingRef.current &&
+        Math.abs(catVelocity) > 0.05
+      ) {
         catAdjustingRef.current = true;
         container.scrollLeft += catVelocity;
         catVelocity *= 0.9;
         wrap();
       }
+
       rafId = requestAnimationFrame(tick);
     };
+
     rafId = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", onWindowScroll);
-      container.removeEventListener("scroll", onContainerScroll);
-      container.removeEventListener("pointerdown", onPointerDown);
-      container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener(
+        "scroll",
+        onContainerScroll,
+      );
+      container.removeEventListener(
+        "pointerdown",
+        onPointerDown,
+      );
+      container.removeEventListener(
+        "pointermove",
+        onPointerMove,
+      );
       container.removeEventListener("pointerup", endDrag);
       container.removeEventListener("pointercancel", endDrag);
       container.removeEventListener("pointerleave", endDrag);
@@ -194,26 +273,60 @@ export default function Home() {
         description="Eine kuratierte Rezeptsammlung aus dem Alltag. Einfach in der Zubereitung, nie langweilig im Ergebnis."
       />
 
-      <section className="supper-hero" aria-label="Supper Edit – Rezepte für lange Abende">
-        <img className="supper-hero__image" src={heroImage} alt="" fetchPriority="high" />
-        <div className="supper-hero__shade" aria-hidden="true" />
+      <section
+        className="supper-hero"
+        aria-label="Supper Edit – Rezepte für lange Abende"
+      >
+        <img
+          className="supper-hero__image"
+          src={heroImage}
+          alt=""
+          fetchPriority="high"
+        />
+
+        <div
+          className="supper-hero__shade"
+          aria-hidden="true"
+        />
+
         <div className="supper-hero__logo">
           <AnimatedLogo />
         </div>
+
         <div className="supper-hero__content">
           <p className="supper-hero__description">
-            Gute Rezepte, schnelle Drinks und kleine Ideen für Abende, an denen man
-            einfach hängen bleibt.
+            Gute Rezepte, schnelle Drinks und kleine Ideen
+            für Abende, an denen man einfach hängen bleibt.
           </p>
-          <Link to="/rezepte" className="hero-menu-link">
+
+          <Link
+            to="/rezepte"
+            className="hero-menu-link"
+          >
             <span>Rezepte entdecken</span>
-            <ArrowRight size={22} strokeWidth={1.25} aria-hidden="true" />
+            <ArrowRight
+              size={22}
+              strokeWidth={1.25}
+              aria-hidden="true"
+            />
           </Link>
         </div>
-        <span className="supper-hero__caption" aria-hidden="true">Rezepte für lange Abende</span>
+
+        <span
+          className="supper-hero__caption"
+          aria-hidden="true"
+        >
+          Rezepte für lange Abende
+        </span>
       </section>
 
-      <div style={{ overflow: "hidden", backgroundColor: "var(--color-maroon)", paddingBlock: 4 }}>
+      <div
+        style={{
+          overflow: "hidden",
+          backgroundColor: "var(--color-maroon)",
+          paddingBlock: 4,
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -241,25 +354,48 @@ export default function Home() {
         </div>
       </div>
 
-      <section style={{ backgroundColor: "var(--color-cream)", paddingBlock: 40 }}>
-        <div className="wrap" style={{ marginBottom: 40 }}>
-          <h2 className="font-display" style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", margin: 0, fontWeight: 400 }}>
+      <section
+        style={{
+          backgroundColor: "var(--color-cream)",
+          paddingBlock: 40,
+        }}
+      >
+        <div
+          className="wrap"
+          style={{ marginBottom: 40 }}
+        >
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.6rem, 3vw, 2.4rem)",
+              margin: 0,
+              fontWeight: 400,
+            }}
+          >
             Kategorien
           </h2>
         </div>
 
-        <div className="categories-scroll" ref={catContainerRef}>
+        <div
+          className="categories-scroll"
+          ref={catContainerRef}
+        >
           <div className="categories-track">
             {[...categories, ...categories].map((cat, i) => {
               const entry = categoryIcons[cat.slug];
               const Icon = entry?.Icon;
               const isDuplicate = i >= categories.length;
+
               return (
                 <Link
                   key={`${cat.slug}-${i}`}
                   to={`/rezepte?kategorie=${cat.slug}`}
                   className="cat-link"
-                  style={{ width: 140, flexShrink: 0, textAlign: "center" }}
+                  style={{
+                    width: 140,
+                    flexShrink: 0,
+                    textAlign: "center",
+                  }}
                   aria-hidden={isDuplicate || undefined}
                   tabIndex={isDuplicate ? -1 : undefined}
                   draggable={false}
@@ -277,15 +413,34 @@ export default function Home() {
                     {Icon && (
                       <Icon
                         className="cat-icon"
-                        style={{ height: entry.height, width: "auto" }}
+                        style={{
+                          height: entry.height,
+                          width: "auto",
+                        }}
                         color="var(--color-ink)"
                       />
                     )}
                   </div>
-                  <span className="font-display" style={{ display: "block", fontSize: 22, pointerEvents: "none" }}>
+
+                  <span
+                    className="font-display"
+                    style={{
+                      display: "block",
+                      fontSize: 22,
+                      pointerEvents: "none",
+                    }}
+                  >
                     {cat.name}
                   </span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--color-muted)", pointerEvents: "none" }}>
+
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: 11,
+                      color: "var(--color-muted)",
+                      pointerEvents: "none",
+                    }}
+                  >
                     {cat.sub}
                   </span>
                 </Link>
@@ -296,7 +451,10 @@ export default function Home() {
       </section>
 
       {!loading && newestRecipes.length > 0 && (
-        <section className="wrap" style={{ paddingBlock: 40 }}>
+        <section
+          className="wrap"
+          style={{ paddingBlock: 40 }}
+        >
           <div
             style={{
               display: "flex",
@@ -305,10 +463,24 @@ export default function Home() {
               marginBottom: 40,
             }}
           >
-            <h2 className="font-display" style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", margin: 0, fontWeight: 400 }}>
+            <h2
+              className="font-display"
+              style={{
+                fontSize: "clamp(1.6rem, 3vw, 2.4rem)",
+                margin: 0,
+                fontWeight: 400,
+              }}
+            >
               Neue Rezepte
             </h2>
-            <Link to="/rezepte" style={{ fontSize: 14, borderBottom: "1px solid var(--color-ink)" }}>
+
+            <Link
+              to="/rezepte"
+              style={{
+                fontSize: 14,
+                borderBottom: "1px solid var(--color-ink)",
+              }}
+            >
               Alle ansehen
             </Link>
           </div>
@@ -328,34 +500,7 @@ export default function Home() {
         </section>
       )}
 
-      <section className="wrap sticky-feature">
-        <div className="sticky-feature-image" style={{ backgroundImage: `url(${heroImage})` }} />
-        <div className="sticky-feature-text">
-          <p className="font-display" style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)", marginBottom: 10 }}>
-            The Art of Supper.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Supper ist mehr als nur ein Abendessen. Es beschreibt diese{" "}
-            <strong>entspannten Abende</strong>, an denen Menschen zusammenkommen,
-            sich Zeit füreinander nehmen und Essen teilen.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Genau darum geht es bei <strong>Supper Edit</strong>.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8, marginBottom: 20 }}>
-            Nicht um das perfekte Menü oder stundenlange Vorbereitung. Sondern um{" "}
-            <strong>einfache Rezepte, saisonale Zutaten und kleine Ideen</strong> für
-            Tisch, Deko und Anrichten, die aus einem gewöhnlichen Abend etwas Besonderes
-            machen. Oft reichen ein paar Teller zum Teilen, Kerzen auf dem Tisch und{" "}
-            <strong>die richtigen Menschen</strong>, damit aus einem Dienstagabend ein
-            Anlass wird.
-          </p>
-          <p style={{ color: "var(--color-maroon)", fontSize: 15, lineHeight: 1.8 }}>
-            Denn die schönsten Dinner entstehen nicht durch Perfektion, sondern durch
-            <strong> die Menschen, die daran sitzen</strong>.
-          </p>
-        </div>
-      </section>
+      <HomeHerbarium />
 
       <section
         style={{
@@ -369,8 +514,16 @@ export default function Home() {
         <SeasonalCalendarCard />
       </section>
 
-      <section style={{ backgroundColor: "var(--color-sky)", paddingBlock: 72 }}>
-        <div className="wrap" style={{ textAlign: "center" }}>
+      <section
+        style={{
+          backgroundColor: "var(--color-sky)",
+          paddingBlock: 72,
+        }}
+      >
+        <div
+          className="wrap"
+          style={{ textAlign: "center" }}
+        >
           <p
             style={{
               fontSize: 11,
@@ -382,6 +535,7 @@ export default function Home() {
           >
             Noch nichts geplant?
           </p>
+
           <h2
             className="font-display"
             style={{
@@ -394,14 +548,22 @@ export default function Home() {
             Heute kochst du:
           </h2>
 
-          <div className="vibe-filter" role="group" aria-label="Nach Vibe filtern">
+          <div
+            className="vibe-filter"
+            role="group"
+            aria-label="Nach Vibe filtern"
+          >
             {VIBES.map((vibe) => (
               <button
                 key={vibe.key}
                 type="button"
                 onClick={() => setVibeKey(vibe.key)}
                 aria-pressed={vibeKey === vibe.key}
-                className={`vibe-pill ${vibeKey === vibe.key ? "vibe-pill-active" : ""}`}
+                className={`vibe-pill ${
+                  vibeKey === vibe.key
+                    ? "vibe-pill-active"
+                    : ""
+                }`}
               >
                 {vibe.label}
               </button>
@@ -413,7 +575,10 @@ export default function Home() {
               <div className="postcard-photo">
                 {suggestion.image ? (
                   <img
-                    src={resizeDriveUrl(suggestion.image, "w600")}
+                    src={resizeDriveUrl(
+                      suggestion.image,
+                      "w600",
+                    )}
                     alt={suggestion.title}
                     loading="lazy"
                     decoding="async"
@@ -426,22 +591,53 @@ export default function Home() {
                     }}
                   />
                 ) : (
-                  <div style={{ position: "absolute", inset: 0, backgroundColor: "var(--color-line)" }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundColor: "var(--color-line)",
+                    }}
+                  />
                 )}
               </div>
 
               <div className="postcard-right">
-                <span style={{ fontSize: 11, color: "var(--color-terracotta)", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 8, minHeight: "1em" }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: "var(--color-terracotta)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    display: "block",
+                    marginBottom: 8,
+                    minHeight: "1em",
+                  }}
+                >
                   {suggestion.category}
                 </span>
 
                 <p
-                  style={{ fontFamily: "var(--font-body)", fontWeight: 300, fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)", margin: "0 0 12px", lineHeight: 1.2, minHeight: "3.6em" }}
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 300,
+                    fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)",
+                    margin: "0 0 12px",
+                    lineHeight: 1.2,
+                    minHeight: "3.6em",
+                  }}
                 >
                   {suggestion.title}
                 </p>
 
-                <p style={{ fontSize: 13, color: "var(--color-muted)", lineHeight: 1.75, margin: "0 0 28px", minHeight: "4.5em" }}>
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "var(--color-muted)",
+                    lineHeight: 1.75,
+                    margin: "0 0 28px",
+                    minHeight: "4.5em",
+                  }}
+                >
                   {suggestion.intro
                     ? suggestion.intro.length > 95
                       ? suggestion.intro.slice(0, 95) + "…"
@@ -449,11 +645,24 @@ export default function Home() {
                     : ""}
                 </p>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <Link to={`/rezepte/${suggestion.slug}`} className="btn-primary btn-small">
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Link
+                    to={`/rezepte/${suggestion.slug}`}
+                    className="btn-primary btn-small"
+                  >
                     Zum Rezept <ArrowRight size={13} />
                   </Link>
-                  <button onClick={pickRandom} className="btn-secondary btn-small">
+
+                  <button
+                    onClick={pickRandom}
+                    className="btn-secondary btn-small"
+                  >
                     <Shuffle size={13} /> Anderes Rezept
                   </button>
                 </div>
@@ -461,8 +670,14 @@ export default function Home() {
             </div>
           ) : (
             !loading && (
-              <p style={{ color: "var(--color-maroon)", fontSize: 14 }}>
-                Für "{activeVibe.label}" ist noch kein Rezept da.
+              <p
+                style={{
+                  color: "var(--color-maroon)",
+                  fontSize: 14,
+                }}
+              >
+                Für "{activeVibe.label}" ist noch kein
+                Rezept da.
               </p>
             )
           )}
@@ -499,12 +714,71 @@ export default function Home() {
 
       <SupperPairing />
 
+      <section className="wrap sticky-feature">
+        <div
+          className="sticky-feature-image"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+          }}
+        />
+
+        <div className="sticky-feature-text">
+          <h2
+            className="font-display"
+            style={{
+              fontSize: "clamp(1.6rem, 4vw, 2.4rem)",
+              marginBottom: 20,
+            }}
+          >
+            The Art of Supper.
+          </h2>
+
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.8,
+              marginBottom: 20,
+            }}
+          >
+            Gute Abende brauchen kein perfektes Menü.
+            Ein paar Teller zum Teilen, Kerzen auf dem
+            Tisch und Menschen, mit denen man gerne
+            sitzen bleibt.
+          </p>
+
+          <p
+            style={{
+              fontSize: 16,
+              lineHeight: 1.8,
+              marginBottom: 24,
+            }}
+          >
+            Dafür sammeln wir Rezepte, kleine Dinnerideen
+            und Wissen über das, was draußen wächst.
+            Zum Ausprobieren und Immer-wieder-Machen.
+          </p>
+
+          <Link
+            to="/about"
+            style={{
+              display: "inline-block",
+              fontSize: 14,
+              paddingBlock: 8,
+              borderBottom: "1px solid var(--color-maroon)",
+            }}
+          >
+            Mehr über Supper Edit →
+          </Link>
+        </div>
+      </section>
+
       <style>{`
         .newest-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 28px;
         }
+
         @media (max-width: 640px) {
           .newest-grid {
             display: flex;
@@ -517,7 +791,11 @@ export default function Home() {
             padding-inline: 20px;
             scrollbar-width: none;
           }
-          .newest-grid::-webkit-scrollbar { display: none; }
+
+          .newest-grid::-webkit-scrollbar {
+            display: none;
+          }
+
           .newest-grid > * {
             flex: 0 0 68%;
             scroll-snap-align: start;
@@ -533,12 +811,19 @@ export default function Home() {
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
         }
-        .categories-scroll::-webkit-scrollbar { display: none; }
+
+        .categories-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
         .categories-track {
           display: flex;
           gap: 40px;
           width: max-content;
-          padding-left: max(clamp(20px, 5vw, 56px), calc((100vw - 1180px) / 2 + 56px));
+          padding-left: max(
+            clamp(20px, 5vw, 56px),
+            calc((100vw - 1180px) / 2 + 56px)
+          );
         }
 
         .vibe-filter {
@@ -548,6 +833,7 @@ export default function Home() {
           gap: 8px;
           margin-bottom: 40px;
         }
+
         .vibe-pill {
           padding: 8px 16px;
           border-radius: 999px;
@@ -558,7 +844,11 @@ export default function Home() {
           cursor: pointer;
           transition: background 0.2s ease, color 0.2s ease;
         }
-        .vibe-pill:hover { background: rgba(43, 18, 16, 0.06); }
+
+        .vibe-pill:hover {
+          background: rgba(43, 18, 16, 0.06);
+        }
+
         .vibe-pill-active {
           background: var(--color-terracotta);
           border-color: var(--color-terracotta);
@@ -574,6 +864,7 @@ export default function Home() {
           overflow: hidden;
           box-shadow: 0 20px 48px rgba(43, 18, 16, 0.12);
         }
+
         .postcard-photo {
           width: 240px;
           flex-shrink: 0;
@@ -581,6 +872,7 @@ export default function Home() {
           min-height: 320px;
           background-color: var(--color-line);
         }
+
         .postcard-right {
           flex: 1;
           padding: 28px 32px;
@@ -589,40 +881,66 @@ export default function Home() {
           justify-content: center;
           text-align: left;
         }
+
         @media (max-width: 580px) {
-          .postcard { flex-direction: column; }
-          .postcard-photo { width: 100%; min-height: 220px; }
+          .postcard {
+            flex-direction: column;
+          }
+
+          .postcard-photo {
+            width: 100%;
+            min-height: 220px;
+          }
         }
 
-        .statement-section { background-attachment: fixed; }
+        .statement-section {
+          background-attachment: fixed;
+        }
+
         @media (max-width: 780px) {
-          .statement-section { background-attachment: scroll; }
+          .statement-section {
+            background-attachment: scroll;
+          }
         }
 
         .sticky-feature {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 48px;
-          align-items: start;
-          padding-block: 80px;
+          align-items: center;
+          padding-block: 64px;
         }
+
         .sticky-feature-image {
-          position: sticky;
-          top: 100px;
-          height: 70vh;
+          height: clamp(280px, 36vw, 440px);
           border-radius: 16px;
           background-size: cover;
           background-position: center;
         }
-        .sticky-feature-text { padding-top: 10vh; padding-bottom: 10vh; }
+
+        .sticky-feature-text {
+          padding-block: 12px;
+        }
 
         @media (max-width: 780px) {
-          .sticky-feature { grid-template-columns: 1fr; }
-          .sticky-feature-image { position: static; height: 50vh; }
-          .sticky-feature-text { padding-top: 0; padding-bottom: 0; }
+          .sticky-feature {
+            grid-template-columns: 1fr;
+          }
+
+          .sticky-feature-image {
+            height: 320px;
+          }
+
+          .sticky-feature-text {
+            padding-top: 0;
+            padding-bottom: 0;
+          }
         }
+
         @media (prefers-reduced-motion: reduce) {
-          .sticky-feature-image { position: static !important; }
+          .sticky-feature-image {
+            position: static !important;
+          }
         }
       `}</style>
     </>
