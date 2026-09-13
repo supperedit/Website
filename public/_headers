@@ -1,9 +1,146 @@
-/*
-  X-Content-Type-Options: nosniff
-  X-Frame-Options: DENY
-  Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+.recipe-card-hover.collection-card,
+.specimen-card.collection-card {
+  --card-line: color-mix(
+    in srgb,
+    var(--color-maroon) 20%,
+    transparent
+  );
+  --card-inset: 18px;
 
-/api/*
-  Access-Control-Allow-Methods: GET
+  border: 1px solid var(--card-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-cream);
+  color: var(--color-maroon);
+  box-shadow: 0 2px 8px rgba(43, 18, 16, 0.04);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease;
+}
+
+.recipe-card-hover.collection-card {
+  height: 100%;
+}
+
+.collection-card .recipe-card-image {
+  border-radius: 0;
+  transition: none;
+}
+
+.recipe-card-hover.collection-card:hover .recipe-card-image,
+.recipe-card-hover.collection-card .recipe-card-image img {
+  transform: none;
+  box-shadow: none;
+}
+
+.recipe-card-caption {
+  padding: 12px var(--card-inset) 16px;
+  border-top: 0;
+}
+
+.recipe-card-category {
+  display: block;
+  font: 400 12px/1.5 var(--font-body);
+  color: var(--color-terracotta);
+  margin-bottom: 6px;
+}
+
+.recipe-card-caption h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--color-maroon);
+  overflow-wrap: anywhere;
+}
+
+.specimen-card.collection-card {
+  --card-line: color-mix(
+    in srgb,
+    var(--color-maroon) 42%,
+    transparent
+  );
+
+  border-radius: 8px;
+  grid-template-rows:
+    minmax(0, 82fr)
+    minmax(0, 9fr)
+    minmax(0, 9fr);
+}
+
+.collection-card .specimen-photo {
+  overflow: hidden;
+}
+
+.collection-card .specimen-photo img {
+  padding: 0;
+  object-fit: cover;
+  object-position: center;
+  transform: none;
+  transition: none;
+}
+
+.collection-card .specimen-row {
+  border: 0;
+}
+
+.collection-card .specimen-row-title {
+  border-top: 1px solid var(--card-line);
+  grid-template-columns:
+    minmax(0, 1.65fr)
+    minmax(0, 1fr);
+}
+
+.collection-card .specimen-identity {
+  padding: 4px 12px 4px var(--card-inset);
+}
+
+.collection-card .specimen-inline-fact {
+  border-left: 1px solid var(--card-line);
+  padding: 4px 10px;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.collection-card .specimen-row-single {
+  border-top: 1px solid var(--card-line);
+  padding: 5px var(--card-inset);
+  gap: 10px;
+}
+
+.collection-card .specimen-meta-label {
+  font-size: clamp(9px, 2.8cqi, 11px);
+}
+
+@media (hover: hover) {
+  .recipe-card-hover.collection-card:hover,
+  .specimen:hover .specimen-card.collection-card {
+    transform: translateY(-3px) scale(1.01);
+    border-color: color-mix(
+      in srgb,
+      var(--color-maroon) 50%,
+      transparent
+    );
+    box-shadow: 0 10px 24px rgba(43, 18, 16, 0.1);
+  }
+}
+
+.recipe-card-hover.collection-card:focus-visible {
+  outline: 2px solid var(--color-maroon);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recipe-card-hover.collection-card,
+  .specimen-card.collection-card {
+    transition: none;
+  }
+
+  .recipe-card-hover.collection-card:hover,
+  .specimen:hover .specimen-card.collection-card {
+    transform: none;
+  }
+}
