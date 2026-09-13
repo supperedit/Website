@@ -33,7 +33,13 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
     if (!cardRef.current) return;
     setBusy(true);
     try {
-      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+      const { width, height } = cardRef.current.getBoundingClientRect();
+      const dataUrl = await toPng(cardRef.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        width,
+        height,
+      });
       const link = document.createElement("a");
       link.download = `${entry.slug}-herbarium-karte.png`;
       link.href = dataUrl;
@@ -156,7 +162,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
           padding-top: 6px;
         }
         .sc-printable-card {
-          max-width: 260px;
+          width: 260px;
           margin: 0 auto;
         }
         .sc-printable-actions {
@@ -182,6 +188,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
         .sc-printable-option:disabled { opacity: 0.6; cursor: default; }
 
         @media print {
+          body { height: 0 !important; overflow: hidden !important; }
           body * { visibility: hidden; }
           .sc-printable-card, .sc-printable-card * { visibility: visible; }
           .sc-printable-card {
