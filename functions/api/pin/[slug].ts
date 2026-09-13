@@ -86,7 +86,16 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       fonts: [{ name: "Homemade Apple", data: fontData, weight: 400, style: "normal" }],
     });
 
-    return new Response(image.body, {
+    const buf = await image.arrayBuffer();
+
+    if (buf.byteLength === 0) {
+      return new Response(
+        `DEBUG: leere Bildantwort. fontData bytes=${fontData.byteLength}, html length=${html.length}, entry.image=${entry.image ?? "kein Bild"}`,
+        { status: 500 },
+      );
+    }
+
+    return new Response(buf, {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
@@ -94,6 +103,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   } catch (err) {
     console.error("pin:", err);
-    return new Response("Bild konnte nicht erzeugt werden.", { status: 500 });
+    const detail = err instanceof Error ? `${err.message}\n${err.stack ?? ""}` : String(err);
+    return new Response(`DEBUG catch: ${detail}`, { status: 500 });
   }
 };
