@@ -46,44 +46,54 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const title = escapeHtml(entry.title);
   const season = escapeHtml(entry.season || "\u2013");
   const tastingNotes = escapeHtml(entry.tastingNotes || "\u2013");
-  const edibleParts = escapeHtml(entry.edibleParts || "\u2013");
-  const line = "rgba(67,9,8,.35)";
-  const maroon = "#430908";
-  const muted = "#7c4535";
+
+  // Same palette as theme.css / herbarium.css
   const cream = "#F7F6EC";
+  const maroon = "#430908";
+  const line = "rgba(67,9,8,0.42)";
 
   const photo = entry.image
-    ? `<img src="${origin}/img/journal/${entry.slug}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`
+    ? `<img src="${origin}/img/journal/${entry.slug}" width="960" height="1180" style="width:960px;height:1180px;object-fit:contain;" />`
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
+  // Mirrors SpecimenCard.tsx / herbarium.css .specimen-card structure:
+  // photo : title+Saison row : Geschmack row, proportioned 80:10:10, no rounded corners.
   const html = `
-  <div style="display:flex;flex-direction:column;width:1000px;height:1500px;background:${cream};border:3px solid ${line};box-sizing:border-box;">
-    <div style="display:flex;flex:1;align-items:center;justify-content:center;padding:40px;">
+  <div style="display:flex;flex-direction:column;width:1000px;height:1500px;background:${cream};border:2px solid ${line};box-sizing:border-box;">
+    <div style="display:flex;flex:8;align-items:center;justify-content:center;padding:20px;">
       ${photo}
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:3px solid ${line};padding:24px 40px;">
-      <div style="display:flex;font-family:'Homemade Apple';font-size:64px;color:${maroon};">${title}</div>
-      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Saison:&nbsp;</div>
-      <div style="display:flex;font-family:'Homemade Apple';font-size:36px;color:${maroon};">${season}</div>
+    <div style="display:flex;flex:1;border-top:2px solid ${line};">
+      <div style="display:flex;flex:1.55;align-items:center;padding:10px 28px;">
+        <div style="display:flex;font-family:'Homemade Apple';font-size:56px;color:${maroon};">${title}</div>
+      </div>
+      <div style="display:flex;flex:1;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;border-left:2px solid ${line};padding:10px 28px;">
+        <div style="display:flex;font-family:'Elms Sans';font-size:20px;color:${maroon};">Saison</div>
+        <div style="display:flex;font-family:'Homemade Apple';font-size:38px;color:${maroon};">${season}</div>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;border-top:3px solid ${line};padding:20px 40px;gap:6px;">
-      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Geschmack:</div>
-      <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${tastingNotes}</div>
-    </div>
-    <div style="display:flex;flex-direction:column;border-top:3px solid ${line};padding:20px 40px;gap:6px;">
-      <div style="display:flex;font-family:sans-serif;font-size:22px;color:${muted};">Essbare Teile:</div>
-      <div style="display:flex;font-family:'Homemade Apple';font-size:40px;color:${maroon};">${edibleParts}</div>
+    <div style="display:flex;flex:1;align-items:center;border-top:2px solid ${line};padding:10px 28px;gap:20px;">
+      <div style="display:flex;font-family:'Elms Sans';font-size:20px;color:${maroon};white-space:nowrap;">Geschmack:</div>
+      <div style="display:flex;flex:1;font-family:'Elms Sans';font-size:26px;color:${maroon};">${tastingNotes}</div>
     </div>
   </div>`;
 
   try {
-    const fontText = `${entry.title}${entry.season || ""}${entry.tastingNotes || ""}${entry.edibleParts || ""}SaisonGeschmackEssbareTeile0123456789\u2013`;
-    const fontData = await loadGoogleFont({ family: "Homemade Apple", text: fontText });
+    const scriptText = `${entry.title}${entry.season || ""}0123456789\u2013`;
+    const bodyText = `Saison Geschmack: ${entry.tastingNotes || ""}`;
+
+    const [scriptFont, bodyFont] = await Promise.all([
+      loadGoogleFont({ family: "Homemade Apple", text: scriptText }),
+      loadGoogleFont({ family: "Elms Sans", text: bodyText, weight: 400 }),
+    ]);
 
     const image = new ImageResponse(html, {
       width: 1000,
       height: 1500,
-      fonts: [{ name: "Homemade Apple", data: fontData, weight: 400, style: "normal" }],
+      fonts: [
+        { name: "Homemade Apple", data: scriptFont, weight: 400, style: "normal" },
+        { name: "Elms Sans", data: bodyFont, weight: 400, style: "normal" },
+      ],
     });
 
     const buf = await image.arrayBuffer();
