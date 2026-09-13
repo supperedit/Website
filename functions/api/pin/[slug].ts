@@ -23,38 +23,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-  }
-  return btoa(binary);
-}
-
-async function embeddedPhoto(imageUrl: string, cream: string): Promise<string> {
-  const fallback = `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
-  try {
-    const imgRes = await fetch(imageUrl);
-    if (!imgRes.ok) {
-      console.error("pin: image fetch failed with status", imgRes.status);
-      return fallback;
-    }
-    const imgBuf = await imgRes.arrayBuffer();
-    if (imgBuf.byteLength === 0) {
-      console.error("pin: image fetch returned 0 bytes");
-      return fallback;
-    }
-    const contentType = imgRes.headers.get("Content-Type") ?? "image/jpeg";
-    const base64 = arrayBufferToBase64(imgBuf);
-    return `<img src="data:${contentType};base64,${base64}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`;
-  } catch (err) {
-    console.error("pin: embeddedPhoto failed", err);
-    return fallback;
-  }
-}
-
 export const onRequest: PagesFunction<Env> = async (context) => {
   if (await isRateLimited(context.request, context.env.RATE_LIMIT, "pin")) {
     return rateLimitResponse();
@@ -85,7 +53,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const cream = "#F7F6EC";
 
   const photo = entry.image
-    ? await embeddedPhoto(entry.image, cream)
+    ? `<img src="${origin}/img/journal/${entry.slug}" width="920" height="880" style="width:920px;height:880px;object-fit:contain;" />`
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
   const html = `
@@ -120,13 +88,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 
     const buf = await image.arrayBuffer();
 
-    if (buf.byteLength === 0) {
-      return new Response(
-        `DEBUG: leere Bildantwort. fontData bytes=${fontData.byteLength}, html length=${html.length}, entry.image=${entry.image ?? "kein Bild"}`,
-        { status: 500 },
-      );
-    }
-
     return new Response(buf, {
       headers: {
         "Content-Type": "image/png",
@@ -135,7 +96,6 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     });
   } catch (err) {
     console.error("pin:", err);
-    const detail = err instanceof Error ? `${err.message}\n${err.stack ?? ""}` : String(err);
-    return new Response(`DEBUG catch: ${detail}`, { status: 500 });
+    return new Response("Bild konnte nicht erzeugt werden.", { status: 500 });
   }
 };
