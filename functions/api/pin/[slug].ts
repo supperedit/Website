@@ -80,14 +80,18 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     const fontText = `${entry.title}${entry.season || ""}${entry.tastingNotes || ""}${entry.edibleParts || ""}SaisonGeschmackEssbareTeile0123456789\u2013`;
     const fontData = await loadGoogleFont({ family: "Homemade Apple", text: fontText });
 
-    return new ImageResponse(html, {
+    const image = new ImageResponse(html, {
       width: 1000,
       height: 1500,
       fonts: [{ name: "Homemade Apple", data: fontData, weight: 400, style: "normal" }],
+    });
+
+    return new Response(image.body, {
       headers: {
+        "Content-Type": "image/png",
         "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
       },
-    } as never);
+    });
   } catch (err) {
     console.error("pin:", err);
     return new Response("Bild konnte nicht erzeugt werden.", { status: 500 });
