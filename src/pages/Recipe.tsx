@@ -143,8 +143,8 @@ export default function Recipe() {
         description={recipe.intro ?? `${recipe.title}, ein Rezept von Supper Edit.`}
         ogTitle={recipe.pinterestTitle ?? undefined}
         ogDescription={recipe.pinterestDescription ?? undefined}
-        ogImage={recipe.image ? resizeDriveUrl(recipe.image, "w1200") : undefined}
-        ogImageAlt={recipe.altText ?? recipe.title}
+        image={recipe.image ? resizeDriveUrl(recipe.image, "w1200") : undefined}
+        imageAlt={recipe.title}
       />
       <script
         type="application/ld+json"
