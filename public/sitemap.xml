@@ -1,23 +1,48 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://supperedit.figma.site/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://supperedit.figma.site/rezepte</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://supperedit.figma.site/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://supperedit.figma.site/kontakt</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-</urlset>
+interface Recipe {
+  slug: string;
+}
+
+interface JournalEntry {
+  slug: string;
+}
+
+function urlEntry(loc: string, changefreq: string, priority: string): string {
+  return `  <url>\n    <loc>${loc}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+}
+
+export const onRequest: PagesFunction = async (context) => {
+  const BASE = "https://www.supperedit.de";
+
+  const [recipesRes, journalRes] = await Promise.all([
+    fetch(`${BASE}/api/recipes`),
+    fetch(`${BASE}/api/journal`),
+  ]);
+
+  const recipes: Recipe[] = recipesRes.ok ? await recipesRes.json() : [];
+  const journalEntries: JournalEntry[] = journalRes.ok ? await journalRes.json() : [];
+
+  const staticUrls = [
+    urlEntry(`${BASE}/`, "weekly", "1.0"),
+    urlEntry(`${BASE}/rezepte`, "weekly", "0.9"),
+    urlEntry(`${BASE}/journal`, "weekly", "0.7"),
+    urlEntry(`${BASE}/about`, "monthly", "0.5"),
+    urlEntry(`${BASE}/kontakt`, "monthly", "0.3"),
+  ];
+
+  const recipeUrls = recipes
+    .filter((r) => r.slug)
+    .map((r) => urlEntry(`${BASE}/rezepte/${r.slug}`, "monthly", "0.8"));
+
+  const journalUrls = journalEntries
+    .filter((e) => e.slug)
+    .map((e) => urlEntry(`${BASE}/journal/${e.slug}`, "monthly", "0.6"));
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...staticUrls, ...recipeUrls, ...journalUrls].join("\n")}\n</urlset>`;
+
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate=300",
+    },
+  });
+};
