@@ -33,7 +33,7 @@ export default function JournalEntry() {
   ].filter(([, value]) => Boolean(value));
   const linkedRecipes = recipes.filter(recipe => entry.linkedRecipes.includes(recipe.slug));
   return <>
-    <SEO title={`${entry.title} – Herbarium`} description={entry.intro ?? `${entry.title}: botanische Notizen im Supper Edit Herbarium.`} image={entry.image} />
+    <SEO title={`${entry.title} – Herbarium`} description={entry.intro ?? `${entry.title}: botanische Notizen im Supper Edit Herbarium.`} image={entry.image ? `/img/journal/${entry.slug}` : undefined} />
     <article className="herbarium plant-entry">
       <Link className="herbarium-back" to={archiveUrl}><ArrowLeft size={16} aria-hidden="true" /> Zur Sammlung</Link>
       <header className="plant-heading"><div><p className="herbarium-kicker">Herbarium / {plantGroup(entry)}</p><h1>{entry.title}</h1>{entry.latinName && <p className="plant-latin">{entry.latinName}</p>}</div>{entry.season && <span className="plant-season-stamp"><span>Saison</span>{entry.season}</span>}</header>
