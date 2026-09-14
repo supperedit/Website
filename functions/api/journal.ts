@@ -10,6 +10,7 @@ interface NotionRichText {
 
 interface NotionProperty {
   type: string;
+  number?: number | null;
   title?: NotionRichText[];
   rich_text?: NotionRichText[];
   select?: { name: string } | null;
@@ -29,6 +30,11 @@ function richText(prop: NotionProperty | undefined): string {
   if (prop.type === "title") return prop.title?.map((t) => t.plain_text).join("") ?? "";
   if (prop.type === "rich_text") return prop.rich_text?.map((t) => t.plain_text).join("") ?? "";
   return "";
+}
+
+function dotRating(prop: NotionProperty | undefined): number | null {
+  const value = prop?.type === "number" ? prop.number : null;
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 5 ? value : null;
 }
 
 function slugify(text: string): string {
@@ -144,6 +150,8 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return {
           slug,
           title,
+          lightNeed: dotRating(p["Lichtbedarf"]),
+          waterNeed: dotRating(p["Wasserbedarf"]),
           edibleParts: richText(p["Essbare Teile"]) || null,
           sowingTime: richText(p["Aussaat"]) || null,
           plantingTime: richText(p["Pflanzzeit"]) || null,
