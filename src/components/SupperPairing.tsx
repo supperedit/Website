@@ -72,7 +72,7 @@ export default function SupperPairing() {
         <p className="pairing-eyebrow">{currentPairing.label}</p>
         <h2 className="font-display pairing-heading">The Supper Pairing</h2>
 
-        <div className="pairing-card">
+        <div className="pairing-layout">
           <div className="pairing-row">
             <div className="pairing-item">
               <RecipeCard
@@ -83,6 +83,7 @@ export default function SupperPairing() {
               />
             </div>
 
+            <span className="pairing-symbol" aria-hidden="true">&amp;</span>
             <div className="pairing-item">
               <RecipeCard
                 slug={itemB.slug}
@@ -100,59 +101,18 @@ export default function SupperPairing() {
       </div>
 
       <style>{`
-        .pairing-section {
-          background-color: var(--color-cream);
-          padding-block: 80px;
-        }
-        .pairing-eyebrow {
-          font-size: 11px;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
-          color: var(--color-terracotta);
-          margin-bottom: 12px;
-        }
-        .pairing-heading {
-          font-size: clamp(1.8rem, 4vw, 2.6rem);
-          margin: 0 0 40px;
-          color: var(--color-maroon);
-        }
-        .pairing-card {
-          max-width: 560px;
-          margin: 0 auto;
-          background: var(--color-cream);
-          border-radius: 20px;
-          padding: 32px 20px;
-          box-shadow: 0 20px 48px rgba(43, 18, 16, 0.12);
-        }
-        /* Row layout stays side-by-side at every width — including mobile —
-           so the whole pairing fits on one screen while scrolling, instead
-           of stacking into a tall column. Card width shrinks with the
-           viewport instead. */
-        .pairing-row {
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          gap: clamp(10px, 4vw, 24px);
-        }
-        .pairing-item {
-          width: clamp(120px, 38vw, 220px);
-          flex-shrink: 0;
-          text-align: left;
-          transition: transform 0.25s ease;
-        }
-        .pairing-item:hover {
-          transform: translateY(-4px);
-        }
-        .pairing-symbol {
-          flex-shrink: 0;
-          align-self: center;
-          font-family: var(--font-display);
-          font-size: clamp(20px, 5vw, 28px);
-          line-height: 1;
-          color: var(--color-terracotta);
-        }
-        .pairing-shuffle {
-          margin-top: 32px;
+        .pairing-section { background: var(--color-sky); padding-block: clamp(48px, 7vw, 80px); }
+        .pairing-eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-maroon); margin-bottom: 12px; }
+        .pairing-heading { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 32px; color: var(--color-maroon); }
+        .pairing-layout { max-width: 620px; margin-inline: auto; }
+        .pairing-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: clamp(8px, 2vw, 24px); align-items: stretch; }
+        .pairing-item { min-width: 0; text-align: left; }
+        .pairing-symbol { align-self: center; font: 400 clamp(24px, 5vw, 48px)/1 var(--font-display); color: var(--color-maroon); }
+        .pairing-shuffle { margin-top: 28px; }
+        @media (max-width: 480px) {
+          .pairing-item .recipe-card-caption { padding: 10px 10px 14px; }
+          .pairing-item .recipe-card-caption h3 { font-size: 17px !important; }
+          .pairing-item .recipe-card-category { font-size: 10px; }
         }
       `}</style>
     </section>
