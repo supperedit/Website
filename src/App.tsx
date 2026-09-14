@@ -19,6 +19,7 @@ import Datenschutz from "./pages/Datenschutz";
 import NotFound from "./pages/NotFound";
 import Favorites from "./pages/Favorites";
 import KitchenNotes from "./pages/KitchenNotes";
+import KitchenNote from "./pages/KitchenNote";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="/rezepte/:slug" element={<Recipe />} />
           <Route path="/journal"       element={<Journal />} />
           <Route path="/journal/:slug" element={<JournalEntry />} />
+          <Route path="/kitchen-notes/:slug" element={<KitchenNote />} />
           <Route path="/kitchen-notes" element={<KitchenNotes />} />
           <Route path="/about"         element={<About />} />
           <Route path="/kontakt"       element={<Contact />} />
