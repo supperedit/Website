@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { Printer, Download, Share2, X } from "lucide-react";
-import { toPng } from "html-to-image";
+import { createPortal } from "react-dom";
+import { exportHerbariumCard } from "../data/exportHerbariumCard";
+import "../styles/herbarium.css";
 import SpecimenCard from "./SpecimenCard";
 import type { JournalEntry } from "../data/journalTypes";
 
@@ -11,6 +13,7 @@ interface SpecimenCardPrintableProps {
 export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintableProps) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -30,22 +33,21 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
   };
 
   const handleDownload = async () => {
-    if (!cardRef.current) return;
+    if (busy) return;
     setBusy(true);
+    setError(null);
     try {
-      const { width, height } = cardRef.current.getBoundingClientRect();
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: 3,
-        cacheBust: true,
-        width,
-        height,
-      });
+      const blob = await exportHerbariumCard(entry);
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.download = `${entry.slug}-herbarium-karte.png`;
-      link.href = dataUrl;
+      link.href = url;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err) {
-      console.error("Kartenbild konnte nicht erzeugt werden:", err);
+      setError(err instanceof Error ? err.message : "Die Karte konnte nicht erstellt werden. Bitte erneut versuchen.");
     } finally {
       setBusy(false);
     }
@@ -74,7 +76,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
         <Printer size={17} aria-hidden="true" />
       </button>
 
-      {open && (
+      {open && createPortal(
         <div className="sc-printable-overlay" role="presentation" onClick={close}>
           <div
             className="sc-printable-dialog"
@@ -94,6 +96,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
               </div>
             </div>
 
+            {error && <p className="sc-printable-error" role="alert">{error}</p>}
             <div className="sc-printable-actions">
               <button type="button" className="sc-printable-option" onClick={handlePrint}>
                 <Printer size={18} aria-hidden="true" />
@@ -109,7 +112,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
               </button>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
 
       <style>{`
@@ -142,7 +145,9 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
           border-radius: 10px;
           padding: 28px 24px 20px;
           width: 100%;
-          max-width: 340px;
+          max-width: 360px;
+          max-height: calc(100dvh - 40px);
+          overflow-y: auto;
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -162,9 +167,11 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
           padding-top: 6px;
         }
         .sc-printable-card {
-          width: 260px;
+          width: min(260px, 100%);
+          container-type: inline-size;
           margin: 0 auto;
         }
+        .sc-printable-error { font-size: 13px; line-height: 1.6; color: var(--color-maroon); }
         .sc-printable-actions {
           display: flex;
           flex-direction: column;
