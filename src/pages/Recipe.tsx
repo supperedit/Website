@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Leaf, ChevronLeft, Copy, Check, Minus, Plus, Share2 } from "lucide-react";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
@@ -14,6 +14,21 @@ export default function Recipe() {
   const [copied, setCopied] = useState(false);
   const [servings, setServings] = useState<number | null>(null);
   const recipe = recipes.find((r) => r.slug === slug);
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const [stickySteps, setStickySteps] = useState(false);
+  useEffect(() => {
+    const element = stepsRef.current;
+    if (!element) return;
+    const measure = () => setStickySteps(
+      window.innerWidth > 780 && element.offsetHeight <= window.innerHeight - 132,
+    );
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    window.addEventListener("resize", measure);
+    measure();
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, [recipe?.slug, loading]);
+
   useEffect(() => {
     setServings(recipe?.baseServings ?? null);
   }, [recipe?.slug, recipe?.baseServings]);
@@ -389,7 +404,7 @@ export default function Recipe() {
               ))}
             </div>
           </div>
-          <div className="recipe-content">
+          <div ref={stepsRef} className={`recipe-content${stickySteps ? " recipe-content--sticky" : ""}`}>
             <h2 className="font-display" style={{ fontSize: 26, marginBottom: 20 }}>
               Zubereitung
             </h2>
@@ -498,7 +513,9 @@ export default function Recipe() {
         .recipe-content {
           padding-top: 4px;
         }
+        .recipe-content--sticky { position: sticky; top: 100px; align-self: start; }
         @media (max-width: 780px) {
+          .recipe-content--sticky { position: static; }
           .recipe-header {
             padding-top: 8px;
             margin-bottom: 24px;
