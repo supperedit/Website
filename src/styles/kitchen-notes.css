@@ -55,3 +55,36 @@
 @media (hover: hover) { .notes-post-link:hover h3 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; } }
 @media (max-width: 1000px) { .notes-post-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .notes-post-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+.notes-article-intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; margin-bottom: 36px; }
+.notes-article-intro--text { grid-template-columns: minmax(0, 760px); }
+.notes-article-intro h1 { font-size: clamp(36px, 4.6vw, 60px); line-height: 1.12; }
+.notes-article-intro .notes-intro { margin: 0; font-size: 17px; }
+.notes-hero-image { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+.notes-editorial { max-width: none; font-size: 16px; line-height: 1.8; }
+.notes-editorial > section { margin-block: 40px; }
+.notes-reading { max-width: 720px; margin-inline: auto; }
+.notes-editorial h2 { margin-top: 0; font-size: clamp(27px, 3vw, 36px); }
+.notes-editorial p { margin-bottom: 16px; }
+.notes-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.notes-split > figure { margin: 0; }
+.notes-split > figure img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.notes-split--reverse > figure { order: 2; }
+.notes-section-copy { min-width: 0; }
+.notes-editorial .notes-source { font-size: 11px; line-height: 1.8; margin-top: 14px; color: var(--color-terracotta); }
+.notes-table-wrap { overflow-x: auto; }
+.notes-table-wrap table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.7; }
+.notes-table-wrap th, .notes-table-wrap td { text-align: left; vertical-align: top; padding: 16px 12px; border-bottom: 1px solid var(--color-line); }
+.notes-table-wrap thead { background: var(--color-sky); }
+.notes-table-wrap th { font-weight: 500; }
+.notes-table-wrap tbody th { width: 28%; }
+.notes-reading--memo { padding: clamp(22px, 4vw, 36px); background: var(--color-sky); border-radius: 8px; }
+.notes-reading--memo .notes-callout { background: none; padding: 0; margin: 0 0 16px; white-space: pre-line; }
+.notes-reading--memo .notes-section-copy > p:last-child { font-size: 11px; margin-bottom: 0; }
+.notes-editorial > footer { max-width: 720px; margin-inline: auto; }
+@media (max-width: 760px) {
+  .notes-article-intro, .notes-split { grid-template-columns: 1fr; gap: 24px; }
+  .notes-split--reverse > figure { order: 0; }
+  .notes-editorial > section { margin-block: 32px; }
+  .notes-table-wrap th, .notes-table-wrap td { padding: 12px 8px; }
+}
