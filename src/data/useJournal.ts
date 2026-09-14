@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 export interface JournalEntry {
+  lightNeed?: number | null;
+  waterNeed?: number | null;
   edibleParts?: string | null;
   sowingTime?: string | null;
   plantingTime?: string | null;
