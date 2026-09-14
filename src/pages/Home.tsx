@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Shuffle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
-import type { Recipe } from "../data/recipeTypes";
 import { categories } from "../data/categories";
 import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
@@ -48,84 +47,12 @@ const categoryIcons: Record<
   pantry: { Icon: PantryIcon, height: 90 },
 };
 
-const VIBES = [
-  {
-    key: "alle",
-    label: "Alles",
-    categories: null as string[] | null,
-  },
-  {
-    key: "suess",
-    label: "Süßes",
-    categories: ["Bake Club", "Swirl Society"],
-  },
-  {
-    key: "herzhaft",
-    label: "Herzhaft",
-    categories: [
-      "Small Bites",
-      "Bread & Butter",
-      "Pasta Night",
-      "Saucy Stuff",
-      "Pickle & Ferment",
-    ],
-  },
-  {
-    key: "maedelsabend",
-    label: "Mädelsabend",
-    categories: ["Fizz & Friends", "Slow Sips", "Small Bites"],
-  },
-] as const;
-
 export default function Home() {
   const { recipes, loading } = useRecipes();
-  const [vibeKey, setVibeKey] =
-    useState<(typeof VIBES)[number]["key"]>("alle");
-  const [suggestion, setSuggestion] = useState<Recipe | null>(null);
-
-  const activeVibe =
-    VIBES.find((v) => v.key === vibeKey) ?? VIBES[0];
-
-  const vibePool = useMemo(
-    () =>
-      activeVibe.categories
-        ? recipes.filter((r) =>
-            activeVibe.categories!.includes(r.category),
-          )
-        : recipes,
-    [recipes, activeVibe],
-  );
-
   const newestRecipes = useMemo(
     () => recipes.slice(0, 4),
     [recipes],
   );
-
-  useEffect(() => {
-    if (vibePool.length > 0) {
-      setSuggestion(
-        vibePool[Math.floor(Math.random() * vibePool.length)],
-      );
-    } else {
-      setSuggestion(null);
-    }
-  }, [vibeKey, recipes.length]);
-
-  const pickRandom = () => {
-    if (vibePool.length === 0) return;
-
-    let next =
-      vibePool[Math.floor(Math.random() * vibePool.length)];
-
-    if (vibePool.length > 1 && suggestion) {
-      while (next.slug === suggestion.slug) {
-        next =
-          vibePool[Math.floor(Math.random() * vibePool.length)];
-      }
-    }
-
-    setSuggestion(next);
-  };
 
   const catContainerRef = useRef<HTMLDivElement>(null);
   const catSetWidthRef = useRef(0);
@@ -514,175 +441,7 @@ export default function Home() {
         <SeasonalCalendarCard />
       </section>
 
-      <section
-        style={{
-          backgroundColor: "var(--color-sky)",
-          paddingBlock: 72,
-        }}
-      >
-        <div
-          className="wrap"
-          style={{ textAlign: "center" }}
-        >
-          <p
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: "var(--color-maroon)",
-              marginBottom: 12,
-            }}
-          >
-            Noch nichts geplant?
-          </p>
-
-          <h2
-            className="font-display"
-            style={{
-              fontSize: "clamp(1.8rem, 4vw, 2.6rem)",
-              color: "var(--color-maroon)",
-              margin: "0 0 24px",
-              fontWeight: 400,
-            }}
-          >
-            Heute kochst du:
-          </h2>
-
-          <div
-            className="vibe-filter"
-            role="group"
-            aria-label="Nach Vibe filtern"
-          >
-            {VIBES.map((vibe) => (
-              <button
-                key={vibe.key}
-                type="button"
-                onClick={() => setVibeKey(vibe.key)}
-                aria-pressed={vibeKey === vibe.key}
-                className={`vibe-pill ${
-                  vibeKey === vibe.key
-                    ? "vibe-pill-active"
-                    : ""
-                }`}
-              >
-                {vibe.label}
-              </button>
-            ))}
-          </div>
-
-          {suggestion ? (
-            <div className="postcard">
-              <div className="postcard-photo">
-                {suggestion.image ? (
-                  <img
-                    src={resizeDriveUrl(
-                      suggestion.image,
-                      "w600",
-                    )}
-                    alt={suggestion.title}
-                    loading="lazy"
-                    decoding="async"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      backgroundColor: "var(--color-line)",
-                    }}
-                  />
-                )}
-              </div>
-
-              <div className="postcard-right">
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: "var(--color-terracotta)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.1em",
-                    display: "block",
-                    marginBottom: 8,
-                    minHeight: "1em",
-                  }}
-                >
-                  {suggestion.category}
-                </span>
-
-                <p
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontWeight: 300,
-                    fontSize: "clamp(1.2rem, 2.2vw, 1.65rem)",
-                    margin: "0 0 12px",
-                    lineHeight: 1.2,
-                    minHeight: "3.6em",
-                  }}
-                >
-                  {suggestion.title}
-                </p>
-
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "var(--color-muted)",
-                    lineHeight: 1.75,
-                    margin: "0 0 28px",
-                    minHeight: "4.5em",
-                  }}
-                >
-                  {suggestion.intro
-                    ? suggestion.intro.length > 95
-                      ? suggestion.intro.slice(0, 95) + "…"
-                      : suggestion.intro
-                    : ""}
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 10,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Link
-                    to={`/rezepte/${suggestion.slug}`}
-                    className="btn-primary btn-small"
-                  >
-                    Zum Rezept <ArrowRight size={13} />
-                  </Link>
-
-                  <button
-                    onClick={pickRandom}
-                    className="btn-secondary btn-small"
-                  >
-                    <Shuffle size={13} /> Anderes Rezept
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            !loading && (
-              <p
-                style={{
-                  color: "var(--color-maroon)",
-                  fontSize: 14,
-                }}
-              >
-                Für "{activeVibe.label}" ist noch kein
-                Rezept da.
-              </p>
-            )
-          )}
-        </div>
-      </section>
+      <SupperPairing />
 
       <section
         className="statement-section"
@@ -711,8 +470,6 @@ export default function Home() {
           Recipes worth making twice.
         </p>
       </section>
-
-      <SupperPairing />
 
       <section className="wrap sticky-feature">
         <div
@@ -824,73 +581,6 @@ export default function Home() {
             clamp(20px, 5vw, 56px),
             calc((100vw - 1180px) / 2 + 56px)
           );
-        }
-
-        .vibe-filter {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 8px;
-          margin-bottom: 40px;
-        }
-
-        .vibe-pill {
-          padding: 8px 16px;
-          border-radius: 999px;
-          border: 1px solid var(--color-line);
-          background: transparent;
-          color: var(--color-ink);
-          font-size: 13px;
-          cursor: pointer;
-          transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .vibe-pill:hover {
-          background: rgba(43, 18, 16, 0.06);
-        }
-
-        .vibe-pill-active {
-          background: var(--color-terracotta);
-          border-color: var(--color-terracotta);
-          color: var(--color-cream);
-        }
-
-        .postcard {
-          max-width: 640px;
-          margin: 0 auto;
-          display: flex;
-          background: var(--color-cream);
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 20px 48px rgba(43, 18, 16, 0.12);
-        }
-
-        .postcard-photo {
-          width: 240px;
-          flex-shrink: 0;
-          position: relative;
-          min-height: 320px;
-          background-color: var(--color-line);
-        }
-
-        .postcard-right {
-          flex: 1;
-          padding: 28px 32px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          text-align: left;
-        }
-
-        @media (max-width: 580px) {
-          .postcard {
-            flex-direction: column;
-          }
-
-          .postcard-photo {
-            width: 100%;
-            min-height: 220px;
-          }
         }
 
         .statement-section {
