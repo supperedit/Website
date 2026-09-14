@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-export type NoteBlock = { id: string; type: string; depth?: number; text: { text: string; href?: string; bold?: boolean; italic?: boolean }[]; image?: string; caption?: string };
+export type NoteBlock = { id: string; type: string; depth?: number; cells?: string[]; text: { text: string; href?: string; bold?: boolean; italic?: boolean }[]; image?: string; caption?: string };
 export type NotePost = { slug: string; title: string; intro: string; category: string; date?: string | null; image?: string; imageAlt?: string; blocks?: NoteBlock[] };
 type Result = { configured: boolean; posts?: NotePost[]; post?: NotePost; error?: string };
 export function useKitchenNotes(slug?: string) {
