@@ -3,252 +3,255 @@ import heroImage from '../assets/images/hero.webp';
 import picnicImage from '../assets/images/picnic.webp';
 export const kitchenNotesExample: NotePost = {
   "slug": "vorratskammer-ohne-concept-store",
-  "title": "Deine Vorratskammer muss kein Concept Store sein.",
-  "intro": "Ein paar gute Vorräte, ein bisschen Überblick und keine Verpflichtung zum Etikettendrucker.",
-  "category": "Vorrat & Küchenalltag",
-  "imageAlt": "Tischszene aus der Supper-Edit-Bildwelt",
+  "title": "Vorräte lagern: Was braucht wirklich welchen Platz?",
+  "intro": "Glas oder Kunststoff, Küchenschrank oder Keller? Ein kompakter Überblick für Vorräte, die gut aufgehoben sind.",
+  "category": "Vorrat & Küchenwissen",
+  "imageAlt": "Tischszene aus der bestehenden Supper-Edit-Bildwelt",
   "blocks": [
     {
-      "id": "0",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Da steht dieses eine Glas. Sehr hübsch, sehr ordentlich beschriftet, sehr wahrscheinlich seit Monaten unangetastet. Daneben eine offene Packung Nudeln mit Wäscheklammer. Die Nudeln werden heute Abend gekocht. Das Glas sieht weiterhin gut aus."
-        }
-      ]
-    },
-    {
-      "id": "1",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Vielleicht ist das schon die ganze Geschichte: Eine gute Vorratskammer sollte vor allem zu dem passen, was tatsächlich auf deinem Teller landet."
-        }
-      ]
-    },
-    {
-      "id": "2",
+      "id": "note-0",
       "type": "heading_2",
       "text": [
         {
-          "text": "Erst der Hunger. Dann die hübschen Gläser."
+          "text": "Reicht ein Küchenschrank?"
         }
       ]
     },
     {
-      "id": "3",
+      "id": "note-1",
       "type": "paragraph",
       "text": [
         {
-          "text": "An einer schönen Küche ist überhaupt nichts auszusetzen. Und wenn gleich große Gläser Freude machen: bitte. Nur muss aus einer angebrochenen Packung Reis nicht sofort ein Organisationsprojekt werden."
+          "text": "Für Mehl, Reis, Nudeln und Konserven: ja, wenn er trocken, dunkel und nicht zu warm ist. Das BZfE nennt 15–20 °C für diese Vorräte. Ein feuchter Keller ist dafür kein Upgrade. Entscheidend sind die Bedingungen, nicht das Schild an der Tür."
         }
       ]
     },
     {
-      "id": "4",
+      "id": "note-2",
       "type": "paragraph",
       "text": [
         {
-          "text": "Bevor du deinen Vorrat neu sortierst, stell dir eine ziemlich unspektakuläre Frage: Was koche ich eigentlich immer wieder?"
+          "text": "Kartoffeln haben andere Ansprüche: Für größere Mengen über längere Zeit empfiehlt das BZfE einen dunklen Keller mit 4–6 °C. Ein warmer Wohnungsflur ersetzt ihn nicht. Kühlpflichtige Produkte gehören weiterhin in den Kühlschrank; Verpackungshinweise gehen vor."
         }
       ]
     },
     {
-      "id": "5",
+      "id": "note-3",
       "type": "paragraph",
       "text": [
         {
-          "text": "Nicht: Was würde die Version von mir kochen, die sonntags drei Stunden vorkocht und niemals ihr Mittagessen vergisst?"
-        }
-      ]
-    },
-    {
-      "id": "6",
-      "type": "paragraph",
-      "text": [
+          "text": "BZfE: Vorräte lagern",
+          "href": "https://www.bzfe.de/kueche-und-alltag/private-ernaehrungsvorsorge"
+        },
         {
-          "text": "Sondern du. An einem Dienstag. Mit Hunger."
-        }
-      ]
-    },
-    {
-      "id": "7",
-      "type": "paragraph",
-      "text": [
+          "text": " · "
+        },
         {
-          "text": "Schreib drei Gerichte auf, die du ohne große Verhandlung mit dir selbst machen würdest. Ihre wiederkehrenden Zutaten sind ein guter Anfang für deinen Vorrat. Eine universelle Liste mit 47 unverzichtbaren Basics ist dafür nicht nötig."
+          "text": "BZfE: Lebensmittel richtig lagern",
+          "href": "https://www.bzfe.de/kueche-und-alltag/kochen/lebensmittel-richtig-lagern"
         }
       ]
     },
     {
-      "id": "8",
+      "id": "note-4",
       "type": "heading_2",
       "text": [
         {
-          "text": "Ein Vorrat braucht Anschluss."
+          "text": "Glas, Kunststoff oder Ton?"
         }
       ]
     },
     {
-      "id": "9",
+      "id": "note-5",
+      "type": "table_row",
+      "text": [],
+      "cells": [
+        "Material",
+        "Gut zu wissen"
+      ]
+    },
+    {
+      "id": "note-6",
+      "type": "table_row",
+      "text": [],
+      "cells": [
+        "Glas",
+        "Gut zu reinigen und für trockene Vorräte geeignet. Klares Glas schützt nicht vor Licht: also in den Schrank. Ein dicht schließender Deckel zählt mit."
+      ]
+    },
+    {
+      "id": "note-7",
+      "type": "table_row",
+      "text": [],
+      "cells": [
+        "Kunststoff",
+        "Geeignete Mehrweg-Lebensmittelbehälter funktionieren ebenfalls. Verwendungshinweise beachten. Eis- oder Joghurtverpackungen sind keine universellen Vorratsdosen."
+      ]
+    },
+    {
+      "id": "note-8",
+      "type": "table_row",
+      "text": [],
+      "cells": [
+        "Terrakotta / Keramik",
+        "Kein Alleskönner: Unglasierte Brottöpfe können für Brot passen. Für Mehl ist ein dicht schließender Behälter sinnvoller. Lebensmittel nicht langfristig in glasiertem, besonders bunt glasiertem Geschirr lagern."
+      ]
+    },
+    {
+      "id": "note-9",
       "type": "paragraph",
       "text": [
         {
-          "text": "Die spannendste Zutat im Regal hilft wenig, wenn dir jedes Mal noch fünf andere fehlen, um etwas daraus zu machen."
+          "text": "Verbraucherzentrale: Glas",
+          "href": "https://www.verbraucherzentrale.de/wissen/lebensmittel/lebensmittelproduktion/glas-7059"
+        },
+        {
+          "text": " · "
+        },
+        {
+          "text": "Verbraucherzentrale: Verpackungen",
+          "href": "https://www.verbraucherzentrale.de/wissen/lebensmittel/lebensmittelproduktion/schadstoffe-im-essen-von-der-verpackung-ins-lebensmittel-11944"
+        },
+        {
+          "text": " · "
+        },
+        {
+          "text": "Verbraucherzentrale: Keramik",
+          "href": "https://www.verbraucherzentrale.de/wissen/lebensmittel/lebensmittelproduktion/keramik-im-lebensmittelbereich-das-sind-die-vor-und-nachteile-106265"
+        },
+        {
+          "text": " · "
+        },
+        {
+          "text": "Verbraucherzentrale: Vorratsschädlinge",
+          "href": "https://www.verbraucherzentrale.de/wissen/lebensmittel/auswaehlen-zubereiten-aufbewahren/vorratsschaedlinge-tipps-zur-vorbeugung-und-bekaempfung-63252"
         }
       ]
     },
     {
-      "id": "mood-image",
+      "id": "note-10",
+      "type": "heading_2",
+      "text": [
+        {
+          "text": "Was lohnt sich umzufüllen?"
+        }
+      ]
+    },
+    {
+      "id": "note-11",
       "type": "image",
       "text": [],
-      "caption": "Wofür der Vorrat da ist: etwas Gutes auf den Tisch bringen."
+      "caption": "Bildwelt-Vorschau: Die Vorratsaufnahme wird hier eingesetzt."
     },
     {
-      "id": "10",
+      "id": "note-12",
       "type": "paragraph",
       "text": [
         {
-          "text": "Denk deshalb eher in kleinen Verbindungen: Was ist die Basis? Was gibt Geschmack? Was macht daraus etwas, auf das du dich freust?"
+          "text": "Angebrochene Mehl-, Reis- und Nudelpackungen profitieren von dicht schließenden Behältern. Papier und dünne Folie schützen nicht zuverlässig vor Vorratsschädlingen. Auch ungeöffnete Packungen lassen sich samt Verpackung in eine passende Schutzbox stellen — so bleiben die Angaben dabei."
         }
       ]
     },
     {
-      "id": "11",
+      "id": "note-13",
       "type": "paragraph",
       "text": [
         {
-          "text": "Das könnten Nudeln, ein Glas Tomaten und etwas Knuspriges obendrauf sein. Oder Bohnen, ein kräftiges Dressing und ein Stück Brot. Kein festes System. Eher ein paar Zutaten, die sich schon kennen."
+          "text": "Unbeschädigte Konservendosen und original verschlossene Vorratsgläser müssen nicht für die Optik umgefüllt werden. Nach dem Öffnen gelten die jeweiligen Lagerhinweise. Beim Umfüllen Produktname, Mindesthaltbarkeitsdatum und Hinweise aufbewahren."
         }
       ]
     },
     {
-      "id": "12",
+      "id": "note-14",
       "type": "paragraph",
       "text": [
         {
-          "text": "Auch besondere Mitbringsel dürfen bleiben. Nur bekommen sie am besten eine konkrete Verabredung: Wozu möchte ich sie als Nächstes verwenden? „Irgendwann mal“ ist leider ein sehr unzuverlässiger Dinnergast."
+          "text": "Verbraucherzentrale: Vorratsschädlinge",
+          "href": "https://www.verbraucherzentrale.de/wissen/lebensmittel/auswaehlen-zubereiten-aufbewahren/vorratsschaedlinge-tipps-zur-vorbeugung-und-bekaempfung-63252"
+        },
+        {
+          "text": " · "
+        },
+        {
+          "text": "BZfE: Lebensmittel richtig lagern",
+          "href": "https://www.bzfe.de/kueche-und-alltag/kochen/lebensmittel-richtig-lagern"
         }
       ]
     },
     {
-      "id": "13",
+      "id": "note-15",
       "type": "heading_2",
       "text": [
         {
-          "text": "Die kleine Kategorie „Bitte zuerst“."
+          "text": "Wer braucht Abstand?"
         }
       ]
     },
     {
-      "id": "14",
+      "id": "note-16",
+      "type": "bulleted_list_item",
+      "text": [
+        {
+          "text": "Tomaten und Gurken: getrennt lagern. Das Reifegas Ethylen der Tomaten lässt empfindliche Nachbarn schneller altern."
+        }
+      ]
+    },
+    {
+      "id": "note-17",
+      "type": "bulleted_list_item",
+      "text": [
+        {
+          "text": "Kartoffeln und Zwiebeln: ebenfalls getrennt aufbewahren, wie das BZfE empfiehlt."
+        }
+      ]
+    },
+    {
+      "id": "note-18",
+      "type": "bulleted_list_item",
+      "text": [
+        {
+          "text": "Reis neben Nudeln: In jeweils dicht geschlossenen Behältern ist kein eigener Schrank pro Zutat nötig. Diese praktische Folgerung gilt für trockene Vorräte mit gleichen Lageranforderungen, nicht pauschal für frisches Obst und Gemüse."
+        }
+      ]
+    },
+    {
+      "id": "note-19",
       "type": "paragraph",
       "text": [
         {
-          "text": "Du brauchst dafür weder einen Etikettendrucker noch zwölf neue Behälter. Ein gut sichtbarer Platz reicht."
+          "text": "BZfE: Lebensmittel richtig lagern",
+          "href": "https://www.bzfe.de/kueche-und-alltag/kochen/lebensmittel-richtig-lagern"
         }
       ]
     },
     {
-      "id": "15",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Dorthin kommen die Dinge, die beim nächsten Kochen wieder ins Blickfeld sollen: die zweite offene Nudelpackung, der kleine Rest Linsen, die Zutat, die nur für ein Rezept gekauft wurde. Natürlich jeweils an den Ort, an dem sie laut Verpackung aufbewahrt werden soll."
-        }
-      ]
-    },
-    {
-      "id": "16",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Das ist keine Strafbank für Fehlkäufe. Eher die erste Reihe. Was sichtbar ist, kann bei der nächsten Essensidee mitreden."
-        }
-      ]
-    },
-    {
-      "id": "17",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Und bevor der Einkaufszettel wächst, lohnt sich ein kurzer Blick genau dorthin. Vielleicht fehlt für ein Abendessen weniger, als es gerade scheint."
-        }
-      ]
-    },
-    {
-      "id": "18",
+      "id": "note-20",
       "type": "heading_2",
       "text": [
         {
-          "text": "Ordnung darf ein bisschen nach Alltag aussehen."
+          "text": "Der kleine Merkzettel"
         }
       ]
     },
     {
-      "id": "19",
+      "id": "note-21",
+      "type": "callout",
+      "text": [
+        {
+          "text": "• Trocken, dunkel, passend temperiert.\n• Behälter passend zum Lebensmittel wählen.\n• Trockenvorräte vor Schädlingen schützen.\n• Lagerhinweise und Datum behalten.\n• Frisches Obst und Gemüse individuell einordnen."
+        }
+      ]
+    },
+    {
+      "id": "note-22",
       "type": "paragraph",
       "text": [
         {
-          "text": "Eine benutzte Küche hat angebrochene Packungen. Krümel passieren. Nicht jedes Gewürz braucht einen Auftritt mit passender Schriftart."
-        }
-      ]
-    },
-    {
-      "id": "20",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Praktische Ordnung bedeutet, dass du Dinge findest, wieder benutzt und ungefähr weißt, was noch da ist. Wenn du umfüllst, bewahre Produktname, Datum und Hinweise von der Verpackung mit auf. Das unscheinbare Kleingedruckte ist gelegentlich nützlicher als das schönste Label."
-        }
-      ]
-    },
-    {
-      "id": "21",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Der Rest darf zu deinem Alltag passen. Auch optisch."
-        }
-      ]
-    },
-    {
-      "id": "22",
-      "type": "heading_2",
-      "text": [
-        {
-          "text": "Für heute reichen zehn Minuten."
-        }
-      ]
-    },
-    {
-      "id": "23",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Nimm dir ein einziges Fach vor. Stell zusammen, was zusammengehört. Schau nach, was du mehrfach hast. Such eine Zutat aus, die beim nächsten Essen mitmachen darf."
-        }
-      ]
-    },
-    {
-      "id": "24",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Dann hör auf, wenn du möchtest. Du musst nicht aus Versehen die ganze Küche renovieren."
-        }
-      ]
-    },
-    {
-      "id": "25",
-      "type": "paragraph",
-      "text": [
-        {
-          "text": "Eine gute Vorratskammer ist schließlich kein Laden, in dem du dich selbst beeindrucken musst. Sie ist der Ort, an dem dein nächstes Abendessen schon ein bisschen angefangen hat."
+          "text": "Quellen geprüft am 15. September 2026. Die Links stehen jeweils beim passenden Abschnitt."
         }
       ]
     }
   ]
 };
 kitchenNotesExample.image = heroImage;
-kitchenNotesExample.blocks!.find(block => block.id === 'mood-image')!.image = picnicImage;
+kitchenNotesExample.blocks!.find(block => block.type === 'image')!.image = picnicImage;
