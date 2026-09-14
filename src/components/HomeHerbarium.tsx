@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useJournal } from "../data/useJournal";
 import SpecimenCard from "./SpecimenCard";
 import "../styles/herbarium.css";
@@ -8,6 +8,30 @@ import "../styles/home-herbarium.css";
 
 export default function HomeHerbarium() {
   const { entries, loading, error } = useJournal();
+  const rail = useRef<HTMLUListElement>(null);
+  const [active, setActive] = useState(0);
+
+  const move = (direction: number) => {
+    const list = rail.current;
+    if (!list) return;
+    const index = Math.max(0, Math.min(list.children.length - 1, active + direction));
+    const card = list.children[index] as HTMLElement;
+    const first = list.children[0] as HTMLElement;
+    list.scrollTo({
+      left: card.offsetLeft - first.offsetLeft,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  };
+
+  const updateActive = () => {
+    const list = rail.current;
+    if (!list || !list.children.length) return;
+    const first = list.children[0] as HTMLElement;
+    const distances = Array.from(list.children, (child) =>
+      Math.abs((child as HTMLElement).offsetLeft - first.offsetLeft - list.scrollLeft),
+    );
+    setActive(distances.indexOf(Math.min(...distances)));
+  };
 
   const month = new Date().toLocaleString("de-DE", {
     month: "long",
@@ -98,6 +122,9 @@ export default function HomeHerbarium() {
           </div>
         ) : featured.length > 0 ? (
           <ul
+            ref={rail}
+            id="home-herbarium-cards"
+            onScroll={updateActive}
             className="home-herbarium-grid"
             aria-label="Einblicke ins Herbarium"
           >
@@ -119,6 +146,20 @@ export default function HomeHerbarium() {
               ? "Die Pflanzenkarten konnten gerade nicht geladen werden."
               : "Die Sammlung wächst. Entdecke das Herbarium."}
           </p>
+        )}
+
+        {!loading && featured.length > 1 && (
+          <div className="home-herbarium-controls" aria-label="Pflanzenkarten durchblättern">
+            <button type="button" onClick={() => move(-1)} disabled={active === 0}
+              aria-label="Vorherige Pflanzenkarte" aria-controls="home-herbarium-cards">
+              <ChevronLeft size={22} aria-hidden="true" />
+            </button>
+            <span>{active + 1} / {featured.length}</span>
+            <button type="button" onClick={() => move(1)} disabled={active === featured.length - 1}
+              aria-label="Nächste Pflanzenkarte" aria-controls="home-herbarium-cards">
+              <ChevronRight size={22} aria-hidden="true" />
+            </button>
+          </div>
         )}
 
         <div className="home-herbarium-footer">
