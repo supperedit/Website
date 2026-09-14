@@ -50,9 +50,9 @@ export const onRequest: PagesFunction<Env> = async ({ env, request }) => {
       do {
         const data = await notion(`blocks/${id}/children?page_size=100${cursor ? `&start_cursor=${encodeURIComponent(cursor)}` : ''}`) as { results: Block[]; has_more: boolean; next_cursor: string };
         for (const block of data.results) {
-          const content = block[block.type] as { rich_text?: Rich[]; caption?: Rich[]; file?: { url: string }; external?: { url: string } } | undefined;
-          if (['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote', 'callout', 'divider', 'image'].includes(block.type)) {
-            blocks.push({ id: block.id, type: block.type, depth, text: (content?.rich_text ?? []).map(part => ({ text: part.plain_text ?? part.text?.content ?? '', href: safeUrl(part.href ?? part.text?.link?.url), bold: part.annotations?.bold, italic: part.annotations?.italic })), image: block.type === 'image' ? imageUrl(content) : undefined, caption: plain(content?.caption) });
+          const content = block[block.type] as { rich_text?: Rich[]; cells?: Rich[][]; caption?: Rich[]; file?: { url: string }; external?: { url: string } } | undefined;
+          if (['paragraph', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote', 'callout', 'divider', 'image', 'table_row'].includes(block.type)) {
+            blocks.push({ id: block.id, type: block.type, depth, cells: content?.cells?.map(cell => plain(cell)), text: (content?.rich_text ?? []).map(part => ({ text: part.plain_text ?? part.text?.content ?? '', href: safeUrl(part.href ?? part.text?.link?.url), bold: part.annotations?.bold, italic: part.annotations?.italic })), image: block.type === 'image' ? imageUrl(content) : undefined, caption: plain(content?.caption) });
           }
           if (block.has_children) await readBlocks(block.id, depth + 1);
         }
