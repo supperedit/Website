@@ -4,10 +4,6 @@ interface FetchErrorProps {
   compact?: boolean;
 }
 
-// Shared warm, on-brand "content didn't load" state with a real retry action —
-// modeled on Journal.tsx's error handling, which was the one place this was
-// done right. Used everywhere a useRecipes()/useJournal()/useKitchenNotes()
-// fetch can fail so the site doesn't fall back to bare caption text.
 export default function FetchError({
   title,
   message = "Bitte versuche es gleich noch einmal.",
