@@ -3,6 +3,7 @@ import { Shuffle } from "lucide-react";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import type { Recipe } from "../data/recipeTypes";
 import RecipeCard from "./RecipeCard";
+import FetchError from "./FetchError";
 
 const PAIRINGS = [
   {
@@ -28,7 +29,7 @@ function pickRandom(recipes: Recipe[], category: string, exclude?: string): Reci
 }
 
 export default function SupperPairing() {
-  const { recipes, loading } = useRecipes();
+  const { recipes, loading, error } = useRecipes();
   const [pairingIndex, setPairingIndex] = useState(0);
   const [itemA, setItemA] = useState<Recipe | null>(null);
   const [itemB, setItemB] = useState<Recipe | null>(null);
@@ -64,7 +65,23 @@ export default function SupperPairing() {
     setItemB(nextB);
   };
 
-  if (loading || !itemA || !itemB) return null;
+  if (loading) return null;
+
+  if (error) {
+    return (
+      <section className="pairing-section">
+        <div className="wrap" style={{ textAlign: "center" }}>
+          <FetchError
+            compact
+            title="Die Pairing-Idee lässt sich gerade nicht laden."
+            message="Versuch es gleich noch einmal."
+          />
+        </div>
+      </section>
+    );
+  }
+
+  if (!itemA || !itemB) return null;
 
   return (
     <section className="pairing-section">
