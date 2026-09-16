@@ -5,6 +5,7 @@ import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import { categories } from "../data/categories";
 import RecipeCard from "../components/RecipeCard";
 import SEO from "../components/SEO";
+import FetchError from "../components/FetchError";
 import AnimatedLogo from "../components/AnimatedLogo";
 import SeasonalCalendarCard from "../components/SeasonalCalendarCard";
 import HomeHerbarium from "../components/HomeHerbarium";
@@ -48,7 +49,7 @@ const categoryIcons: Record<
 };
 
 export default function Home() {
-  const { recipes, loading } = useRecipes();
+  const { recipes, loading, error } = useRecipes();
   const newestRecipes = useMemo(
     () => recipes.slice(0, 4),
     [recipes],
@@ -380,11 +381,18 @@ export default function Home() {
         </div>
       </section>
 
-      {!loading && newestRecipes.length > 0 && (
+      {!loading && (error || newestRecipes.length > 0) && (
         <section
           className="wrap"
           style={{ paddingBlock: 40 }}
         >
+          {error ? (
+            <FetchError
+              title="Die neuesten Rezepte lassen sich gerade nicht laden."
+              message="Versuch es gleich noch einmal."
+            />
+          ) : (
+            <>
           <div
             style={{
               display: "flex",
@@ -427,6 +435,8 @@ export default function Home() {
               />
             ))}
           </div>
+            </>
+          )}
         </section>
       )}
 
