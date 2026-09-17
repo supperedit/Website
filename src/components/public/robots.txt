@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://www.supperedit.de/sitemap.xml
