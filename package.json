@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:client && npm run build:functions",
+    "build": "npm run build:client",
     "preview": "wrangler pages dev dist --compatibility-date 2026-09-19",
     "build:client": "vite build",
     "build:functions": "wrangler pages functions build functions --outdir dist/_worker.js --build-output-directory dist --output-routes-path dist/_routes.json --compatibility-date 2026-09-19",
