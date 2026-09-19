@@ -1,0 +1,38 @@
+{
+  "name": "supper-edit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:client && npm run build:functions",
+    "preview": "wrangler pages dev dist --compatibility-date 2026-09-19",
+    "build:client": "vite build",
+    "build:functions": "wrangler pages functions build functions --outdir dist/_worker.js --build-output-directory dist --output-routes-path dist/_routes.json --compatibility-date 2026-09-19",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.functions.json",
+    "test": "node tests/regression.mjs"
+  },
+  "dependencies": {
+    "html-to-image": "1.11.13",
+    "lucide-react": "0.577.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.30.6",
+    "workers-og": "0.0.27"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260917.1",
+    "@types/node": "^22.20.4",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "4.7.0",
+    "miniflare": "^5.20260917.0-alpha",
+    "typescript": "5.9.3",
+    "vite": "6.4.3",
+    "vite-plugin-svgr": "^5.2.0",
+    "wrangler": "^4.134.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
