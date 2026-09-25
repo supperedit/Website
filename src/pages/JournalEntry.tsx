@@ -22,8 +22,9 @@ export default function JournalEntry() {
   const { recipes } = useRecipes();
   const entry = entries.find(e => e.slug === slug);
   const savedSearch = typeof location.state?.herbariumSearch === 'string' ? location.state.herbariumSearch : '';
-  const archiveUrl = `/journal${savedSearch ? `?${savedSearch}` : ''}`;
+  const archiveUrl = `/herbarium${savedSearch ? `?${savedSearch}` : ''}`;
   if (loading || error || !entry) return <div className="herbarium herbarium-empty"><h1>{loading ? 'Wird geladen …' : error ? 'Die Sammlung ist gerade nicht erreichbar.' : 'Eintrag nicht gefunden.'}</h1><Link to={archiveUrl}>Zum Herbarium</Link></div>;
+  const imageSrc = entry.image ? `/img/herbarium/${entry.slug}` : undefined;
   const months = seasonMonthIndexes(entry.seasonMonths);
   const facts = [
     ['Pflanzenfamilie', entry.plantFamily], ['Saison', entry.season], ['Essbare Teile', entry.edibleParts],
@@ -38,27 +39,27 @@ export default function JournalEntry() {
   ].filter(([, value]) => Boolean(value));
   const linkedRecipes = recipes.filter(recipe => entry.linkedRecipes.includes(recipe.slug));
   return <>
-    <SEO title={`${entry.title} – Herbarium`} description={entry.intro ?? `${entry.title}: botanische Notizen im Supper Edit Herbarium.`} image={entry.image ? `/img/journal/${entry.slug}` : undefined} />
+    <SEO title={`${entry.title} – Herbarium`} description={entry.intro ?? `${entry.title}: botanische Notizen im Supper Edit Herbarium.`} image={imageSrc} />
     <article className="herbarium plant-entry plant-notebook">
       <Link className="herbarium-back" to={archiveUrl}><ArrowLeft size={16} aria-hidden="true" /> Zur Sammlung</Link>
       <header className="plant-heading"><div><p className="herbarium-kicker">Herbarium / {plantGroup(entry)}</p><h1>{entry.title}</h1>{entry.latinName && <p className="plant-latin">{entry.latinName}</p>}</div>{entry.season && <span className="plant-season-stamp"><span>Saison</span>{entry.season}</span>}</header>
       {entry.intro && <p className="plant-intro plant-lead">{entry.intro}</p>}
-      <div className={`plant-layout${entry.image ? '' : ' plant-layout--text'}`}>
+      <div className={`plant-layout${imageSrc ? '' : ' plant-layout--text'}`}>
         <aside className="plant-sheet" aria-label="Botanischer Steckbrief">
-          {entry.image && <figure style={{ position: 'relative' }}>
-            <img src={entry.image} alt={entry.title} loading="lazy" />
+          {imageSrc && <figure style={{ position: 'relative' }}>
+            <img src={imageSrc} alt={entry.title} />
             <figcaption>{entry.latinName || entry.title}</figcaption>
             <div style={{ position: 'absolute', top: 10, right: 10 }}>
               <SpecimenCardPrintable entry={entry} />
             </div>
           </figure>}
-          {!entry.image && <SpecimenCardPrintable entry={entry} />}
+          {!imageSrc && <SpecimenCardPrintable entry={entry} />}
           <p className="herbarium-kicker">Auf einen Blick</p>
           <dl className="plant-facts">{facts.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           {months.length > 0 && <div className="plant-calendar"><p className="herbarium-kicker">Saison im Jahreslauf</p><p className="sr-only">Saisonmonate: {months.map(i => MONTHS[i]).join(', ')}</p><ol aria-hidden="true">{MONTHS.map((month,index) => <li key={month} className={months.includes(index) ? 'in-season' : ''} title={month}>{month.slice(0,3)}</li>)}</ol></div>}
         </aside>
         <div className="plant-story">
-          {entry.tastingNotes && <section className="plant-taste"><p className="herbarium-kicker">Der erste Eindruck</p><h2>Geschmack & Duft</h2><p>{entry.tastingNotes}</p></section>}
+          {entry.tastingNotes && <section className="plant-taste"><p className="herbarium-kicker">Der erste Eindruck</p><h2>Geschmack &amp; Duft</h2><p>{entry.tastingNotes}</p></section>}
           {kitchen.length > 0 && <section className="plant-kitchen"><p className="herbarium-kicker">Von der Pflanze zum Teller</p><h2>In der Küche</h2><div className="plant-kitchen-notes">{kitchen.map(([label, value]) => <div key={label}><h3>{label}</h3><p>{value}</p></div>)}</div></section>}
           {(growing.length > 0 || entry.lightNeed || entry.waterNeed) && <section className="plant-growing"><h2>Hier fühlt sie sich wohl.</h2><div className="plant-ratings"><DotRating label="Lichtbedarf" value={entry.lightNeed} low="schattig" high="sonnig" /><DotRating label="Wasserbedarf" value={entry.waterNeed} low="wenig" high="viel" /></div><dl>{growing.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></section>}
           {entry.funFact && <aside className="plant-notebook-note"><p className="herbarium-kicker">Am Rande notiert</p><p>{entry.funFact}</p></aside>}
