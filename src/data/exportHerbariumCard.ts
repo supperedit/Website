@@ -64,9 +64,8 @@ export async function exportHerbariumCard(entry: CardEntry): Promise<Blob> {
       loadFont('Homemade Apple', `${entry.title} ${entry.season || '–'}`),
       loadFont('Elms Sans', `Saison Geschmack: ${taste}`),
     ]);
-    // A font rejection is observed immediately while the image request is pending.
     const [response] = await Promise.all([
-      fetch(`/img/journal/${encodeURIComponent(entry.slug)}`, { signal: controller.signal }),
+      fetch(`/img/herbarium/${encodeURIComponent(entry.slug)}`, { signal: controller.signal }),
       fontTask,
     ]);
     if (!response.ok) throw new Error('Das Pflanzenbild konnte nicht geladen werden. Bitte erneut versuchen.');
