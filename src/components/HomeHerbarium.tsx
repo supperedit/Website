@@ -131,7 +131,7 @@ export default function HomeHerbarium() {
             {featured.map((entry) => (
               <li key={entry.slug}>
                 <Link
-                  to={`/journal/${entry.slug}`}
+                  to={`/herbarium/${entry.slug}`}
                   className="specimen"
                   aria-label={`${entry.title} im Herbarium entdecken`}
                 >
@@ -165,7 +165,7 @@ export default function HomeHerbarium() {
         <div className="home-herbarium-footer">
           <span>Von der Pflanze zum Teller.</span>
 
-          <Link to="/journal">
+          <Link to="/herbarium">
             Das Herbarium entdecken
             <ArrowRight size={18} aria-hidden="true" />
           </Link>
