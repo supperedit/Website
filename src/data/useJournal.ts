@@ -51,9 +51,9 @@ function notifyListeners() {
 function fetchJournalOnce(): Promise<void> {
   if (inFlightPromise) return inFlightPromise;
 
-  inFlightPromise = fetch("/api/journal")
+  inFlightPromise = fetch("/api/herbarium")
     .then((res) => {
-      if (!res.ok) throw new Error(`Journal konnte nicht geladen werden (${res.status})`);
+      if (!res.ok) throw new Error(`Herbarium konnte nicht geladen werden (${res.status})`);
       return res.json() as Promise<JournalEntry[]>;
     })
     .then((data) => {
