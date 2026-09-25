@@ -245,7 +245,7 @@ export default function Journal() {
               <li key={entry.slug}>
                 <Link
                   className="specimen"
-                  to={`/journal/${entry.slug}`}
+                  to={`/herbarium/${entry.slug}`}
                   state={{ herbariumSearch: params.toString() }}
                 >
                   <SpecimenCard entry={entry} />
