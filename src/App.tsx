@@ -1,6 +1,6 @@
 import "./styles/globals.css";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import CookieBanner from "./components/CookieBanner";
@@ -32,6 +32,12 @@ function ScrollToTop() {
 function LoadingGate({ visible }: { visible: boolean }) {
   const { pathname } = useLocation();
   return <LoadingScreen visible={pathname === "/" && visible} />;
+}
+
+function LegacyHerbariumRedirect() {
+  const { slug } = useParams();
+  const { search } = useLocation();
+  return <Navigate to={`/herbarium${slug ? `/${slug}` : ""}${search}`} replace />;
 }
 
 export default function App() {
@@ -91,19 +97,21 @@ export default function App() {
 
       <main style={{ flex: 1 }}>
         <Routes>
-          <Route path="/"              element={<Home />} />
-          <Route path="/rezepte"       element={<Recipes />} />
-          <Route path="/rezepte/:slug" element={<Recipe />} />
-          <Route path="/journal"       element={<Journal />} />
-          <Route path="/journal/:slug" element={<JournalEntry />} />
+          <Route path="/"                element={<Home />} />
+          <Route path="/rezepte"         element={<Recipes />} />
+          <Route path="/rezepte/:slug"   element={<Recipe />} />
+          <Route path="/herbarium"       element={<Journal />} />
+          <Route path="/herbarium/:slug" element={<JournalEntry />} />
+          <Route path="/journal"         element={<LegacyHerbariumRedirect />} />
+          <Route path="/journal/:slug"   element={<LegacyHerbariumRedirect />} />
           <Route path="/kitchen-notes/:slug" element={<KitchenNote />} />
-          <Route path="/kitchen-notes" element={<KitchenNotes />} />
-          <Route path="/about"         element={<About />} />
-          <Route path="/kontakt"       element={<Contact />} />
-          <Route path="/impressum"     element={<Impressum />} />
-          <Route path="/datenschutz"   element={<Datenschutz />} />
-          <Route path="/merkliste"     element={<Favorites />} />
-          <Route path="*"              element={<NotFound />} />
+          <Route path="/kitchen-notes"   element={<KitchenNotes />} />
+          <Route path="/about"           element={<About />} />
+          <Route path="/kontakt"         element={<Contact />} />
+          <Route path="/impressum"       element={<Impressum />} />
+          <Route path="/datenschutz"     element={<Datenschutz />} />
+          <Route path="/merkliste"       element={<Favorites />} />
+          <Route path="*"                element={<NotFound />} />
         </Routes>
       </main>
 
