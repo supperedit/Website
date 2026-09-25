@@ -5,7 +5,7 @@ import { withMetadata, type Metadata } from './_lib/metadata';
 const pages: Record<string, [string, string]> = {
   '/': ['Rezepte, die bleiben', 'Eine kuratierte Rezeptsammlung aus dem Alltag. Einfach in der Zubereitung, nie langweilig im Ergebnis.'],
   '/rezepte': ['Alle Rezepte', 'Alle Rezepte von Supper Edit: Pasta, Gebäck, Drinks, Dips und kleine Ideen für lange Abende.'],
-  '/journal': ['Herbarium', 'Botanische Notizen, saisonale Zutaten und essbare Pflanzen im Supper Edit Herbarium.'],
+  '/herbarium': ['Herbarium', 'Botanische Notizen, saisonale Zutaten und essbare Pflanzen im Supper Edit Herbarium.'],
   '/kitchen-notes': ['Kitchen Notes', 'Geschichten aus der Küche, praktische Ideen und kleine Entdeckungen für deinen Alltag.'],
   '/about': ['Was ist Supper Edit', 'Über Abende, die man nicht vergisst.'],
   '/kontakt': ['Kontakt', 'Fragen, Ideen oder Kooperationen, immer gern per Mail.'],
@@ -15,12 +15,13 @@ const pages: Record<string, [string, string]> = {
 };
 export const onRequest: PagesFunction = async context => {
   const url = new URL(context.request.url);
+  const legacy = url.pathname.match(/^\/((?:img|api)\/)?journal(\/.*)?$/);
+  if (legacy) return Response.redirect(`${url.origin}/${legacy[1] ?? ''}herbarium${legacy[2] ?? ''}${url.search}`, 301);
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/img/')) return context.next();
   const response = await context.next();
   if (!(response.headers.get('Content-Type') || '').includes('text/html')) return response;
   const path = url.pathname.replace(/\/+$/, '') || '/';
-  // The existing herbarium detail route owns its metadata.
-  if (path.startsWith('/journal/')) return response;
+  if (path.startsWith('/herbarium/')) return response;
   let status = response.status;
   let meta: Metadata = { title: 'Seite nicht gefunden', description: 'Diese Seite gibt es nicht oder nicht mehr.', path: canonicalPath(path, url.search), noindex: true };
   const base = pages[path];
