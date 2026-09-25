@@ -5,7 +5,7 @@ interface Env {
   RATE_LIMIT?: KVNamespace;
 }
 
-interface JournalEntryLite {
+interface HerbariumEntryLite {
   slug: string;
   title: string;
   latinName: string | null;
@@ -44,12 +44,12 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const slug = context.params.slug as string;
   const origin = new URL(context.request.url).origin;
 
-  const journalRes = await fetch(`${origin}/api/journal`);
-  if (!journalRes.ok) {
-    console.error("pin: journal fetch failed with status", journalRes.status);
+  const herbariumRes = await fetch(`${origin}/api/herbarium`);
+  if (!herbariumRes.ok) {
+    console.error("pin: herbarium fetch failed with status", herbariumRes.status);
     return new Response("Karte konnte nicht geladen werden.", { status: 502 });
   }
-  const entries = (await journalRes.json()) as JournalEntryLite[];
+  const entries = (await herbariumRes.json()) as HerbariumEntryLite[];
   const entry = entries.find((e) => e.slug === slug);
 
   if (!entry) {
@@ -60,17 +60,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const season = escapeHtml(entry.season || "\u2013");
   const tastingNotes = escapeHtml(entry.tastingNotes || "\u2013");
 
-  // Same palette as theme.css / herbarium.css
   const cream = "#F7F6EC";
   const maroon = "#430908";
   const line = "rgba(67,9,8,0.42)";
 
   const photo = entry.image
-    ? `<img src="${origin}/img/journal/${entry.slug}" width="960" height="1180" style="width:960px;height:1180px;object-fit:contain;" />`
+    ? `<img src="${origin}/img/herbarium/${entry.slug}" width="960" height="1180" style="width:960px;height:1180px;object-fit:contain;" />`
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
-  // Mirrors SpecimenCard.tsx / herbarium.css .specimen-card structure:
-  // photo : title+Saison row : Geschmack row, proportioned 80:10:10, no rounded corners.
   const html = `
   <div style="display:flex;flex-direction:column;width:1000px;height:1500px;background:${cream};border:2px solid ${line};box-sizing:border-box;">
     <div style="display:flex;flex:8;align-items:center;justify-content:center;padding:20px;">
