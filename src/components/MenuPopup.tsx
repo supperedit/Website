@@ -28,7 +28,7 @@ function MenuFrameShape() {
 const links = [
   { to: "/", label: "Start" },
   { to: "/rezepte", label: "Rezepte" },
-  { to: "/journal", label: "Herbarium" },
+  { to: "/herbarium", label: "Herbarium" },
   { to: "/kitchen-notes", label: "Kitchen Notes" },
 ];
 
