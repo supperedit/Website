@@ -54,7 +54,7 @@ export default function SpecimenCardPrintable({ entry }: SpecimenCardPrintablePr
   };
 
   const handlePinterest = () => {
-    const pageUrl = `${window.location.origin}/journal/${entry.slug}`;
+    const pageUrl = `${window.location.origin}/herbarium/${entry.slug}`;
     const imageUrl = `${window.location.origin}/api/pin/${entry.slug}`;
     const description = entry.intro || `${entry.title} im Supper Edit Herbarium`;
     const pinUrl = `https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(pageUrl)}&media=${encodeURIComponent(imageUrl)}&description=${encodeURIComponent(description)}`;
