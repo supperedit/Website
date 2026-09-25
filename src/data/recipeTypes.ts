@@ -36,6 +36,7 @@ export interface Recipe {
   steps: RecipeStep[];
   pinterestTitle?: string | null;
   pinterestDescription?: string | null;
+  pinterestIngredients?: string[];
   related: string[];
   linkedIngredients: { title: string; slug: string }[];
 }
