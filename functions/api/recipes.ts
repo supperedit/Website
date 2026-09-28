@@ -44,14 +44,16 @@ function richText(prop: NotionProperty | undefined): string {
 
 function positiveMinutes(prop: NotionProperty | undefined): number | undefined {
   const value = prop?.number;
-  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }
+
 function isPublished(page: NotionPage): boolean {
   const status = page.properties["Status"];
   if (!status) return true;
   const name = status.type === "select" ? status.select?.name : status.type === "status" ? status.status?.name : undefined;
   return (status.type === "select" || status.type === "status") ? name?.toLowerCase() === "aktiv" : true;
 }
+
 function slugify(text: string): string {
   const map: Record<string, string> = { ä: "ae", ö: "oe", ü: "ue", ß: "ss" };
   return text
@@ -83,6 +85,13 @@ function parseIngredients(cell: string) {
     });
   });
   return groups.filter((g) => g.items.length > 0);
+}
+
+function parseLines(cell: string): string[] {
+  return cell
+    .split(/\r?\n/)
+    .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean);
 }
 
 function parseSteps(cell: string) {
@@ -216,6 +225,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
           seoDescription: richText(p["Meta Description"] ?? p["SEO-Beschreibung"]) || undefined,
           pinterestTitle: richText(p["Pinterest-Titel"] ?? p["Pinterest Title"]) || undefined,
           pinterestDescription: richText(p["Pinterest-Beschreibung"] ?? p["Pinterest Description"]) || undefined,
+          pinterestIngredients: parseLines(richText(p["Pinterest-Zutaten"] ?? p["Pinterest Zutaten"])),
           datePublished: (p["Veröffentlichungsdatum"]?.date?.start) || undefined,
           dateModified: page.last_edited_time || undefined,
           prepMinutes: positiveMinutes(p["Prep Time"] ?? p["Vorbereitungszeit"]),
