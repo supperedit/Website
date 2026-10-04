@@ -87,16 +87,12 @@ export async function exportHerbariumCard(entry: CardEntry): Promise<Blob> {
     const maroon = theme.getPropertyValue('--color-maroon').trim() || '#430908';
     context.fillStyle = cream;
     context.fillRect(0, 0, WIDTH, HEIGHT);
-    context.save();
-    context.beginPath();
-    context.roundRect(1.5, 1.5, 997, 1497, 28);
-    context.clip();
     const imageHeight = 1228;
-    const scale = Math.max(997 / image.naturalWidth, imageHeight / image.naturalHeight);
-    const cropWidth = 997 / scale;
+    const scale = Math.max(WIDTH / image.naturalWidth, imageHeight / image.naturalHeight);
+    const cropWidth = WIDTH / scale;
     const cropHeight = imageHeight / scale;
     context.drawImage(image, (image.naturalWidth - cropWidth) / 2,
-      (image.naturalHeight - cropHeight) / 2, cropWidth, cropHeight, 1.5, 1.5, 997, imageHeight);
+      (image.naturalHeight - cropHeight) / 2, cropWidth, cropHeight, 0, 0, WIDTH, imageHeight);
     context.fillStyle = maroon;
     drawText(context, entry.title, 'Homemade Apple', 58, 48, 1238, 530, 114);
     drawText(context, 'Saison', 'Elms Sans', 24, 630, 1238, 336, 32, true);
@@ -107,17 +103,11 @@ export async function exportHerbariumCard(entry: CardEntry): Promise<Blob> {
     context.globalAlpha = 0.42;
     context.lineWidth = 3;
     context.beginPath();
-    context.moveTo(0, 1230); context.lineTo(1000, 1230);
-    context.moveTo(0, 1365); context.lineTo(1000, 1365);
+    context.moveTo(0, 1230); context.lineTo(WIDTH, 1230);
+    context.moveTo(0, 1365); context.lineTo(WIDTH, 1365);
     context.moveTo(622, 1230); context.lineTo(622, 1365);
     context.stroke();
-    context.restore();
-    context.strokeStyle = maroon;
-    context.globalAlpha = 0.42;
-    context.lineWidth = 3;
-    context.beginPath();
-    context.roundRect(1.5, 1.5, 997, 1497, 28);
-    context.stroke();
+    context.globalAlpha = 1;
     return await new Promise<Blob>((resolve, reject) => canvas.toBlob(
       blob => blob ? resolve(blob) : reject(new Error('Das PNG konnte nicht erstellt werden.')), 'image/png',
     ));
