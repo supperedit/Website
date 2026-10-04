@@ -69,7 +69,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
     : `<div style="display:flex;width:100%;height:100%;background:${cream};"></div>`;
 
   const html = `
-  <div style="display:flex;flex-direction:column;width:1000px;height:1500px;background:${cream};border:2px solid ${line};box-sizing:border-box;">
+  <div style="display:flex;flex-direction:column;width:1000px;height:1500px;background:${cream};box-sizing:border-box;">
     <div style="display:flex;flex:8;align-items:center;justify-content:center;padding:20px;">
       ${photo}
     </div>
