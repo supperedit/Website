@@ -508,7 +508,7 @@ export default function Home() {
             style={{
               fontSize: 16,
               lineHeight: 1.8,
-              marginBottom: 24,
+              marginBottom: 0,
             }}
           >
             Dafür sammeln wir Rezepte, kleine Dinnerideen
@@ -516,17 +516,6 @@ export default function Home() {
             Zum Ausprobieren und Immer-wieder-Machen.
           </p>
 
-          <Link
-            to="/about"
-            style={{
-              display: "inline-block",
-              fontSize: 14,
-              paddingBlock: 8,
-              borderBottom: "1px solid var(--color-maroon)",
-            }}
-          >
-            Mehr über Supper Edit →
-          </Link>
         </div>
       </section>
 
