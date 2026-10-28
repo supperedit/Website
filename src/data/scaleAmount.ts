@@ -1,4 +1,3 @@
-// Parse only the leading quantity. Package sizes and preparation notes stay intact.
 const fractions: Record<string, number> = { '¼': 1/4, '½': 1/2, '¾': 3/4, '⅐': 1/7, '⅑': 1/9, '⅒': 1/10, '⅓': 1/3, '⅔': 2/3, '⅕': 1/5, '⅖': 2/5, '⅗': 3/5, '⅘': 4/5, '⅙': 1/6, '⅚': 5/6, '⅛': 1/8, '⅜': 3/8, '⅝': 5/8, '⅞': 7/8 };
 const fractionChars = Object.keys(fractions).join('');
 const number = `(?:\\d+\\s+\\d+[/⁄]\\d+|\\d+[/⁄]\\d+|\\d*\\s*[${fractionChars}]|\\d+(?:[.,]\\d+)?)`;
@@ -13,25 +12,28 @@ function parse(value: string): number {
   }
   return Number(value.replace(',', '.'));
 }
+function round(value: number): string {
+  const rounded = value >= 50 ? Math.round(value) : value >= 10 ? Math.round(value * 10) / 10 : Math.round(value * 100) / 100;
+  return String(rounded).replace('.', ',');
+}
 function format(value: number): string {
-  // Keep thirds exact instead of rounding small amounts to zero or half units.
+  if (value >= 10) return round(value);
   const whole = Math.floor(value + 1e-10);
   const part = value - whole;
-  if (Math.abs(part * 1000000 - Math.round(part * 1000000)) < 1e-8) return Number(value.toFixed(6)).toString().replace(".", ",");
+  if (Math.abs(part * 100 - Math.round(part * 100)) < 1e-8) return round(value);
   for (const denominator of [3, 6, 7, 9]) {
     const numerator = Math.round(part * denominator);
     if (numerator > 0 && numerator < denominator && Math.abs(part - numerator / denominator) < 1e-9) {
       return `${whole ? `${whole} ` : ''}${numerator}/${denominator}`;
     }
   }
-  return Number(value.toFixed(6)).toString().replace('.', ',');
+  return round(value);
 }
 export function scaleAmount(amount: string, factor: number): string {
   if (!amount || factor === 1 || !Number.isFinite(factor) || factor <= 0) return amount;
   const match = amount.match(quantity);
   if (!match) return amount;
   const [, prefix, first, separator, second, rest] = match;
-  // Do not reinterpret malformed fractions or dimensions as a quantity.
   if (/^\s*[/⁄]/.test(rest) || /^\s*[x×]\s*\d/.test(rest)) return amount;
   const a = parse(first), b = second ? parse(second) : null;
   if (!Number.isFinite(a) || (b !== null && !Number.isFinite(b))) return amount;

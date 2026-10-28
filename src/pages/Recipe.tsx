@@ -3,7 +3,7 @@ import { categoryPath, recipeSchema, recipeDescription, recipeImagePath } from "
 import { highImagePriority } from "../data/imagePriority";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Leaf, ChevronLeft, Copy, Check, Share2 } from "lucide-react";
+import { Leaf, ChevronLeft, Copy, Check, Share2, Minus, Plus } from "lucide-react";
 import { useRecipes, resizeDriveUrl } from "../data/useRecipes";
 import { scaleAmount, scaleServingsText } from "../data/scaleAmount";
 import FavoriteButton from "../components/FavoriteButton";
@@ -16,6 +16,29 @@ export default function Recipe() {
   const [veganMode, setVeganMode] = useState(false);
   const [copied, setCopied] = useState(false);
   const [scaleFactor, setScaleFactor] = useState(1);
+  const [scaleDraft, setScaleDraft] = useState("1");
+  const MIN_SCALE = 0.25;
+  const MAX_SCALE = 20;
+  const formatScale = (value: number) => String(Math.round(value * 100) / 100).replace(".", ",");
+  const applyScale = (value: number) => {
+    const clamped = Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(value * 100) / 100));
+    setScaleFactor(clamped);
+    setScaleDraft(formatScale(clamped));
+  };
+  const stepScale = (direction: 1 | -1) => {
+    const next = direction > 0 ? Math.floor(scaleFactor * 2 + 1e-9) / 2 + 0.5 : Math.ceil(scaleFactor * 2 - 1e-9) / 2 - 0.5;
+    applyScale(next < MIN_SCALE ? MIN_SCALE : next);
+  };
+  const onScaleInput = (raw: string) => {
+    if (!/^\d{0,2}(?:[.,]\d{0,2})?$/.test(raw)) return;
+    setScaleDraft(raw);
+    const value = Number(raw.replace(",", "."));
+    if (raw && Number.isFinite(value) && value >= MIN_SCALE && value <= MAX_SCALE) setScaleFactor(value);
+  };
+  const commitScale = () => {
+    const value = Number(scaleDraft.replace(",", "."));
+    applyScale(scaleDraft && Number.isFinite(value) && value > 0 ? value : scaleFactor);
+  };
   const recipe = recipes.find((r) => r.slug === slug);
   const stepsRef = useRef<HTMLDivElement>(null);
   const [stickySteps, setStickySteps] = useState(false);
@@ -118,7 +141,7 @@ export default function Recipe() {
     document.body.removeChild(textarea);
   };
   const copyIngredients = () => {
-    const lines: string[] = [recipe.title, `${scaleFactor}× Rezeptmenge`, ""];
+    const lines: string[] = [recipe.title, `${formatScale(scaleFactor)}× Rezeptmenge`, ""];
     recipe.ingredientGroups.forEach((group) => {
       if (group.group) lines.push(group.group.toUpperCase());
       group.items.forEach((item) => {
@@ -262,13 +285,32 @@ export default function Recipe() {
                 <div>
                   <h2 className="font-display" style={{ fontSize: 22, margin: 0 }}>Zutaten</h2>
                   <div className="recipe-scale" role="group" aria-label="Rezeptmenge wählen">
-                    {[1, 2, 3].map(factor => <button key={factor} type="button"
-                      aria-pressed={scaleFactor === factor}
-                      aria-label={factor === 1 ? "Einfache Menge" : factor === 2 ? "Doppelte Menge" : "Dreifache Menge"}
-                      onClick={() => setScaleFactor(factor)}>{factor}×</button>)}
+                    <button type="button" onClick={() => stepScale(-1)} disabled={scaleFactor <= MIN_SCALE} aria-label="Rezeptmenge verringern">
+                      <Minus size={16} aria-hidden="true" />
+                    </button>
+                    <label className="recipe-scale-field">
+                      <span className="sr-only">Rezeptmenge als Faktor, zum Beispiel 0,5 für ein halbes Rezept</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={scaleDraft}
+                        onChange={(e) => onScaleInput(e.target.value)}
+                        onBlur={commitScale}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") { e.preventDefault(); commitScale(); }
+                          if (e.key === "ArrowUp") { e.preventDefault(); stepScale(1); }
+                          if (e.key === "ArrowDown") { e.preventDefault(); stepScale(-1); }
+                        }}
+                        aria-describedby="recipe-yield"
+                      />
+                      <span aria-hidden="true">×</span>
+                    </label>
+                    <button type="button" onClick={() => stepScale(1)} disabled={scaleFactor >= MAX_SCALE} aria-label="Rezeptmenge erhöhen">
+                      <Plus size={16} aria-hidden="true" />
+                    </button>
                   </div>
-                  <p className="recipe-yield" aria-live="polite">
-                    {recipe.servings ? scaleServingsText(recipe.servings, scaleFactor) : recipe.baseServings ? `${recipe.baseServings * scaleFactor} Portionen` : `${scaleFactor}× Rezeptmenge`}
+                  <p className="recipe-yield" id="recipe-yield" aria-live="polite">
+                    {recipe.servings ? scaleServingsText(recipe.servings, scaleFactor) : recipe.baseServings ? `${formatScale(recipe.baseServings * scaleFactor)} Portionen` : `${formatScale(scaleFactor)}× Rezeptmenge`}
                   </p>
                 </div>
                 <button
@@ -421,10 +463,15 @@ export default function Recipe() {
         </section>
       )}
       <style>{`
-        .recipe-scale { display: flex; gap: 8px; margin-top: 12px; }
-        .recipe-scale button { min-width: 44px; min-height: 44px; border: 1px solid var(--color-ink); border-radius: 999px; background: transparent; color: var(--color-ink); cursor: pointer; }
-        .recipe-scale button[aria-pressed="true"] { background: var(--color-ink); color: var(--color-cream); }
-        .recipe-scale button:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 3px; }
+        .recipe-scale { display: inline-flex; align-items: center; gap: 4px; margin-top: 12px; border: 1px solid var(--color-ink); border-radius: 999px; padding: 3px; }
+        .recipe-scale button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: none; border-radius: 999px; background: transparent; color: var(--color-ink); cursor: pointer; transition: background 0.15s ease; }
+        .recipe-scale button:hover:not(:disabled) { background: var(--color-ink); color: var(--color-cream); }
+        .recipe-scale button:disabled { opacity: 0.35; cursor: not-allowed; }
+        .recipe-scale button:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 2px; }
+        .recipe-scale-field { display: inline-flex; align-items: baseline; gap: 2px; font-size: 16px; color: var(--color-ink); }
+        .recipe-scale-field input { width: 3.2ch; min-height: 36px; border: none; border-bottom: 1px solid transparent; background: transparent; color: var(--color-ink); font: inherit; text-align: right; padding: 0; }
+        .recipe-scale-field input:hover { border-bottom-color: var(--color-ink); }
+        .recipe-scale-field input:focus-visible { outline: 2px solid var(--color-terracotta); outline-offset: 3px; border-radius: 4px; }
         .recipe-yield { font-size: 12px; margin: 8px 0 0; color: var(--color-muted); }
         .recipe-left-col { min-width: 0; width: 100%; }
 
