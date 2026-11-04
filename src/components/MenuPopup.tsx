@@ -114,7 +114,10 @@ export default function MenuPopup({ onClose }: MenuPopupProps) {
         .menu-popup-close:focus-visible, .menu-nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
         .menu-tagline { margin: 20px 0 0; font-size: 11px; }
         @keyframes menuCardIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
-        @media (max-width: 640px) { .menu-popup-overlay { padding: 24px 12px; justify-content: center; } }
+        @media (max-width: 640px) {
+          .menu-popup-overlay { padding: 16px; justify-content: center; }
+          .menu-popup-card { margin-block: auto; }
+        }
         @media (prefers-reduced-motion: reduce) { .menu-popup-card { animation: none; } }
       `}</style>
     </div>

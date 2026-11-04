@@ -1,7 +1,6 @@
-/* Hero-only styles: existing buttons elsewhere keep their appearance. */
 .supper-hero {
   position: relative;
-  min-height: max(680px, 100svh);
+  min-height: max(640px, 86svh);
   display: flex;
   align-items: center;
   justify-content: center;
